@@ -17,7 +17,8 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "git@github.com:CX-engine/expert-stats-api-sdk-php.git"
+            "url": "git@github.com:CX-engine/expert-stats-api-sdk-php.git",
+            "no-api": true
         }
     ],
     "autoload": {
