@@ -1,0 +1,47 @@
+{
+    "name": "cx-engine/expert-statistics",
+    "description": "Dashboard and Expert Statistics (PBX call analytics) package for BlueRockTEL CX Engine apps.",
+    "type": "library",
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "illuminate/support": "^11.0|^12.0",
+        "livewire/livewire": "^3.0",
+        "cx-engine/expert-stats-api-sdk-php": "dev-feature/stats-endpoints",
+        "nesbot/carbon": "^2.72|^3.0"
+    },
+    "require-dev": {
+        "pestphp/pest": "^3.0",
+        "orchestra/testbench": "^9.0|^10.0"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../expert-stats-api-sdk-php"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "CXEngine\\ExpertStatistics\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CXEngine\\ExpertStatistics\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CXEngine\\ExpertStatistics\\ExpertStatisticsServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
