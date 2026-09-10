@@ -12,6 +12,7 @@ use CXEngine\ExpertStatistics\Livewire\Ai\AiFloatingChat;
 use CXEngine\ExpertStatistics\Livewire\CallAnalysis\CallAnalysis;
 use CXEngine\ExpertStatistics\Livewire\Configuration\ManagePbxSettings;
 use CXEngine\ExpertStatistics\Livewire\Dashboard;
+use CXEngine\ExpertStatistics\Livewire\Home;
 use CXEngine\ExpertStatistics\Livewire\Reports\CallerNumbers\CallerNumbersReport;
 use CXEngine\ExpertStatistics\Livewire\Reports\ManageScheduledReports;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyNumbers\MyNumbersReport;
@@ -71,6 +72,8 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
         ], 'expert-statistics-lang');
 
         if (class_exists(Livewire::class)) {
+            Livewire::component('expert-statistics.home', Home::class);
+
             Livewire::component('expert-statistics.dashboard', Dashboard::class);
 
             Livewire::component('expert-statistics.my-queues.report', MyQueuesReport::class);

@@ -7,6 +7,10 @@ return [
 
     'activation' => [
         'required' => 'Expert Statistics is not activated for this PBX host. Ask your administrator to activate it from the Expert Statistics configuration page.',
+        'not_active_title' => 'Expert Statistics',
+        'not_active_heading' => "This host doesn't have Expert Statistics activated yet",
+        'not_active_description' => 'Improve customer satisfaction and team productivity by analysing your calls by queue, user or number, spotting missed calls, and reducing wait times. Ask an administrator to activate Expert Statistics for this host, or get in touch to enable it.',
+        'not_active_cta' => 'Activate now',
     ],
 
     'navigation' => [
@@ -494,6 +498,11 @@ return [
         'home_feature_my_queues_desc' => 'Analyse inbound calls per queue to improve wait time management and customer experience.',
         'home_feature_my_users_desc' => 'Analyse individual agent statistics to balance workload and optimise performance.',
         'home_feature_caller_numbers_desc' => 'Identify your most frequent callers and analyse their behaviour.',
+        'home_feature_dashboard_desc' => 'Get a live overview of inbound and outbound call activity at a glance.',
+        'home_feature_call_details_desc' => 'Drill into any call\'s full flow — transfers, hold, queue time and outcome.',
+        'home_feature_agent_monitoring_desc' => 'Watch agent status and queue connection in real time.',
+        'home_feature_scheduled_reports_desc' => 'Send or schedule recurring reports straight to your inbox.',
+        'home_feature_ai_desc' => 'Ask questions about your call data and review AI-generated insights.',
         'home_video_section_label' => 'Video tutorials',
         'home_video_tab_config' => 'Group Setup',
         'home_video_tab_reports' => 'Reports & Alerts',

@@ -7,6 +7,10 @@ return [
 
     'activation' => [
         'required' => "Expert Statistics n'est pas activé pour cet hôte PBX. Demandez à votre administrateur de l'activer depuis la page de configuration Expert Statistics.",
+        'not_active_title' => 'Expert Statistics',
+        'not_active_heading' => "Expert Statistics n'est pas encore activé pour cet hôte",
+        'not_active_description' => "Améliorez la satisfaction client et la productivité de vos équipes en analysant vos appels par file, utilisateur ou numéro, en identifiant les appels manqués et en réduisant les temps d'attente. Demandez à un administrateur d'activer Expert Statistics pour cet hôte, ou contactez-nous pour l'activer.",
+        'not_active_cta' => 'Activer maintenant',
     ],
 
     'navigation' => [
@@ -494,6 +498,11 @@ return [
         'home_feature_my_queues_desc' => 'Analysez les appels entrants par file d\'attente pour améliorer la gestion des temps d\'attente et l\'expérience client.',
         'home_feature_my_users_desc' => 'Analysez les stats individuelles des agents pour équilibrer la charge de travail et optimiser les performances.',
         'home_feature_caller_numbers_desc' => 'Identifiez vos appelants les plus fréquents et analysez leurs comportements.',
+        'home_feature_dashboard_desc' => "Obtenez en un coup d'œil un aperçu en direct de l'activité des appels entrants et sortants.",
+        'home_feature_call_details_desc' => "Explorez le flux complet d'un appel : transferts, mise en attente, temps en file et issue.",
+        'home_feature_agent_monitoring_desc' => 'Suivez en temps réel le statut des agents et la connexion aux files.',
+        'home_feature_scheduled_reports_desc' => 'Envoyez ou planifiez des rapports récurrents directement dans votre boîte mail.',
+        'home_feature_ai_desc' => 'Posez des questions sur vos données d\'appels et consultez les analyses générées par IA.',
         'home_video_section_label' => 'Tutoriels vidéo',
         'home_video_tab_config' => 'Création Groupe',
         'home_video_tab_reports' => 'Rapport & Alerte',
