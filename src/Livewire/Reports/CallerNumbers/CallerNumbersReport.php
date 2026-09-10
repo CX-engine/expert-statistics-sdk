@@ -8,6 +8,7 @@ use CXEngine\ExpertStatistics\Concerns\HasPbxElementSelector;
 use CXEngine\ExpertStatistics\Concerns\RequiresExpertStatisticsActivation;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Route;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -268,6 +269,46 @@ class CallerNumbersReport extends Component
                     ? ['all_groups' => true, 'queues' => $this->selectedQueues]
                     : ['group_names' => $this->groupSelectedName, 'queues' => $this->selectedQueues]),
         );
+    }
+
+    /**
+     * Points at CallersReportExportController's route, wired by a later
+     * phase (modules/ExpertStatistics/Routes/tenant.php). Falls back to '#'
+     * while that route doesn't exist yet, the same Route::has() guard used
+     * by CallAnalysis::getExportUrl(). Mirrors the same groups/groupless/
+     * queues param-building logic as loadData().
+     */
+    public function getExportUrl(): string
+    {
+        if (! $this->startDate || ! $this->endDate || ! Route::has('expert-stats.caller-numbers.export')) {
+            return '#';
+        }
+
+        if ($this->activeTab === 'groups' && empty($this->groupSelectedName)) {
+            return '#';
+        }
+
+        $params = [
+            'start_date' => $this->startDate,
+            'end_date' => $this->endDate,
+            'start_time' => $this->startTime,
+            'end_time' => $this->endTime,
+            'exclude_closed_hours' => $this->excludeClosedHours ? 1 : 0,
+        ];
+
+        if ($this->activeTab === 'groupless') {
+            $params['groupless'] = 1;
+        } elseif ($this->isAllGroupsSelected()) {
+            $params['all_groups'] = 1;
+        } else {
+            $params['group_names'] = implode(',', $this->groupSelectedName);
+        }
+
+        if (! empty($this->selectedQueues)) {
+            $params['queues'] = implode(',', $this->selectedQueues);
+        }
+
+        return route('expert-stats.caller-numbers.export', array_filter($params));
     }
 
     public function loadData(): void

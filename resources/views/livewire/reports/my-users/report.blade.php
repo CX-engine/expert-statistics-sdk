@@ -8,7 +8,10 @@
             :groupSelectedName="$groupSelectedName"
         />
 
-        <x-expert-statistics::report-action-buttons />
+        <div class="flex items-center gap-2">
+            <x-expert-statistics::report-action-buttons />
+            <x-expert-statistics::export-button :url="$this->getExportUrl()" />
+        </div>
     </div>
 
     {{-- Filter bar --}}

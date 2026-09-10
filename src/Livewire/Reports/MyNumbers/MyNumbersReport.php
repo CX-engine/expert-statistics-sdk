@@ -8,6 +8,7 @@ use CXEngine\ExpertStatistics\Concerns\HasPbxElementSelector;
 use CXEngine\ExpertStatistics\Concerns\RequiresExpertStatisticsActivation;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Route;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -137,6 +138,32 @@ class MyNumbersReport extends Component
             endTime: $this->endTime,
             elements: $this->dn,
         );
+    }
+
+    /**
+     * Points at DidReportExportController's route, wired by a later phase
+     * (modules/ExpertStatistics/Routes/tenant.php). Falls back to '#' while
+     * that route doesn't exist yet, the same Route::has() guard used by
+     * CallAnalysis::getExportUrl(). There is no bluerocktelclients reference
+     * for this export - built directly from ExpertStatisticsService::
+     * streamDidReportFile(), mirroring the sibling reports' getExportUrl().
+     */
+    public function getExportUrl(): string
+    {
+        if (! $this->dn || ! $this->startDate || ! $this->endDate || ! Route::has('expert-stats.my-numbers.export')) {
+            return '#';
+        }
+
+        $params = array_filter([
+            'start_date' => $this->startDate,
+            'end_date' => $this->endDate,
+            'start_time' => $this->startTime,
+            'end_time' => $this->endTime,
+            'dn' => $this->dn,
+            'exclude_closed_hours' => $this->excludeClosedHours ? 1 : 0,
+        ]);
+
+        return route('expert-stats.my-numbers.export', $params);
     }
 
     public function loadData(): void
