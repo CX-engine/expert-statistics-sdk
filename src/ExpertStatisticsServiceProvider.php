@@ -5,6 +5,10 @@ namespace CXEngine\ExpertStatistics;
 use CXEngine\ExpertStatistics\Livewire\AgentMonitoring\QueueConnection;
 use CXEngine\ExpertStatistics\Livewire\AgentMonitoring\RealtimeStatus;
 use CXEngine\ExpertStatistics\Livewire\AgentMonitoring\StatusBreakdown;
+use CXEngine\ExpertStatistics\Livewire\Ai\AiAlerts;
+use CXEngine\ExpertStatistics\Livewire\Ai\AiChat;
+use CXEngine\ExpertStatistics\Livewire\Ai\AiDashboard;
+use CXEngine\ExpertStatistics\Livewire\Ai\AiFloatingChat;
 use CXEngine\ExpertStatistics\Livewire\CallAnalysis\CallAnalysis;
 use CXEngine\ExpertStatistics\Livewire\Configuration\ManagePbxSettings;
 use CXEngine\ExpertStatistics\Livewire\Dashboard;
@@ -94,6 +98,11 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
             Livewire::component('expert-statistics.agent-monitoring.realtime-status', RealtimeStatus::class);
             Livewire::component('expert-statistics.agent-monitoring.queue-connection', QueueConnection::class);
             Livewire::component('expert-statistics.agent-monitoring.status-breakdown', StatusBreakdown::class);
+
+            Livewire::component('expert-statistics.ai.chat', AiChat::class);
+            Livewire::component('expert-statistics.ai.dashboard', AiDashboard::class);
+            Livewire::component('expert-statistics.ai.alerts', AiAlerts::class);
+            Livewire::component('expert-statistics.ai.floating-chat', AiFloatingChat::class);
         }
     }
 }
