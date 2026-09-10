@@ -237,6 +237,30 @@ return [
             'levelYellow' => 'Yellow',
             'levelGreen' => 'Green',
         ],
+
+        // AI Alerts tab (mirrors bluerocktelclients' lang/en/ai.php "config" section,
+        // which was not ported wholesale since AI dashboard/chat/alerts are out of
+        // scope — only the settings form fields used here were copied over).
+        'aiAlerts' => [
+            'generalSection' => 'General Settings',
+            'description' => 'Configure how and when AI-generated alerts are sent for this PBX.',
+            'thresholdsSection' => 'Alert Thresholds',
+            'thresholdsDesc' => 'Trigger values for each alert type. Alerts fire when a metric crosses the configured threshold.',
+            'enabled' => 'Alerts enabled',
+            'enabledDesc' => 'Enable or disable all AI-generated alerts for this PBX.',
+            'checkInterval' => 'Check interval (minutes)',
+            'language' => 'Alert language',
+            'notificationEmail' => 'Notification email',
+            'abandonRate' => 'Abandon rate',
+            'notAnsweredRate' => 'Not-answered rate',
+            'abandonPreanswer' => 'Pre-answer abandonment rate',
+            'waitTime' => 'Wait time',
+            'changeThresholds' => 'Change thresholds (period-over-period)',
+            'levelWarning' => 'Warning',
+            'levelCritical' => 'Critical',
+            'volumeChangePercent' => 'Volume change (%)',
+            'abandonRateChangePercent' => 'Abandon rate change (%)',
+        ],
     ],
 
     'reports' => [

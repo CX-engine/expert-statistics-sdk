@@ -2,6 +2,7 @@
 
 namespace CXEngine\ExpertStatistics;
 
+use CXEngine\ExpertStatistics\Livewire\Configuration\ManagePbxSettings;
 use CXEngine\ExpertStatistics\Livewire\Dashboard;
 use CXEngine\ExpertStatistics\Livewire\Reports\CallerNumbers\CallerNumbersReport;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyNumbers\MyNumbersReport;
@@ -73,6 +74,8 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
 
             Livewire::component('expert-statistics.my-numbers.report', MyNumbersReport::class);
             Livewire::component('expert-statistics.caller-numbers.report', CallerNumbersReport::class);
+
+            Livewire::component('expert-statistics.configuration.manage-pbx-settings', ManagePbxSettings::class);
         }
     }
 }

@@ -237,6 +237,30 @@ return [
             'levelYellow' => 'Jaune',
             'levelGreen' => 'Vert',
         ],
+
+        // Onglet Alertes IA (repris de lang/fr/ai.php "config" dans bluerocktelclients,
+        // qui n'a pas été porté en entier puisque le tableau de bord/chat/alertes IA
+        // sont hors périmètre — seuls les champs de ce formulaire ont été copiés).
+        'aiAlerts' => [
+            'generalSection' => 'Paramètres généraux',
+            'description' => 'Configurez comment et quand les alertes générées par l\'IA sont envoyées pour ce PBX.',
+            'thresholdsSection' => 'Seuils d\'alerte',
+            'thresholdsDesc' => 'Valeurs de déclenchement pour chaque type d\'alerte. Une alerte se déclenche lorsqu\'un indicateur dépasse le seuil configuré.',
+            'enabled' => 'Alertes activées',
+            'enabledDesc' => 'Activer ou désactiver toutes les alertes IA pour ce PBX.',
+            'checkInterval' => 'Intervalle de vérification (minutes)',
+            'language' => 'Langue des alertes',
+            'notificationEmail' => 'E-mail de notification',
+            'abandonRate' => 'Taux d\'abandon',
+            'notAnsweredRate' => 'Taux de non-réponse',
+            'abandonPreanswer' => 'Taux d\'abandon au pré-décroché',
+            'waitTime' => 'Temps d\'attente',
+            'changeThresholds' => 'Seuils de variation (période sur période)',
+            'levelWarning' => 'Avertissement',
+            'levelCritical' => 'Critique',
+            'volumeChangePercent' => 'Variation de volume (%)',
+            'abandonRateChangePercent' => 'Variation du taux d\'abandon (%)',
+        ],
     ],
 
     'reports' => [
