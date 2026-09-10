@@ -127,3 +127,66 @@ it('generates an inclusive date range', function () {
         ->and($dates[0]->format('Y-m-d'))->toBe('2026-01-01')
         ->and($dates[2]->format('Y-m-d'))->toBe('2026-01-03');
 });
+
+it('builds a deduplicated flow preview from consecutive ping segments', function () {
+    $flow = [
+        ['segment_type' => 'ring', 'to_dn' => '100', 'to_type' => 'extension'],
+        ['segment_type' => 'ping', 'to_dn' => '100', 'to_type' => 'extension', 'to_name' => 'Alice', 'duration' => 5, 'answered' => false],
+        ['segment_type' => 'ping', 'to_dn' => '100', 'to_type' => 'extension', 'to_name' => 'Alice', 'duration' => 3, 'answered' => true],
+        ['segment_type' => 'ping', 'to_dn' => '200', 'to_type' => 'extension', 'to_name' => 'Bob', 'duration' => 2, 'answered' => false],
+    ];
+
+    $preview = PbxDataProcessor::buildFlowPreview($flow);
+
+    expect($preview)->toHaveCount(2)
+        ->and($preview[0]['to_dn'])->toBe('100')
+        ->and($preview[0]['count'])->toBe(2)
+        ->and($preview[0]['total_secs'])->toBe(8)
+        ->and($preview[0]['answered'])->toBeTrue()
+        ->and($preview[1]['to_dn'])->toBe('200')
+        ->and($preview[1]['count'])->toBe(1);
+});
+
+it('resolves call-flow segment labels to translation keys', function () {
+    expect(PbxDataProcessor::getSegmentLabel('ring', true))->toBe('expert-statistics::pbx.expert_statistics.cfa_segment_talk')
+        ->and(PbxDataProcessor::getSegmentLabel('ring', false))->toBe('expert-statistics::pbx.expert_statistics.cfa_segment_ring')
+        ->and(PbxDataProcessor::getSegmentLabel('pong', false))->toBe('expert-statistics::pbx.expert_statistics.cfa_segment_missed')
+        ->and(PbxDataProcessor::getSegmentLabel('custom_type', false))->toBe('Custom_type')
+        ->and(PbxDataProcessor::getSegmentLabel('', false))->toBe('expert-statistics::pbx.expert_statistics.cfa_segment_transit');
+});
+
+it('resolves call-flow step names from the pbx map', function () {
+    $pbxMap = [
+        'extensions' => ['100' => 'Alice'],
+        'call_queues' => ['200' => ['name' => 'Support']],
+    ];
+
+    expect(PbxDataProcessor::resolveStepName('100', 'extension', null, $pbxMap))->toBe('Alice (100)')
+        ->and(PbxDataProcessor::resolveStepName('999', 'extension', null, $pbxMap))->toBe('999')
+        ->and(PbxDataProcessor::resolveStepName('200', 'queue', null, $pbxMap))->toBe('Support (200)')
+        ->and(PbxDataProcessor::resolveStepName('100', 'extension', 'Explicit Name', $pbxMap))->toBe('Explicit Name')
+        ->and(PbxDataProcessor::resolveStepName('', 'unknown', null, $pbxMap))->toBe('—');
+});
+
+it('resolves "DN — Name" display names from the pbx map', function () {
+    $pbxMap = [
+        'extensions' => ['100' => 'Alice'],
+        'call_queues' => ['200' => ['name' => 'Support']],
+    ];
+
+    expect(PbxDataProcessor::resolveDisplayName('100', 'extension', $pbxMap))->toBe('100 — Alice')
+        ->and(PbxDataProcessor::resolveDisplayName('200', 'queue', $pbxMap))->toBe('200 — Support')
+        ->and(PbxDataProcessor::resolveDisplayName('999', 'extension', $pbxMap))->toBe('999');
+});
+
+it('formats the duration between two timestamps', function () {
+    expect(PbxDataProcessor::formatDuration('2026-01-01 10:00:00', '2026-01-01 10:00:45'))->toBe('45s')
+        ->and(PbxDataProcessor::formatDuration('2026-01-01 10:00:00', '2026-01-01 10:02:05'))->toBe('2m 5s')
+        ->and(PbxDataProcessor::formatDuration('2026-01-01 10:00:00', 'not-a-date'))->toBe('0s');
+});
+
+it('formats a second count in short form', function () {
+    expect(PbxDataProcessor::formatSecondsShort(45))->toBe('45s')
+        ->and(PbxDataProcessor::formatSecondsShort(65))->toBe('1m 5s')
+        ->and(PbxDataProcessor::formatSecondsShort(0))->toBe('0s');
+});

@@ -602,6 +602,158 @@ class PbxDataProcessor
     }
 
     /**
+     * Build a deduplicated preview of a call flow, collapsing consecutive
+     * "ping" segments to the same destination into a single entry with an
+     * accumulated count/duration.
+     *
+     * @param  array<int, array<string, mixed>>  $flow
+     * @return array<int, array<string, mixed>>
+     */
+    public static function buildFlowPreview(array $flow): array
+    {
+        $preview = [];
+
+        foreach ($flow as $step) {
+            if (($step['segment_type'] ?? '') !== 'ping') {
+                continue;
+            }
+
+            $key = ($step['to_dn'] ?? '').':'.($step['to_type'] ?? '');
+            $last = count($preview) - 1;
+            $stepSecs = (int) ($step['duration'] ?? 0);
+
+            if ($last >= 0 && $preview[$last]['key'] === $key) {
+                $preview[$last]['count']++;
+                $preview[$last]['total_secs'] += $stepSecs;
+
+                if ($step['answered'] ?? false) {
+                    $preview[$last]['answered'] = true;
+                }
+            } else {
+                $preview[] = [
+                    'key' => $key,
+                    'to_dn' => $step['to_dn'] ?? '',
+                    'to_type' => $step['to_type'] ?? '',
+                    'to_name' => $step['to_name'] ?? null,
+                    'count' => 1,
+                    'total_secs' => $stepSecs,
+                    'answered' => $step['answered'] ?? false,
+                ];
+            }
+        }
+
+        return $preview;
+    }
+
+    /**
+     * Resolve the translation key for a call-flow segment label. Returns the
+     * key itself (not the translated text) - this class has no translation
+     * dependency elsewhere, so callers should translate with __() at the
+     * view layer, e.g. __(PbxDataProcessor::getSegmentLabel(...)).
+     */
+    public static function getSegmentLabel(string $segmentType, bool $answered): string
+    {
+        if ($answered) {
+            return 'expert-statistics::pbx.expert_statistics.cfa_segment_talk';
+        }
+
+        return match ($segmentType) {
+            'ring', 'ringing' => 'expert-statistics::pbx.expert_statistics.cfa_segment_ring',
+            'pong' => 'expert-statistics::pbx.expert_statistics.cfa_segment_missed',
+            'transfer', 'transferred' => 'expert-statistics::pbx.expert_statistics.cfa_segment_transfer',
+            'hold' => 'expert-statistics::pbx.expert_statistics.cfa_segment_hold',
+            'voicemail' => 'expert-statistics::pbx.expert_statistics.cfa_segment_voicemail',
+            'ivr' => 'expert-statistics::pbx.expert_statistics.cfa_segment_ivr',
+            'queue' => 'expert-statistics::pbx.expert_statistics.cfa_segment_queue',
+            default => $segmentType !== '' ? ucfirst($segmentType) : 'expert-statistics::pbx.expert_statistics.cfa_segment_transit',
+        };
+    }
+
+    /**
+     * Resolve a human-readable name for a call-flow step's destination DN.
+     *
+     * @param  array<string, mixed>  $pbxMap  The 'extensions'/'call_queues' map from ExpertStatisticsService::getMap()
+     */
+    public static function resolveStepName(string $dn, string $type, ?string $name, array $pbxMap): string
+    {
+        if ($name) {
+            return $name;
+        }
+
+        if ($type === 'extension') {
+            $extName = $pbxMap['extensions'][$dn] ?? null;
+
+            return $extName ? "{$extName} ({$dn})" : $dn;
+        }
+
+        if ($type === 'queue') {
+            $q = $pbxMap['call_queues'][$dn] ?? null;
+            $qName = is_array($q) ? ($q['name'] ?? null) : null;
+
+            return $qName ? "{$qName} ({$dn})" : $dn;
+        }
+
+        return $dn ?: '—';
+    }
+
+    /**
+     * Resolve a "DN — Name" display label for a filter/selector element.
+     *
+     * @param  array<string, mixed>  $pbxMap  The 'extensions'/'call_queues' map from ExpertStatisticsService::getMap()
+     */
+    public static function resolveDisplayName(string $dn, string $type, array $pbxMap): string
+    {
+        if ($type === 'queue') {
+            $q = $pbxMap['call_queues'][$dn] ?? null;
+
+            if ($q && is_array($q) && isset($q['name'])) {
+                return $dn.' — '.$q['name'];
+            }
+        }
+
+        if ($type === 'extension') {
+            $name = $pbxMap['extensions'][$dn] ?? null;
+
+            if ($name) {
+                return $dn.' — '.$name;
+            }
+        }
+
+        return $dn;
+    }
+
+    /**
+     * Format the elapsed time between two timestamps as "Xm Ys" (or "Ys"
+     * under a minute). Unlike formatSecsToMinSec() (colon-separated "M:SS"
+     * from a raw second count), this derives the duration from two
+     * datetime strings, matching the Call Flow Analysis call-list display.
+     */
+    public static function formatDuration(string $startedAt, string $endedAt): string
+    {
+        $startTimestamp = strtotime($startedAt);
+        $endTimestamp = strtotime($endedAt);
+        $seconds = ($startTimestamp !== false && $endTimestamp !== false) ? max(0, $endTimestamp - $startTimestamp) : 0;
+        $minutes = intdiv($seconds, 60);
+        $remaining = $seconds % 60;
+
+        return $minutes > 0 ? "{$minutes}m {$remaining}s" : "{$remaining}s";
+    }
+
+    /**
+     * Format a second count as "Xm Ys" (or "Ys" under a minute). Unlike
+     * formatSecsToMinSec() (colon-separated "M:SS"), used for the compact
+     * Call Flow Analysis segment/step duration labels.
+     */
+    public static function formatSecondsShort(int $seconds): string
+    {
+        if ($seconds >= 60) {
+            return intdiv($seconds, 60).'m '.($seconds % 60).'s';
+        }
+
+        return $seconds.'s';
+    }
+
+    /**
      * Generate an inclusive date range.
      *
      * @return array<int, Carbon>
