@@ -1,3 +1,5 @@
+<x-pages.index :title="__('expert-statistics::pbx.expert_statistics.my_numbers_title')">
+
 <div class="space-y-5">
     <div class="flex justify-between items-center">
         {{-- Element selector --}}
@@ -93,7 +95,7 @@
     {{-- Empty state: no DN entered --}}
     @if (! $dn)
     <div wire:loading.remove wire:target="{{ $loadingTargets }}"
-        class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-12 text-center">
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-12 text-center">
         <x-heroicon-o-phone-arrow-down-left class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-4" />
         <h3 class="text-base font-semibold text-gray-600 dark:text-gray-400 mb-2">{{
             __('expert-statistics::pbx.expert_statistics.my_numbers_title') }}</h3>
@@ -103,7 +105,7 @@
     {{-- No data --}}
     @elseif (empty($didData) && empty($queueData))
     <div wire:loading.remove wire:target="{{ $loadingTargets }}"
-        class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
         <x-heroicon-o-chart-bar class="w-10 h-10 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
         <p class="text-sm text-gray-400 dark:text-gray-500">{{ __('expert-statistics::pbx.expert_statistics.my_numbers_no_data') }}</p>
     </div>
@@ -124,7 +126,7 @@
         };
     @endphp
     <div wire:loading.remove wire:target="{{ $loadingTargets }}"
-        class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
 
         @if ($didsOnlyStats)
         {{-- DID view table --}}
@@ -300,3 +302,5 @@
     <livewire:expert-statistics.reports.share-report-modal />
 
 </div>
+
+</x-pages.index>

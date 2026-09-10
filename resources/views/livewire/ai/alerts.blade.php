@@ -22,13 +22,12 @@
     ];
 @endphp
 
+<x-pages.index :title="__('expert-statistics::pbx.expert_statistics.nav_ai_alerts')">
+
 <div class="space-y-5">
 
     {{-- ── Header ─────────────────────────────────────────────────────────── --}}
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            {{ __('expert-statistics::pbx.expert_statistics.nav_ai_alerts') }}
-        </h2>
+    <div class="flex flex-wrap items-center justify-end gap-3">
         <button
             wire:click="checkNow"
             wire:loading.attr="disabled"
@@ -49,7 +48,7 @@
                 ['key' => 'warning', 'label' => __('expert-statistics::pbx.expert_statistics.ai_alerts_summary_warning'), 'color' => 'yellow'],
                 ['key' => 'info', 'label' => __('expert-statistics::pbx.expert_statistics.ai_alerts_summary_info'), 'color' => 'blue'],
             ] as $kpi)
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
                     <div class="flex items-center justify-between">
                         <div>
                             <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{{ $kpi['label'] }}</p>
@@ -95,7 +94,7 @@
 
     {{-- ── Empty state ─────────────────────────────────────────────────────── --}}
     @if (! $errorMessage && empty($alerts))
-        <div class="px-5 py-16 text-center bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10">
+        <div class="px-5 py-16 text-center bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10">
             <div class="w-12 h-12 bg-green-50 dark:bg-green-950/30 rounded-full flex items-center justify-center mx-auto mb-3">
                 <x-heroicon-o-check-circle class="w-6 h-6 text-green-500 dark:text-green-400" />
             </div>
@@ -285,3 +284,5 @@
     @endif
 
 </div>
+
+</x-pages.index>

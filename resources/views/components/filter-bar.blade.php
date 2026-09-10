@@ -7,7 +7,7 @@
 'showTimeRange' => true,
 ])
 
-<div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-4">
+<div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-4">
     <div class="flex flex-wrap items-center gap-4">
 
         {{-- Date range picker (dropdown, dashboard style) --}}
@@ -28,7 +28,7 @@
             </button>
 
             <div x-show="open" x-transition.opacity @click.away="open = false"
-                class="absolute left-0 top-full mt-2 z-50 w-auto bg-white dark:bg-gray-900 rounded-2xl shadow-2xl ring-1 ring-gray-950/10 dark:ring-white/10 p-5">
+                class="absolute left-0 top-full mt-2 z-50 w-auto bg-white dark:bg-gray-900 rounded-xl shadow-2xl ring-1 ring-gray-950/10 dark:ring-white/10 p-5">
                 <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">
                     {{ __('expert-statistics::pbx.expert_statistics.filter_quick_periods') }}
                 </p>

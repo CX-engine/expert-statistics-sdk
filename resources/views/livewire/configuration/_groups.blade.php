@@ -69,7 +69,7 @@
                     </button>
                 </div>
 
-                <div class="space-y-4 px-5 py-5">
+                <div class="space-y-4 p-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                             {{ __('expert-statistics::pbx.config.groups.name') }}

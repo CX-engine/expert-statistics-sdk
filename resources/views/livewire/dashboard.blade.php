@@ -1,3 +1,8 @@
+<x-pages.index
+    :title="__('expert-statistics::pbx.expert_statistics.nav_dashboard')"
+    :subtitle="__('expert-statistics::pbx.expert_statistics.home_feature_dashboard_desc')"
+>
+
 <div class="space-y-5">
 
     {{-- Tab pills --}}
@@ -46,7 +51,7 @@
         {{-- ==================== Total calls ==================== --}}
         <div class="relative mb-5">
             <div wire:loading.flex wire:target="selectPeriod,setCustomRange,updateTimeRange"
-                class="absolute inset-0 bg-white/75 dark:bg-gray-800/75 rounded-2xl z-20 items-center justify-center backdrop-blur-sm">
+                class="absolute inset-0 bg-white/75 dark:bg-gray-800/75 rounded-xl z-20 items-center justify-center backdrop-blur-sm">
                 <div class="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-xl shadow-lg ring-1 ring-gray-950/10 dark:ring-white/10 px-4 py-2.5">
                     <x-filament::loading-indicator class="w-5 h-5 text-sky-500" />
                     <span class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ __('expert-statistics::pbx.dashboards.loading') }}</span>
@@ -56,13 +61,13 @@
             @if ($urlType !== null)
                 {{-- Hidden when a URL type filter is active --}}
             @elseif (empty($totals))
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-600 dark:text-gray-400 uppercase text-sm tracking-wide mb-2">{{ __('expert-statistics::pbx.dashboards.totalCallsTitle') }}</h3>
                     <p class="text-gray-400 dark:text-gray-500 text-sm">{{ __('expert-statistics::pbx.dashboards.noDataForPeriod') }}</p>
                 </div>
             @else
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
 
                     <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-100 dark:border-gray-800">
                         <div class="flex items-center gap-2">
@@ -167,7 +172,7 @@
         {{-- ==================== Inbound calls ==================== --}}
         <div class="relative mb-5">
             <div wire:loading.flex wire:target="selectPeriod,setCustomRange,updateTimeRange"
-                class="absolute inset-0 bg-white/75 dark:bg-gray-800/75 rounded-2xl z-20 items-center justify-center backdrop-blur-sm">
+                class="absolute inset-0 bg-white/75 dark:bg-gray-800/75 rounded-xl z-20 items-center justify-center backdrop-blur-sm">
                 <div class="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-xl shadow-lg ring-1 ring-gray-950/10 dark:ring-white/10 px-4 py-2.5">
                     <x-filament::loading-indicator class="w-5 h-5 text-sky-500" />
                     <span class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ __('expert-statistics::pbx.dashboards.loading') }}</span>
@@ -191,7 +196,7 @@
             @endphp
 
             @if ($inboundNeedsSelect)
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-600 dark:text-gray-400 uppercase text-sm tracking-wide mb-2">{{ $inboundTitle }}</h3>
                     <p class="text-gray-400 dark:text-gray-500 text-sm mb-4">
@@ -204,14 +209,14 @@
                 </div>
 
             @elseif (! $inboundHasData)
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-600 dark:text-gray-400 uppercase text-sm tracking-wide mb-2">{{ $inboundTitle }}</h3>
                     <p class="text-gray-400 dark:text-gray-500 text-sm">{{ __('expert-statistics::pbx.dashboards.noDataForPeriod') }}</p>
                 </div>
 
             @else
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
 
                     <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-100 dark:border-gray-800">
                         <div class="flex items-center gap-2">
@@ -222,7 +227,7 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 
-                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                             <div class="flex items-start justify-between mb-4">
                                 <div>
                                     <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">
@@ -280,7 +285,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                             <div class="flex items-start justify-between mb-4">
                                 <div>
                                     <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">
@@ -344,7 +349,7 @@
                             </div>
                         </div>
 
-                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                             <div class="flex items-start justify-between mb-4">
                                 <div>
                                     <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">
@@ -544,7 +549,7 @@
         {{-- ==================== Outbound calls ==================== --}}
         <div class="relative mb-5">
             <div wire:loading.flex wire:target="selectPeriod,setCustomRange,updateTimeRange"
-                class="absolute inset-0 bg-white/75 dark:bg-gray-800/75 rounded-2xl z-20 items-center justify-center backdrop-blur-sm">
+                class="absolute inset-0 bg-white/75 dark:bg-gray-800/75 rounded-xl z-20 items-center justify-center backdrop-blur-sm">
                 <div class="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-xl shadow-lg ring-1 ring-gray-950/10 dark:ring-white/10 px-4 py-2.5">
                     <x-filament::loading-indicator class="w-5 h-5 text-sky-500" />
                     <span class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ __('expert-statistics::pbx.dashboards.loading') }}</span>
@@ -554,7 +559,7 @@
             @if ($urlType !== null)
                 {{-- Hidden when a URL type filter is active --}}
             @elseif (empty($outboundKpis))
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-600 dark:text-gray-400 uppercase text-sm tracking-wide mb-2">{{ __('expert-statistics::pbx.dashboards.externalOutboundCalls') }}</h3>
                     <p class="text-gray-400 dark:text-gray-500 text-sm">{{ __('expert-statistics::pbx.dashboards.noDataForPeriod') }}</p>
@@ -570,7 +575,7 @@
                     $outEndHour    = (int) substr($endTime, 0, 2);
                 @endphp
 
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
 
                     <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-100 dark:border-gray-800">
                         <div class="flex items-center gap-2">
@@ -708,7 +713,7 @@
         {{-- ==================== Top 10 users ==================== --}}
         <div class="relative mb-5">
             <div wire:loading.flex wire:target="selectPeriod,setCustomRange,updateTimeRange"
-                class="absolute inset-0 bg-white/75 dark:bg-gray-800/75 rounded-2xl z-20 items-center justify-center backdrop-blur-sm">
+                class="absolute inset-0 bg-white/75 dark:bg-gray-800/75 rounded-xl z-20 items-center justify-center backdrop-blur-sm">
                 <div class="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-xl shadow-lg ring-1 ring-gray-950/10 dark:ring-white/10 px-4 py-2.5">
                     <x-filament::loading-indicator class="w-5 h-5 text-sky-500" />
                     <span class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ __('expert-statistics::pbx.dashboards.loading') }}</span>
@@ -718,13 +723,13 @@
             @if ($urlType === 'queue')
                 {{-- Hidden when queue filter is active --}}
             @elseif (empty($topUsersChartData))
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-600 dark:text-gray-400 uppercase text-sm tracking-wide mb-2">{{ __('expert-statistics::pbx.dashboards.top10Users') }}</h3>
                     <p class="text-gray-400 dark:text-gray-500 text-sm">{{ __('expert-statistics::pbx.dashboards.noDataForPeriod') }}</p>
                 </div>
             @else
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
 
                     <div class="flex items-center gap-2 mb-5 pb-4 border-b border-gray-100 dark:border-gray-800">
                         <div class="w-1 h-5 bg-amber-500 rounded-full"></div>
@@ -791,7 +796,7 @@
         {{-- ==================== Trend KPI cards ==================== --}}
         <div class="relative mb-5">
             <div wire:loading.flex wire:target="updateTimeRange"
-                class="absolute inset-0 bg-white/75 dark:bg-gray-800/75 rounded-2xl z-20 items-center justify-center backdrop-blur-sm">
+                class="absolute inset-0 bg-white/75 dark:bg-gray-800/75 rounded-xl z-20 items-center justify-center backdrop-blur-sm">
                 <div class="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-xl shadow-lg ring-1 ring-gray-950/10 dark:ring-white/10 px-4 py-2.5">
                     <x-filament::loading-indicator class="w-5 h-5 text-sky-500" />
                     <span class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ __('expert-statistics::pbx.dashboards.loading') }}</span>
@@ -799,7 +804,7 @@
             </div>
 
             @if (empty($trends))
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-500 dark:text-gray-400 uppercase text-sm tracking-wide mb-1">{{ __('expert-statistics::pbx.dashboards.twelveMonthTrends') }}</h3>
                     <p class="text-gray-400 dark:text-gray-500 text-sm">{{ __('expert-statistics::pbx.dashboards.noTrendData') }}</p>
@@ -819,7 +824,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                         <div class="flex items-start justify-between mb-3">
                             <div>
                                 <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{{ __('expert-statistics::pbx.dashboards.totalCallsTitle') }}</div>
@@ -849,7 +854,7 @@
                         @endif
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                         <div class="flex items-start justify-between mb-3">
                             <div>
                                 <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{{ __('expert-statistics::pbx.dashboards.answerRate') }}</div>
@@ -879,7 +884,7 @@
                         @endif
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                         <div class="flex items-start justify-between mb-3">
                             <div>
                                 <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{{ __('expert-statistics::pbx.dashboards.avgWaitTime') }}</div>
@@ -919,7 +924,7 @@
         {{-- ==================== Trend charts ==================== --}}
         <div class="relative space-y-5">
             <div wire:loading.flex wire:target="updateTimeRange"
-                class="absolute inset-0 bg-white/75 dark:bg-gray-800/75 rounded-2xl z-20 items-center justify-center backdrop-blur-sm">
+                class="absolute inset-0 bg-white/75 dark:bg-gray-800/75 rounded-xl z-20 items-center justify-center backdrop-blur-sm">
                 <div class="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-xl shadow-lg ring-1 ring-gray-950/10 dark:ring-white/10 px-4 py-2.5">
                     <x-filament::loading-indicator class="w-5 h-5 text-sky-500" />
                     <span class="text-sm font-medium text-gray-600 dark:text-gray-300">{{ __('expert-statistics::pbx.dashboards.loading') }}</span>
@@ -927,14 +932,14 @@
             </div>
 
             @if (empty($answeredChart))
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-500 dark:text-gray-400 uppercase text-sm tracking-wide mb-1">{{ __('expert-statistics::pbx.dashboards.twelveMonthTrends') }}</h3>
                     <p class="text-gray-400 dark:text-gray-500 text-sm">{{ __('expert-statistics::pbx.dashboards.noTrendData') }}</p>
                 </div>
             @else
 
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                     <div class="flex items-center gap-2 mb-5 pb-4 border-b border-gray-100 dark:border-gray-800">
                         <div class="w-1 h-5 bg-teal-500 rounded-full"></div>
                         <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">{{ __('expert-statistics::pbx.dashboards.answeredCallsTrend') }}</h2>
@@ -989,7 +994,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                     <div class="flex items-center gap-2 mb-5 pb-4 border-b border-gray-100 dark:border-gray-800">
                         <div class="w-1 h-5 bg-blue-500 rounded-full"></div>
                         <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">{{ __('expert-statistics::pbx.dashboards.avgWaitTimeTrend') }}</h2>
@@ -1047,3 +1052,5 @@
     <livewire:expert-statistics.reports.share-report-modal />
 
 </div>
+
+</x-pages.index>

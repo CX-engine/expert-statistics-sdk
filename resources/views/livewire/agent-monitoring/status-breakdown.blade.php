@@ -1,3 +1,5 @@
+<x-pages.index :title="__('expert-statistics::pbx.expert_statistics.agent_monitoring_breakdown_title')">
+
 <div class="space-y-5">
 
     {{-- Header: agent selector + consolidated toggle --}}
@@ -45,7 +47,7 @@
     {{-- Empty state: no agent selected --}}
     @if (! $dn)
         <div wire:loading.remove wire:target="{{ $loadingTargets }}"
-            class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-12 text-center">
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-12 text-center">
             <x-heroicon-o-chart-pie class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-4" />
             <h3 class="text-base font-semibold text-gray-600 dark:text-gray-400 mb-2">
                 {{ __('expert-statistics::pbx.expert_statistics.agent_monitoring_breakdown_title') }}
@@ -55,7 +57,7 @@
 
     @elseif (empty($perAgent))
         <div wire:loading.remove wire:target="{{ $loadingTargets }}"
-            class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
             <x-heroicon-o-chart-bar class="w-10 h-10 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
             <p class="text-sm text-gray-400 dark:text-gray-500">{{ __('expert-statistics::pbx.expert_statistics.my_users_no_data') }}</p>
         </div>
@@ -127,7 +129,7 @@
             @endif
 
             {{-- Detail table --}}
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
                 <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/50">
                     <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">
                         {{ __('expert-statistics::pbx.expert_statistics.agent_monitoring_breakdown_table_title') }}
@@ -208,3 +210,5 @@
     @endif
 
 </div>
+
+</x-pages.index>

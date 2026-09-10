@@ -5,7 +5,7 @@
 ])
 
 @if (! empty($series))
-    <div wire:key="{{ $chartKey }}" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
+    <div wire:key="{{ $chartKey }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
 
         <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/50">
             <span class="text-sm font-semibold text-gray-700 dark:text-gray-200">{{ $title }}</span>

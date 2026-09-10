@@ -1,3 +1,8 @@
+<x-pages.index
+    :title="__('expert-statistics::pbx.expert_statistics.nav_ai_insights')"
+    :subtitle="__('expert-statistics::pbx.expert_statistics.ai_dashboard_subtitle')"
+>
+
 <div class="space-y-5">
 
     {{-- ── Header ─────────────────────────────────────────────────────────── --}}
@@ -9,7 +14,6 @@
                 <x-heroicon-o-sparkles class="w-5 h-5 text-white" />
             </div>
             <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('expert-statistics::pbx.expert_statistics.ai_dashboard_subtitle') }}</p>
                 @if (! empty($meta['last_generated_at']))
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                         {{ __('expert-statistics::pbx.expert_statistics.ai_dashboard_last_generated') }}: {{ \Carbon\Carbon::parse($meta['last_generated_at'])->diffForHumans() }}
@@ -119,7 +123,7 @@
 
         @if (! $errorMessage && empty($panels))
             {{-- Empty state --}}
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 py-16 text-center">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 py-16 text-center">
                 <div class="w-14 h-14 rounded-full bg-teal-50 dark:bg-teal-950/30 flex items-center justify-center mx-auto mb-4">
                     <x-heroicon-o-sparkles class="w-6 h-6 text-teal-500 dark:text-teal-400" />
                 </div>
@@ -418,3 +422,5 @@
     </div>
 
 </div>
+
+</x-pages.index>

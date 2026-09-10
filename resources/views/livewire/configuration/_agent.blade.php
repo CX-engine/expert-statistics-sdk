@@ -3,7 +3,7 @@
         <h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-white">{{ __('expert-statistics::pbx.config.agent.title') }}</h2>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ __('expert-statistics::pbx.config.agent.description') }}</p>
     </div>
-    <div class="md:col-span-2 rounded-2xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5 space-y-5">
+    <div class="md:col-span-2 rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5 space-y-5">
         @if ($this->activeHostName())
             <div>
                 <label for="status_custom1" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Custom 1</label>

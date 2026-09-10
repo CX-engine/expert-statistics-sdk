@@ -4,14 +4,15 @@
     $rows = $this->getTableData();
 @endphp
 
+<x-pages.index
+    :title="__('expert-statistics::pbx.expert_statistics.nav_realtime_status')"
+    :subtitle="__('expert-statistics::pbx.expert_statistics.agent_monitoring_subtitle')"
+>
+
 <div wire:poll.60s="poll" class="space-y-5">
 
     {{-- Header --}}
-    <div class="flex flex-wrap items-center justify-between gap-3">
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ __('expert-statistics::pbx.expert_statistics.agent_monitoring_subtitle') }}
-        </p>
-
+    <div class="flex flex-wrap items-center justify-end gap-3">
         <div class="flex items-center gap-3">
             {{-- Live indicator --}}
             <div class="flex items-center gap-1.5">
@@ -88,7 +89,7 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
         {{-- Available --}}
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
@@ -105,7 +106,7 @@
         </div>
 
         {{-- Away --}}
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
@@ -122,7 +123,7 @@
         </div>
 
         {{-- Unavailable --}}
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
@@ -139,7 +140,7 @@
         </div>
 
         {{-- Total --}}
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
@@ -183,7 +184,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         {{-- Chart 1 — Users online --}}
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-5">
                 {{ __('expert-statistics::pbx.expert_statistics.agent_monitoring_chart_online_title') }}
             </h3>
@@ -231,7 +232,7 @@
         </div>
 
         {{-- Chart 2 — User status distribution --}}
-        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5">
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-5">
                 {{ __('expert-statistics::pbx.expert_statistics.agent_monitoring_chart_distribution_title') }}
             </h3>
@@ -291,7 +292,7 @@
     </div>
 
     {{-- Filters + Table --}}
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
 
         {{-- Filter bar --}}
         <div class="px-5 py-4 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
@@ -489,3 +490,5 @@
     </div>
 
 </div>
+
+</x-pages.index>

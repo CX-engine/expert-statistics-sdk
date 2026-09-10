@@ -22,7 +22,7 @@
         return $mins > 0 ? "{$mins}m {$remaining}s" : "{$remaining}s";
     };
 @endphp
-<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
 
     {{-- Card header --}}
     <div class="px-5 py-3 border-b border-gray-100 dark:border-gray-700/50 flex items-center gap-2">

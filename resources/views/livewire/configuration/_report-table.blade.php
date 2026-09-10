@@ -6,7 +6,7 @@
             <h2 class="text-base font-semibold leading-7 text-gray-900 dark:text-white">{{ __('expert-statistics::pbx.config.reportTable.intervalsTitle') }}</h2>
         </div>
         <div class="md:col-span-2">
-            <div class="rounded-2xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5 space-y-5">
+            <div class="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-5 space-y-5">
                 <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ __('expert-statistics::pbx.config.reportTable.answeredIn') }}</p>
 
                 <div>
@@ -63,7 +63,7 @@
         </div>
         <div class="md:col-span-2 space-y-5">
             @foreach ($alertSections as $section => $meta)
-                <div class="rounded-2xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
+                <div class="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                     <div class="flex items-center justify-between mb-4">
                         <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $meta['title'] }}</p>
                         <div class="flex gap-3 text-xs">

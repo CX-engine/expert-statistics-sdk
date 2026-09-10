@@ -1,3 +1,5 @@
+<x-pages.index :title="__('expert-statistics::pbx.expert_statistics.my_users_dashboard_title')">
+
 <div class="space-y-5">
 
     {{-- Header row: element selector --}}
@@ -66,13 +68,13 @@
         @if ($tab === 'period')
             {{-- Period analysis panel (ported from InboundCallsWidget) --}}
             @if (empty($selectedElements))
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-600 dark:text-gray-400 uppercase text-sm tracking-wide mb-2">{{ __('expert-statistics::pbx.dashboards.inboundCallsByUsers') }}</h3>
                     <p class="text-gray-400 dark:text-gray-500 text-sm">{{ __('expert-statistics::pbx.dashboards.selectUserAndPeriod') }}</p>
                 </div>
             @elseif (empty($kpis))
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-600 dark:text-gray-400 uppercase text-sm tracking-wide mb-2">{{ __('expert-statistics::pbx.dashboards.inboundCallsByUsers') }}</h3>
                     <p class="text-gray-400 dark:text-gray-500 text-sm">{{ __('expert-statistics::pbx.dashboards.noDataForPeriod') }}</p>
@@ -128,7 +130,7 @@
                     }
                 @endphp
 
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5 space-y-5">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4 space-y-5">
 
                     <div class="flex items-center gap-2 pb-4 border-b border-gray-100 dark:border-gray-800">
                         <div class="w-1 h-5 bg-sky-500 rounded-full"></div>
@@ -252,7 +254,7 @@
         @else
             {{-- 12-month trend panel (ported from TrendKpiWidget + TrendChartsWidget) --}}
             @if (empty($trends))
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-500 dark:text-gray-400 uppercase text-sm tracking-wide mb-1">{{ __('expert-statistics::pbx.dashboards.twelveMonthTrends') }}</h3>
                     <p class="text-gray-400 dark:text-gray-500 text-sm">{{ __('expert-statistics::pbx.dashboards.noTrendData') }}</p>
@@ -281,19 +283,19 @@
                 @endphp
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                         <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{{ __('expert-statistics::pbx.dashboards.totalCallsTitle') }}</div>
                         <div class="text-3xl font-extrabold text-teal-600 dark:text-teal-400">{{ number_format($totalCalls) }}</div>
                         <div class="text-xs text-gray-400 dark:text-gray-500 mt-1 mb-3">{{ $currentMonth }} {{ $currentYear }}</div>
                         {!! $trendBadge((float) $totalTrend) !!}
                     </div>
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                         <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{{ __('expert-statistics::pbx.dashboards.answerRate') }}</div>
                         <div class="text-3xl font-extrabold text-lime-600 dark:text-lime-400">{{ $carCalls }}%</div>
                         <div class="text-xs text-gray-400 dark:text-gray-500 mt-1 mb-3">{{ $currentMonth }} {{ $currentYear }}</div>
                         {!! $trendBadge((float) $carTrend) !!}
                     </div>
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                         <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{{ __('expert-statistics::pbx.dashboards.avgWaitTime') }}</div>
                         <div class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{{ $this->formatDuration($avgWait) }}</div>
                         <div class="text-xs text-gray-400 dark:text-gray-500 mt-1 mb-3">{{ $currentMonth }} {{ $currentYear }}</div>
@@ -315,3 +317,5 @@
     </div>
 
 </div>
+
+</x-pages.index>

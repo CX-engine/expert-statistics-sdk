@@ -1,7 +1,12 @@
+<x-pages.index
+    :title="__('expert-statistics::pbx.expert_statistics.ai_chat_title')"
+    :subtitle="__('expert-statistics::pbx.expert_statistics.home_feature_ai_desc')"
+>
+
 <div class="flex gap-4 h-[calc(100vh-12rem)] min-h-[500px]">
 
     {{-- ── Sidebar — conversation history ──────────────────────────────── --}}
-    <div class="w-64 flex-shrink-0 flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
+    <div class="w-64 flex-shrink-0 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
 
         {{-- Sidebar header --}}
         <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-2">
@@ -76,7 +81,7 @@
     </div>
 
     {{-- ── Main chat panel ─────────────────────────────────────────────── --}}
-    <div class="relative flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden min-w-0">
+    <div class="relative flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden min-w-0">
 
         {{-- Chat header --}}
         <div class="px-5 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
@@ -140,7 +145,7 @@
                     @if ($message['role'] === 'user')
                         {{-- User bubble --}}
                         <div class="flex justify-end">
-                            <div class="max-w-[75%] bg-primary-500 text-white rounded-2xl rounded-br-sm px-4 py-2.5 text-sm leading-relaxed shadow-sm">
+                            <div class="max-w-[75%] bg-primary-500 text-white rounded-xl rounded-br-sm px-4 py-2.5 text-sm leading-relaxed shadow-sm">
                                 {{ $message['content'] ?? '' }}
                             </div>
                         </div>
@@ -161,7 +166,7 @@
 
                                 {{-- Text / explanation --}}
                                 @if (! empty($message['explanation']))
-                                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                    <div class="bg-gray-50 dark:bg-gray-900/50 rounded-xl rounded-tl-sm px-4 py-3 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                                         {!! nl2br(e($message['explanation'])) !!}
                                     </div>
                                 @endif
@@ -261,7 +266,7 @@
 
                 {{-- Loading bubble --}}
                 <div wire:loading.flex wire:target="sendMessage,useSuggestion" class="justify-start">
-                    <div class="bg-gray-100 dark:bg-gray-700 rounded-2xl rounded-tl-sm px-4 py-3">
+                    <div class="bg-gray-100 dark:bg-gray-700 rounded-xl rounded-tl-sm px-4 py-3">
                         <div class="flex items-center gap-1">
                             <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]"></span>
                             <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]"></span>
@@ -311,3 +316,5 @@
         }
     });
 </script>
+
+</x-pages.index>

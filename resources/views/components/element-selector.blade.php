@@ -70,7 +70,7 @@
             x-show="open"
             x-transition.opacity
             @click.away="open = false"
-            class="absolute left-0 top-full mt-2 z-50 w-80 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl ring-1 ring-gray-950/10 dark:ring-white/10 p-4 space-y-3"
+            class="absolute left-0 top-full mt-2 z-50 w-80 bg-white dark:bg-gray-900 rounded-xl shadow-2xl ring-1 ring-gray-950/10 dark:ring-white/10 p-4 space-y-3"
         >
             {{-- Search input --}}
             <input

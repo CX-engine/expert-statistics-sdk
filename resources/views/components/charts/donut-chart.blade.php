@@ -26,7 +26,7 @@
 @if ($total > 0)
     <div
         wire:key="{{ $chartKey }}"
-        class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden"
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden"
         x-data="{
             init() {
                 const isDark = document.documentElement.classList.contains('dark');

@@ -1,3 +1,8 @@
+<x-pages.index
+    :title="__('expert-statistics::pbx.expert_statistics.nav_call_analysis')"
+    :subtitle="__('expert-statistics::pbx.expert_statistics.home_feature_call_details_desc')"
+>
+
 <div class="space-y-5">
 
     {{-- Date / Time filter bar --}}
@@ -11,12 +16,12 @@
     />
 
     {{-- 4-section filter panel --}}
-    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10">
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10">
 
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 divide-y xl:divide-y-0 xl:divide-x divide-gray-100 dark:divide-gray-800">
 
             {{-- Section 1: Origin --}}
-            <div class="px-5 py-5 space-y-3">
+            <div class="p-4 space-y-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
                         <x-heroicon-o-phone-arrow-down-left class="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0" />
@@ -68,7 +73,7 @@
             </div>
 
             {{-- Section 2: Destination --}}
-            <div class="px-5 py-5 space-y-3">
+            <div class="p-4 space-y-3">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-1.5">
                         <x-heroicon-o-phone-arrow-up-right class="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0" />
@@ -120,7 +125,7 @@
             </div>
 
             {{-- Section 3: Numbers (DID + Caller) --}}
-            <div class="px-5 py-5 space-y-4">
+            <div class="p-4 space-y-4">
 
                 {{-- DID sub-section --}}
                 <div class="space-y-2">
@@ -226,7 +231,7 @@
             </div>
 
             {{-- Section 4: Flow & Result --}}
-            <div class="px-5 py-5 space-y-4">
+            <div class="p-4 space-y-4">
 
                 {{-- Call direction --}}
                 <div class="space-y-2">
@@ -346,9 +351,9 @@
         <div
             wire:loading.delay
             wire:target="applyFilters,changePage"
-            class="absolute inset-0 z-20 flex items-start justify-center pt-20 bg-white/75 dark:bg-gray-950/75 backdrop-blur-[1px] rounded-2xl min-h-32"
+            class="absolute inset-0 z-20 flex items-start justify-center pt-20 bg-white/75 dark:bg-gray-950/75 backdrop-blur-[1px] rounded-xl min-h-32"
         >
-            <div class="flex items-center gap-3 bg-white dark:bg-gray-800 shadow-lg rounded-2xl px-5 py-3 ring-1 ring-gray-200 dark:ring-gray-700">
+            <div class="flex items-center gap-3 bg-white dark:bg-gray-800 shadow-lg rounded-xl px-5 py-3 ring-1 ring-gray-200 dark:ring-gray-700">
                 <svg class="animate-spin w-4 h-4 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -374,7 +379,7 @@
 
     @elseif (empty($calls))
         {{-- Empty state B: filters applied but no results --}}
-        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-6 py-10 text-center">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-6 py-10 text-center">
             <x-heroicon-o-inbox class="mx-auto h-10 w-10 text-gray-300 dark:text-gray-600" />
             <p class="mt-3 text-sm font-medium text-gray-500 dark:text-gray-400">
                 {{ __('expert-statistics::pbx.expert_statistics.no_data') }}
@@ -452,7 +457,7 @@
 
             <div
                 x-data="{ open: false }"
-                class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden"
+                class="bg-white dark:bg-gray-900 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden"
             >
                 {{-- Card header --}}
                 <div class="px-5 py-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition" @click="open = !open">
@@ -570,7 +575,7 @@
 
                 {{-- Expanded timeline (ping segments only) --}}
                 <div x-show="open" x-transition class="border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
-                    <div class="px-5 py-5">
+                    <div class="p-4">
                         <h4 class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-4">
                             {{ __('expert-statistics::pbx.expert_statistics.cfa_timeline_title') }}
                         </h4>
@@ -835,3 +840,5 @@
     </div>{{-- end results relative wrapper --}}
 
 </div>
+
+</x-pages.index>

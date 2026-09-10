@@ -1,3 +1,5 @@
+<x-pages.index :title="__('expert-statistics::pbx.expert_statistics.my_queues_dashboard_title')">
+
 <div class="space-y-5">
 
     {{-- Header row: element selector + tabs --}}
@@ -58,7 +60,7 @@
 
             {{-- Empty state: no queue selected --}}
             @if (empty($selectedElements))
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-600 dark:text-gray-400 uppercase text-sm tracking-wide mb-2">
                         {{ __('expert-statistics::pbx.dashboards.inboundCallsOnQueues') }}
@@ -67,7 +69,7 @@
                 </div>
 
             @elseif (empty($kpis))
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-600 dark:text-gray-400 uppercase text-sm tracking-wide mb-2">
                         {{ __('expert-statistics::pbx.dashboards.inboundCallsOnQueues') }}
@@ -241,7 +243,7 @@
 
             {{-- Trend tab --}}
             @if (empty($trends))
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
                     <x-heroicon-o-signal class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
                     <h3 class="font-semibold text-gray-500 dark:text-gray-400 uppercase text-sm tracking-wide mb-1">{{ __('expert-statistics::pbx.dashboards.twelveMonthTrends') }}</h3>
                     <p class="text-gray-400 dark:text-gray-500 text-sm">{{ __('expert-statistics::pbx.dashboards.noTrendData') }}</p>
@@ -261,7 +263,7 @@
 
                 {{-- Month-over-month comparison cards --}}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                         <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{{ __('expert-statistics::pbx.dashboards.totalCallsTitle') }}</p>
                         <p class="text-3xl font-extrabold text-teal-600 dark:text-teal-400">{{ number_format($totalCallsTrend) }}</p>
                         <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 mb-2">{{ $currentMonth }} {{ $currentYear }}</p>
@@ -275,7 +277,7 @@
                         @endif
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                         <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{{ __('expert-statistics::pbx.dashboards.answerRate') }}</p>
                         <p class="text-3xl font-extrabold text-lime-600 dark:text-lime-400">{{ $carCalls }}%</p>
                         <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 mb-2">{{ $currentMonth }} {{ $currentYear }}</p>
@@ -289,7 +291,7 @@
                         @endif
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
                         <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{{ __('expert-statistics::pbx.dashboards.avgWaitTime') }}</p>
                         <p class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{{ $this->formatDuration($avgWaitTrend) }}</p>
                         <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 mb-2">{{ $currentMonth }} {{ $currentYear }}</p>
@@ -322,3 +324,5 @@
     </div>
 
 </div>
+
+</x-pages.index>

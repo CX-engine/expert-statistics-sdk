@@ -1,3 +1,5 @@
+<x-pages.index :title="__('expert-statistics::pbx.expert_statistics.caller_numbers_title')">
+
 <div class="space-y-5">
     <div class="flex justify-between items-center">
         {{-- Element selector --}}
@@ -134,7 +136,7 @@
 
     {{-- Empty state: no DN entered --}}
     @if (! $dn && empty($groupSelectedName))
-    <div wire:loading.remove wire:target="{{ $loadingTargets }}" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-12 text-center">
+    <div wire:loading.remove wire:target="{{ $loadingTargets }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-12 text-center">
         <x-heroicon-o-user-group class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-4" />
         <h3 class="text-base font-semibold text-gray-600 dark:text-gray-400 mb-2">{{ __('expert-statistics::pbx.expert_statistics.caller_numbers_title') }}</h3>
         <p class="text-sm text-gray-400 dark:text-gray-500">{{ __('expert-statistics::pbx.expert_statistics.caller_numbers_empty') }}</p>
@@ -145,7 +147,7 @@
     </div>
 
     @elseif (! $this->hasData())
-    <div wire:loading.remove wire:target="{{ $loadingTargets }}" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+    <div wire:loading.remove wire:target="{{ $loadingTargets }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
         <x-heroicon-o-chart-bar class="w-10 h-10 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
         <p class="text-sm text-gray-400 dark:text-gray-500">
             @if ($activeTab === 'groupless')
@@ -158,7 +160,7 @@
 
     @else
     {{-- Data table --}}
-    <div wire:loading.remove wire:target="{{ $loadingTargets }}" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
+    <div wire:loading.remove wire:target="{{ $loadingTargets }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
         <div class="overflow-x-auto">
             @php
                 $sortIcon = function (string $field) use ($sortField, $sortDirection): string {
@@ -396,3 +398,5 @@
     <livewire:expert-statistics.reports.share-report-modal />
 
 </div>
+
+</x-pages.index>

@@ -14,9 +14,12 @@
     };
 @endphp
 
-<div class="space-y-5">
+<x-pages.index
+    :title="__('expert-statistics::pbx.reports.title')"
+    :subtitle="__('expert-statistics::pbx.reports.description')"
+>
 
-    <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('expert-statistics::pbx.reports.description') }}</p>
+<div class="space-y-5">
 
     {{-- Feedback banner --}}
     @if ($statusMessage)
@@ -362,3 +365,5 @@
     @endif
 
 </div>
+
+</x-pages.index>

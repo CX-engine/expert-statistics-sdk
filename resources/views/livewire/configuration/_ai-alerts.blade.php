@@ -8,7 +8,7 @@
         </div>
         <div class="md:col-span-2 space-y-4">
             {{-- Enabled toggle --}}
-            <div class="flex items-center justify-between rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm">
+            <div class="flex items-center justify-between rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm">
                 <div>
                     <p class="text-sm font-medium text-gray-900 dark:text-white">{{ __('expert-statistics::pbx.config.aiAlerts.enabled') }}</p>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ __('expert-statistics::pbx.config.aiAlerts.enabledDesc') }}</p>
@@ -98,7 +98,7 @@
             @endphp
 
             @foreach ($thresholdGroups as $group)
-                <div class="p-4 bg-white dark:bg-gray-900 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10">
+                <div class="p-4 bg-white dark:bg-gray-900 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10">
                     <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">{{ $group['title'] }}</p>
                     <div class="grid grid-cols-{{ count($group['fields']) === 1 ? '1' : '2' }} gap-4">
                         @foreach ($group['fields'] as $field)

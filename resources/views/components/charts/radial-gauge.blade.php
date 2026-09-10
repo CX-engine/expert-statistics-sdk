@@ -42,7 +42,7 @@
     of total vs. seconds clamped to 100), so this preserves each card's exact
     original math instead of forcing one shared formula.
 --}}
-<div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 px-5 py-5">
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
     <div class="flex items-start justify-between mb-4">
         <div>
             <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">{{ $title }}</div>

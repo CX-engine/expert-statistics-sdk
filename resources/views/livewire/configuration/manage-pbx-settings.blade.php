@@ -1,4 +1,6 @@
-<div class="max-w-5xl mx-auto space-y-6 pb-8">
+<x-pages.index :title="__('expert-statistics::pbx.navigation.configuration')">
+
+<div class="space-y-6">
 
     {{-- Tab bar --}}
     <div class="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1 overflow-x-auto">
@@ -54,3 +56,5 @@
     </div>
 
 </div>
+
+</x-pages.index>

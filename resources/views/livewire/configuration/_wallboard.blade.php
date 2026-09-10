@@ -97,7 +97,7 @@
 
         {{-- AI builder --}}
         @php $aiResultCols = (int) ($wallboardAiResult['layout']['columns'] ?? 3); @endphp
-        <div class="relative overflow-hidden rounded-2xl border border-purple-200/70 dark:border-purple-900/40 bg-gradient-to-br from-purple-50 via-white to-primary-50 dark:from-purple-950/30 dark:via-gray-800 dark:to-primary-950/20 shadow-sm">
+        <div class="relative overflow-hidden rounded-xl border border-purple-200/70 dark:border-purple-900/40 bg-gradient-to-br from-purple-50 via-white to-primary-50 dark:from-purple-950/30 dark:via-gray-800 dark:to-primary-950/20 shadow-sm">
             <div class="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-purple-300/20 blur-3xl dark:bg-purple-600/10"></div>
             <div class="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-primary-300/20 blur-3xl dark:bg-primary-600/10"></div>
 
