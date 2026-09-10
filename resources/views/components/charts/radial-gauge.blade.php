@@ -60,6 +60,7 @@
         <div
             x-data="{
                 chart: null,
+                observer: null,
                 pct() {
                     {!! $percentageJs !!}
                 },
@@ -80,12 +81,16 @@
                         fill: {{ Js::from($fill) }},
                         stroke: { dashArray: {{ (int) $strokeDashArray }} },
                     });
-                    this.chart.render();
-                    const obs = new MutationObserver(() => this.chart.updateOptions({
+                    this.chart.render().catch(() => {});
+                    this.observer = new MutationObserver(() => this.chart?.updateOptions({
                         plotOptions: { radialBar: { track: { background: trackColor() } } }
                     }, false, false, false));
-                    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-                    this.$watch('$wire.kpis', () => this.chart.updateSeries([this.pct()]));
+                    this.observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+                    this.$watch('$wire.kpis', () => this.chart?.updateSeries([this.pct()]));
+                },
+                destroy() {
+                    this.observer?.disconnect();
+                    this.chart?.destroy();
                 }
             }"
             wire:ignore

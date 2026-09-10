@@ -51,6 +51,7 @@
     <div
         class="p-4"
         x-data="{
+            chart: null,
             init() {
                 const isDark = document.documentElement.classList.contains('dark');
                 const textColor = isDark ? '#9CA3AF' : '#6B7280';
@@ -140,7 +141,11 @@
                     },
                 };
 
-                new ApexCharts(this.$refs.chart, options).render();
+                this.chart = new ApexCharts(this.$refs.chart, options);
+                this.chart.render().catch(() => {});
+            },
+            destroy() {
+                this.chart?.destroy();
             }
         }"
     >
@@ -152,6 +157,7 @@
         <div
             class="px-4 pb-4"
             x-data="{
+                chart: null,
                 init() {
                     const isDark = document.documentElement.classList.contains('dark');
                     const textColor = isDark ? '#9CA3AF' : '#6B7280';
@@ -203,7 +209,11 @@
                         },
                     };
 
-                    new ApexCharts(this.$refs.waitChart, options).render();
+                    this.chart = new ApexCharts(this.$refs.waitChart, options);
+                    this.chart.render().catch(() => {});
+                },
+                destroy() {
+                    this.chart?.destroy();
                 }
             }"
         >

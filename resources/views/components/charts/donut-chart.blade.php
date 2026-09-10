@@ -28,6 +28,7 @@
         wire:key="{{ $chartKey }}"
         class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden"
         x-data="{
+            chart: null,
             init() {
                 const isDark = document.documentElement.classList.contains('dark');
                 const textColor = isDark ? '#9CA3AF' : '#6B7280';
@@ -83,7 +84,11 @@
                     stroke: { width: 2, colors: [isDark ? '#1f2937' : '#ffffff'] },
                 };
 
-                new ApexCharts(this.$refs.donut, options).render();
+                this.chart = new ApexCharts(this.$refs.donut, options);
+                this.chart.render().catch(() => {});
+            },
+            destroy() {
+                this.chart?.destroy();
             }
         }"
     >
