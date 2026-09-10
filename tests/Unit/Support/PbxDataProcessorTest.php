@@ -190,3 +190,163 @@ it('formats a second count in short form', function () {
         ->and(PbxDataProcessor::formatSecondsShort(65))->toBe('1m 5s')
         ->and(PbxDataProcessor::formatSecondsShort(0))->toBe('0s');
 });
+
+it('categorizes realtime agent-status rows into online/away/unavailable counts', function () {
+    $agentData = [
+        ['user_dn' => '100', 'registration_status' => ['pbx_registered' => true], 'current_status' => ['code' => 0]],
+        ['user_dn' => '101', 'registration_status' => ['pbx_registered' => true], 'current_status' => ['code' => 4]],
+        ['user_dn' => '102', 'registration_status' => ['pbx_registered' => true], 'current_status' => ['code' => 2]],
+        ['user_dn' => '103', 'registration_status' => ['pbx_registered' => false], 'current_status' => ['code' => -1]],
+    ];
+
+    $counts = PbxDataProcessor::agentMonitoringTotalCounts($agentData);
+
+    expect($counts)->toBe(['online' => 1, 'away' => 1, 'unavailable' => 2, 'total' => 4]);
+});
+
+it('builds realtime-status threshold alerts, skipping dismissed ones', function () {
+    $agentData = [
+        [
+            'user_dn' => '100',
+            'registration_status' => ['pbx_registered' => true, 'duration' => ['minutes' => 601, 'formatted' => '10h 1m']],
+            'current_status' => ['code' => 0, 'name' => 'Available'],
+            'status_duration' => ['minutes' => 5, 'formatted' => '5m'],
+        ],
+        [
+            'user_dn' => '101',
+            'registration_status' => ['pbx_registered' => false, 'duration' => ['minutes' => 961, 'formatted' => '16h 1m']],
+            'current_status' => ['code' => -1, 'name' => ''],
+            'status_duration' => ['minutes' => 0, 'formatted' => '0m'],
+        ],
+    ];
+
+    $alerts = PbxDataProcessor::agentMonitoringAlerts($agentData, ['100' => 'Alice'], [], 'Unknown');
+
+    expect($alerts)->toHaveCount(2)
+        ->and($alerts[0]['id'])->toBe('connect-100')
+        ->and($alerts[0]['messageParams'])->toBe(['agent' => '100 — Alice', 'duration' => '10h 1m'])
+        ->and($alerts[1]['id'])->toBe('disconnect-101')
+        ->and($alerts[1]['severity'])->toBe('high')
+        ->and($alerts[1]['messageParams']['agent'])->toBe('101 — Unknown');
+
+    $filtered = PbxDataProcessor::agentMonitoringAlerts($agentData, ['100' => 'Alice'], ['connect-100'], 'Unknown');
+
+    expect($filtered)->toHaveCount(1)
+        ->and($filtered[0]['id'])->toBe('disconnect-101');
+});
+
+it('groups agent-monitoring rows by agent DN, summing minutes per key', function () {
+    $rows = [
+        ['user_dn' => '100', 'queue_dn' => '800', 'connected_seconds' => 600],
+        ['user_dn' => '100', 'queue_dn' => '801', 'connected_seconds' => 120],
+        ['user_dn' => '101', 'queue_dn' => '800', 'connected_seconds' => 1800],
+    ];
+
+    $minutesResolver = fn (array $row): int => (int) round($row['connected_seconds'] / 60);
+
+    $grouped = PbxDataProcessor::agentMonitoringGroupByAgent($rows, 'user_dn', 'queue_dn', $minutesResolver);
+
+    expect($grouped)->toHaveCount(2)
+        ->and($grouped[0]['user_dn'])->toBe('101')
+        ->and($grouped[0]['total_minutes'])->toBe(30)
+        ->and($grouped[1]['user_dn'])->toBe('100')
+        ->and($grouped[1]['total_minutes'])->toBe(12)
+        ->and($grouped[1]['items'][0])->toBe(['key' => '800', 'minutes' => 10]);
+});
+
+it('aggregates agent-monitoring rows by key, summing minutes', function () {
+    $rows = [
+        ['queue_dn' => '800', 'connected_seconds' => 600],
+        ['queue_dn' => '801', 'connected_seconds' => 60],
+        ['queue_dn' => '800', 'connected_seconds' => 120],
+    ];
+
+    $items = PbxDataProcessor::agentMonitoringAggregateByKey($rows, 'queue_dn', fn (array $row): int => (int) round($row['connected_seconds'] / 60));
+
+    expect($items)->toBe([
+        ['key' => '800', 'minutes' => 12],
+        ['key' => '801', 'minutes' => 1],
+    ]);
+});
+
+it('groups agent-monitoring rows by date, summing minutes per key', function () {
+    $rows = [
+        ['report_date' => '2026-01-02', 'queue_dn' => '800', 'connected_seconds' => 60],
+        ['report_date' => '2026-01-01', 'queue_dn' => '800', 'connected_seconds' => 120],
+        ['report_date' => '2026-01-01', 'queue_dn' => '801', 'connected_seconds' => 60],
+        ['report_date' => '', 'queue_dn' => '800', 'connected_seconds' => 999],
+    ];
+
+    $buckets = PbxDataProcessor::agentMonitoringGroupByDate($rows, 'report_date', 'queue_dn', fn (array $row): int => (int) round($row['connected_seconds'] / 60));
+
+    expect($buckets)->toHaveCount(2)
+        ->and($buckets[0]['label'])->toBe('01/01')
+        ->and($buckets[0]['items'])->toBe([['key' => '800', 'minutes' => 2], ['key' => '801', 'minutes' => 1]])
+        ->and($buckets[1]['label'])->toBe('02/01')
+        ->and($buckets[1]['items'])->toBe([['key' => '800', 'minutes' => 1]]);
+});
+
+it('pivots buckets into ApexCharts-ready stacked series', function () {
+    $buckets = [
+        ['label' => 'Alice', 'items' => [['key' => '800', 'minutes' => 10], ['key' => '801', 'minutes' => 5]]],
+        ['label' => 'Bob', 'items' => [['key' => '800', 'minutes' => 3]]],
+    ];
+
+    $series = PbxDataProcessor::agentMonitoringBuildStackedSeries(
+        $buckets,
+        fn (string $key): string => "Queue {$key}",
+        fn (string $key): string => $key === '800' ? '#111' : '#222',
+    );
+
+    expect($series['categories'])->toBe(['Alice', 'Bob'])
+        ->and($series['series'])->toHaveCount(2)
+        ->and($series['series'][0])->toBe(['name' => 'Queue 800', 'data' => [10, 3], 'color' => '#111'])
+        ->and($series['series'][1])->toBe(['name' => 'Queue 801', 'data' => [5, 0], 'color' => '#222']);
+});
+
+it('builds an ApexCharts heatmap series from agent groups', function () {
+    $agentGroups = [
+        ['user_dn' => '100', 'items' => [['key' => '800', 'minutes' => 10]], 'total_minutes' => 10],
+        ['user_dn' => '101', 'items' => [], 'total_minutes' => 0],
+    ];
+
+    $series = PbxDataProcessor::agentMonitoringBuildHeatmapSeries(
+        $agentGroups,
+        ['800', '801'],
+        fn (string $dn): string => "Agent {$dn}",
+        fn (string $key): string => "Queue {$key}",
+    );
+
+    expect($series)->toHaveCount(2)
+        ->and($series[0]['name'])->toBe('Agent 100')
+        ->and($series[0]['data'])->toBe([['x' => 'Queue 800', 'y' => 10], ['x' => 'Queue 801', 'y' => 0]])
+        ->and($series[1]['data'][0]['y'])->toBe(0);
+});
+
+it('collects distinct sorted key values from raw rows', function () {
+    $rows = [
+        ['queue_dn' => '801'],
+        ['queue_dn' => '800'],
+        ['queue_dn' => '801'],
+    ];
+
+    expect(PbxDataProcessor::agentMonitoringDistinctKeys($rows, 'queue_dn'))->toBe(['800', '801']);
+});
+
+it('flattens nested daily-activity rows into flat date/status rows', function () {
+    $dailyActivityAgents = [
+        [
+            'user_dn' => '100',
+            'daily_activity' => [
+                ['date' => '2026-01-01', 'status_breakdown' => [['status' => 0, 'total_minutes' => 30], ['status' => 4, 'total_minutes' => 10]]],
+                ['date' => '', 'status_breakdown' => [['status' => 0, 'total_minutes' => 999]]],
+            ],
+        ],
+    ];
+
+    $rows = PbxDataProcessor::flattenAgentMonitoringDailyActivity($dailyActivityAgents);
+
+    expect($rows)->toHaveCount(2)
+        ->and($rows[0])->toBe(['date' => '2026-01-01', 'user_dn' => '100', 'status' => '0', 'total_minutes' => 30])
+        ->and($rows[1]['status'])->toBe('4');
+});

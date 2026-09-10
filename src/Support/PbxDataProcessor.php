@@ -772,6 +772,404 @@ class PbxDataProcessor
         return $dates;
     }
 
+    // --- Agent Monitoring ---
+    // Shared by the three Agent Monitoring pages (Realtime Status, Queue
+    // Connection, Status Breakdown). Queue Connection and Status Breakdown's
+    // raw API rows both boil down to a (agent DN, grouping key, minutes)
+    // shape once resolved through a caller-supplied minutes closure, so the
+    // grouping/pivoting helpers below are shared between the two.
+
+    /**
+     * Categorize realtime agent-status rows into online/away/unavailable
+     * counts. "Online" = PBX-registered with status code 0, "away" =
+     * registered with status code 4, everything else (unregistered, or
+     * registered with any other status code) counts as "unavailable".
+     *
+     * @param  array<int, array<string, mixed>>  $agentData  Rows from ExpertStatisticsService::getAgentStatsRealtimeStatus()['data'].
+     * @return array{online: int, away: int, unavailable: int, total: int}
+     */
+    public static function agentMonitoringTotalCounts(array $agentData): array
+    {
+        $online = 0;
+        $away = 0;
+        $unavailable = 0;
+
+        foreach ($agentData as $agent) {
+            $registered = $agent['registration_status']['pbx_registered'] ?? false;
+            $code = (int) ($agent['current_status']['code'] ?? -1);
+
+            if ($registered && $code === 0) {
+                $online++;
+            } elseif ($registered && $code === 4) {
+                $away++;
+            } else {
+                $unavailable++;
+            }
+        }
+
+        return [
+            'online' => $online,
+            'away' => $away,
+            'unavailable' => $unavailable,
+            'total' => count($agentData),
+        ];
+    }
+
+    /**
+     * Build the realtime-status threshold alerts (long connection, long
+     * disconnection, extended unavailability, extended away), skipping any
+     * whose id is already in $dismissedAlertIds. Title/message are returned
+     * as translation keys + params rather than translated text (see
+     * getSegmentLabel() above) - callers translate at the view/component
+     * layer. $unknownAgentLabel is the one piece of translated text this
+     * needs up front, to build the ":agent" substitution value itself.
+     *
+     * @param  array<int, array<string, mixed>>  $agentData  Rows from ExpertStatisticsService::getAgentStatsRealtimeStatus()['data'].
+     * @param  array<string, string>  $extensionsMap  DN => display name, from ExpertStatisticsService::getMap()['extensions'].
+     * @param  array<int, string>  $dismissedAlertIds
+     * @return array<int, array{id: string, type: string, severity: string, titleKey: string, messageKey: string, messageParams: array<string, string>}>
+     */
+    public static function agentMonitoringAlerts(array $agentData, array $extensionsMap, array $dismissedAlertIds, string $unknownAgentLabel): array
+    {
+        $thresholds = [
+            'long_connected' => 600,
+            'long_disconnected' => 960,
+            'long_unavailable' => 60,
+            'very_long_unavailable' => 120,
+            'long_away' => 1440,
+        ];
+
+        $alerts = [];
+
+        foreach ($agentData as $agent) {
+            $dn = (string) ($agent['user_dn'] ?? '');
+            $agentLabel = $dn.' — '.($extensionsMap[$dn] ?? $unknownAgentLabel);
+            $registered = $agent['registration_status']['pbx_registered'] ?? false;
+            $regMinutes = (int) ($agent['registration_status']['duration']['minutes'] ?? 0);
+            $regFormatted = (string) ($agent['registration_status']['duration']['formatted'] ?? '');
+            $statusCode = (int) ($agent['current_status']['code'] ?? -1);
+            $statusName = (string) ($agent['current_status']['name'] ?? '');
+            $statusMinutes = (int) ($agent['status_duration']['minutes'] ?? 0);
+            $statusFormatted = (string) ($agent['status_duration']['formatted'] ?? '');
+
+            if ($registered && $regMinutes > $thresholds['long_connected']) {
+                $id = "connect-{$dn}";
+                if (! in_array($id, $dismissedAlertIds, true)) {
+                    $alerts[] = [
+                        'id' => $id,
+                        'type' => 'warning',
+                        'severity' => 'medium',
+                        'titleKey' => 'expert-statistics::pbx.expert_statistics.agent_monitoring_alert_long_connected',
+                        'messageKey' => 'expert-statistics::pbx.expert_statistics.agent_monitoring_alert_long_connected_msg',
+                        'messageParams' => ['agent' => $agentLabel, 'duration' => $regFormatted],
+                    ];
+                }
+            }
+
+            if (! $registered && $regMinutes > $thresholds['long_disconnected']) {
+                $id = "disconnect-{$dn}";
+                if (! in_array($id, $dismissedAlertIds, true)) {
+                    $alerts[] = [
+                        'id' => $id,
+                        'type' => 'error',
+                        'severity' => $regMinutes > $thresholds['very_long_unavailable'] ? 'high' : 'medium',
+                        'titleKey' => 'expert-statistics::pbx.expert_statistics.agent_monitoring_alert_long_disconnected',
+                        'messageKey' => 'expert-statistics::pbx.expert_statistics.agent_monitoring_alert_long_disconnected_msg',
+                        'messageParams' => ['agent' => $agentLabel, 'duration' => $regFormatted],
+                    ];
+                }
+            }
+
+            if ($registered && $statusCode !== 0 && $statusMinutes > $thresholds['long_unavailable']) {
+                $id = "unavailable-{$dn}";
+                if (! in_array($id, $dismissedAlertIds, true)) {
+                    $alerts[] = [
+                        'id' => $id,
+                        'type' => 'warning',
+                        'severity' => $statusMinutes > $thresholds['very_long_unavailable'] ? 'high' : 'medium',
+                        'titleKey' => 'expert-statistics::pbx.expert_statistics.agent_monitoring_alert_long_unavailable',
+                        'messageKey' => 'expert-statistics::pbx.expert_statistics.agent_monitoring_alert_long_unavailable_msg',
+                        'messageParams' => ['agent' => $agentLabel, 'status' => strtolower($statusName), 'duration' => $statusFormatted],
+                    ];
+                }
+            }
+
+            if ($statusCode === 4 && $statusMinutes > $thresholds['long_away']) {
+                $id = "long-away-{$dn}";
+                if (! in_array($id, $dismissedAlertIds, true)) {
+                    $alerts[] = [
+                        'id' => $id,
+                        'type' => 'warning',
+                        'severity' => 'medium',
+                        'titleKey' => 'expert-statistics::pbx.expert_statistics.agent_monitoring_alert_extended_away',
+                        'messageKey' => 'expert-statistics::pbx.expert_statistics.agent_monitoring_alert_extended_away_msg',
+                        'messageParams' => ['agent' => $agentLabel, 'duration' => $statusFormatted],
+                    ];
+                }
+            }
+        }
+
+        return $alerts;
+    }
+
+    /**
+     * Group flat agent-monitoring rows (one row per agent/key slice, e.g.
+     * one Queue Connection or Status Breakdown API row) by an agent DN
+     * field, summing a derived minute value per distinct value of a
+     * grouping field (queue_dn for Queue Connection, status code for Status
+     * Breakdown) and for the agent's grand total.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @param  \Closure(array<string, mixed>): int  $minutesResolver  Extracts the minute value from one row.
+     * @return array<int, array{user_dn: string, items: array<int, array{key: string, minutes: int}>, total_minutes: int}>  Sorted by total_minutes, descending; items sorted by minutes, descending.
+     */
+    public static function agentMonitoringGroupByAgent(array $rows, string $dnField, string $keyField, \Closure $minutesResolver): array
+    {
+        $byAgent = [];
+
+        foreach ($rows as $row) {
+            $dn = (string) ($row[$dnField] ?? '');
+            $key = (string) ($row[$keyField] ?? '');
+            $minutes = $minutesResolver($row);
+
+            $byAgent[$dn] ??= ['user_dn' => $dn, 'items' => [], 'total_minutes' => 0];
+            $byAgent[$dn]['items'][$key] = ($byAgent[$dn]['items'][$key] ?? 0) + $minutes;
+            $byAgent[$dn]['total_minutes'] += $minutes;
+        }
+
+        $agents = [];
+        foreach ($byAgent as $agent) {
+            $items = [];
+            foreach ($agent['items'] as $key => $minutes) {
+                $items[] = ['key' => (string) $key, 'minutes' => $minutes];
+            }
+            usort($items, fn (array $a, array $b): int => $b['minutes'] <=> $a['minutes']);
+
+            $agents[] = ['user_dn' => $agent['user_dn'], 'items' => $items, 'total_minutes' => $agent['total_minutes']];
+        }
+
+        usort($agents, fn (array $a, array $b): int => $b['total_minutes'] <=> $a['total_minutes']);
+
+        return $agents;
+    }
+
+    /**
+     * Sum a derived minute value across all rows, grouped by a key field
+     * (queue_dn for Queue Connection, status code for Status Breakdown).
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @param  \Closure(array<string, mixed>): int  $minutesResolver
+     * @return array<int, array{key: string, minutes: int}>  Sorted by minutes, descending.
+     */
+    public static function agentMonitoringAggregateByKey(array $rows, string $keyField, \Closure $minutesResolver): array
+    {
+        $byKey = [];
+
+        foreach ($rows as $row) {
+            $key = (string) ($row[$keyField] ?? '');
+            $byKey[$key] = ($byKey[$key] ?? 0) + $minutesResolver($row);
+        }
+
+        $items = [];
+        foreach ($byKey as $key => $minutes) {
+            $items[] = ['key' => (string) $key, 'minutes' => $minutes];
+        }
+
+        usort($items, fn (array $a, array $b): int => $b['minutes'] <=> $a['minutes']);
+
+        return $items;
+    }
+
+    /**
+     * Group flat agent-monitoring rows by calendar date, summing a derived
+     * minute value per distinct key within each date. Used to build the
+     * "per day" stacked-bar charts (optionally after filtering rows down to
+     * one agent first, for the per-agent daily small-multiples).
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @param  \Closure(array<string, mixed>): int  $minutesResolver
+     * @return array<int, array{label: string, items: array<int, array{key: string, minutes: int}>}>  Sorted by date, ascending; label is "d/m".
+     */
+    public static function agentMonitoringGroupByDate(array $rows, string $dateField, string $keyField, \Closure $minutesResolver): array
+    {
+        $byDate = [];
+
+        foreach ($rows as $row) {
+            $date = (string) ($row[$dateField] ?? '');
+
+            if ($date === '') {
+                continue;
+            }
+
+            $key = (string) ($row[$keyField] ?? '');
+            $minutes = $minutesResolver($row);
+
+            $byDate[$date] ??= [];
+            $byDate[$date][$key] = ($byDate[$date][$key] ?? 0) + $minutes;
+        }
+
+        ksort($byDate);
+
+        $buckets = [];
+        foreach ($byDate as $date => $keyMinutes) {
+            $items = [];
+            foreach ($keyMinutes as $key => $minutes) {
+                $items[] = ['key' => (string) $key, 'minutes' => $minutes];
+            }
+
+            $buckets[] = ['label' => Carbon::parse($date)->format('d/m'), 'items' => $items];
+        }
+
+        return $buckets;
+    }
+
+    /**
+     * Pivot a list of {label, items:[{key,minutes}]} buckets (from
+     * agentMonitoringGroupByAgent()'s per-agent items, or
+     * agentMonitoringGroupByDate()) into ApexCharts-ready categories + one
+     * series per distinct key.
+     *
+     * @param  array<int, array{label: string, items: array<int, array{key: string, minutes: int}>}>  $buckets
+     * @param  \Closure(string): string  $nameResolver  Resolves a key to its display name.
+     * @param  \Closure(string): string  $colorResolver  Resolves a key to its series color.
+     * @return array{categories: array<int, string>, series: array<int, array<string, mixed>>}
+     */
+    public static function agentMonitoringBuildStackedSeries(array $buckets, \Closure $nameResolver, \Closure $colorResolver): array
+    {
+        $keys = [];
+        foreach ($buckets as $bucket) {
+            foreach ($bucket['items'] as $item) {
+                if (! in_array($item['key'], $keys, true)) {
+                    $keys[] = $item['key'];
+                }
+            }
+        }
+        sort($keys);
+
+        $categories = array_column($buckets, 'label');
+
+        $series = [];
+        foreach ($keys as $key) {
+            $data = [];
+
+            foreach ($buckets as $bucket) {
+                $minutes = 0;
+                foreach ($bucket['items'] as $item) {
+                    if ($item['key'] === $key) {
+                        $minutes = $item['minutes'];
+                        break;
+                    }
+                }
+                $data[] = $minutes;
+            }
+
+            $series[] = [
+                'name' => $nameResolver($key),
+                'data' => $data,
+                'color' => $colorResolver($key),
+            ];
+        }
+
+        return ['categories' => $categories, 'series' => $series];
+    }
+
+    /**
+     * Build ApexCharts heatmap series: one row (series) per agent group from
+     * agentMonitoringGroupByAgent(), one column per key in $keys, cell value
+     * = that agent's summed minutes for that key (0 when absent).
+     *
+     * @param  array<int, array{user_dn: string, items: array<int, array{key: string, minutes: int}>, total_minutes: int}>  $agentGroups
+     * @param  array<int, string>  $keys  Column keys, in display order.
+     * @param  \Closure(string): string  $agentNameResolver
+     * @param  \Closure(string): string  $keyNameResolver
+     * @return array<int, array{name: string, data: array<int, array{x: string, y: int}>}>
+     */
+    public static function agentMonitoringBuildHeatmapSeries(array $agentGroups, array $keys, \Closure $agentNameResolver, \Closure $keyNameResolver): array
+    {
+        $series = [];
+
+        foreach ($agentGroups as $agent) {
+            $data = [];
+
+            foreach ($keys as $key) {
+                $minutes = 0;
+                foreach ($agent['items'] as $item) {
+                    if ($item['key'] === $key) {
+                        $minutes = $item['minutes'];
+                        break;
+                    }
+                }
+
+                $data[] = ['x' => $keyNameResolver($key), 'y' => $minutes];
+            }
+
+            $series[] = ['name' => $agentNameResolver($agent['user_dn']), 'data' => $data];
+        }
+
+        return $series;
+    }
+
+    /**
+     * Collect the distinct string values of a key field across a list of
+     * raw rows, sorted ascending. Used to derive stable heatmap columns /
+     * palette assignment order.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array<int, string>
+     */
+    public static function agentMonitoringDistinctKeys(array $rows, string $keyField): array
+    {
+        $keys = [];
+
+        foreach ($rows as $row) {
+            $key = (string) ($row[$keyField] ?? '');
+            if (! in_array($key, $keys, true)) {
+                $keys[] = $key;
+            }
+        }
+
+        sort($keys);
+
+        return $keys;
+    }
+
+    /**
+     * Flatten the nested Status Breakdown "daily activity" API response
+     * (one entry per agent, each holding a list of {date, status_breakdown}
+     * days) into flat {date, user_dn, status, total_minutes} rows, suitable
+     * for agentMonitoringGroupByDate() / agentMonitoringGroupByAgent().
+     *
+     * @param  array<int, array<string, mixed>>  $dailyActivityAgents  Rows from ExpertStatisticsService::getAgentStatsDailyActivity()['data'].
+     * @return array<int, array{date: string, user_dn: string, status: string, total_minutes: int}>
+     */
+    public static function flattenAgentMonitoringDailyActivity(array $dailyActivityAgents): array
+    {
+        $rows = [];
+
+        foreach ($dailyActivityAgents as $agent) {
+            $dn = (string) ($agent['user_dn'] ?? '');
+
+            foreach ($agent['daily_activity'] ?? [] as $day) {
+                $date = (string) ($day['date'] ?? '');
+
+                if ($date === '') {
+                    continue;
+                }
+
+                foreach ($day['status_breakdown'] ?? [] as $status) {
+                    $rows[] = [
+                        'date' => $date,
+                        'user_dn' => $dn,
+                        'status' => (string) ($status['status'] ?? -1),
+                        'total_minutes' => (int) ($status['total_minutes'] ?? 0),
+                    ];
+                }
+            }
+        }
+
+        return $rows;
+    }
+
     private static function calcTrend(float $current, float $previous): float
     {
         if ($previous == 0) {

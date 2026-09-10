@@ -135,6 +135,32 @@ class MyQueuesReport extends Component
         }
     }
 
+    /** Opens CXEngine\ExpertStatistics\Livewire\Reports\ShareReportModal in "send" mode. */
+    public function shareReport(): void
+    {
+        $this->dispatch('open-share-report',
+            urlType: $this->urlType,
+            startDate: $this->startDate,
+            endDate: $this->endDate,
+            startTime: $this->startTime,
+            endTime: $this->endTime,
+            elements: $this->dn,
+        );
+    }
+
+    /** Opens CXEngine\ExpertStatistics\Livewire\Reports\ShareReportModal in "schedule" mode. */
+    public function scheduleReport(): void
+    {
+        $this->dispatch('open-schedule-report',
+            urlType: $this->urlType,
+            startDate: $this->startDate,
+            endDate: $this->endDate,
+            startTime: $this->startTime,
+            endTime: $this->endTime,
+            elements: $this->dn,
+        );
+    }
+
     public function loadData(): void
     {
         if (! $this->dn || ! $this->startDate || ! $this->endDate) {

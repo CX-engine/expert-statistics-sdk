@@ -2,9 +2,14 @@
 
 namespace CXEngine\ExpertStatistics;
 
+use CXEngine\ExpertStatistics\Livewire\AgentMonitoring\QueueConnection;
+use CXEngine\ExpertStatistics\Livewire\AgentMonitoring\RealtimeStatus;
+use CXEngine\ExpertStatistics\Livewire\AgentMonitoring\StatusBreakdown;
+use CXEngine\ExpertStatistics\Livewire\CallAnalysis\CallAnalysis;
 use CXEngine\ExpertStatistics\Livewire\Configuration\ManagePbxSettings;
 use CXEngine\ExpertStatistics\Livewire\Dashboard;
 use CXEngine\ExpertStatistics\Livewire\Reports\CallerNumbers\CallerNumbersReport;
+use CXEngine\ExpertStatistics\Livewire\Reports\ManageScheduledReports;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyNumbers\MyNumbersReport;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyQueues\MyQueuesDashboard;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyQueues\MyQueuesKpi;
@@ -14,6 +19,8 @@ use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersDashboard;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersKpi;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersOrigins;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersReport;
+use CXEngine\ExpertStatistics\Livewire\Reports\ShareReportModal;
+use CXEngine\ExpertStatistics\Livewire\Wallboard\PublicWallboard;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use CXEngine\ExpertStats\ExpertStatisticsConnector;
 use Illuminate\Support\ServiceProvider;
@@ -76,6 +83,17 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
             Livewire::component('expert-statistics.caller-numbers.report', CallerNumbersReport::class);
 
             Livewire::component('expert-statistics.configuration.manage-pbx-settings', ManagePbxSettings::class);
+
+            Livewire::component('expert-statistics.reports.share-report-modal', ShareReportModal::class);
+            Livewire::component('expert-statistics.reports.manage-scheduled-reports', ManageScheduledReports::class);
+
+            Livewire::component('expert-statistics.call-analysis.index', CallAnalysis::class);
+
+            Livewire::component('expert-statistics.wallboard.public', PublicWallboard::class);
+
+            Livewire::component('expert-statistics.agent-monitoring.realtime-status', RealtimeStatus::class);
+            Livewire::component('expert-statistics.agent-monitoring.queue-connection', QueueConnection::class);
+            Livewire::component('expert-statistics.agent-monitoring.status-breakdown', StatusBreakdown::class);
         }
     }
 }

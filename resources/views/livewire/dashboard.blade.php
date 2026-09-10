@@ -26,6 +26,8 @@
                 {{ __('expert-statistics::pbx.dashboards.twelveMonthTrends') }}
             </button>
         </div>
+
+        <x-expert-statistics::report-action-buttons />
     </div>
 
     {{-- Filter bar (unified — date picker visible only on period tab) --}}
@@ -1041,5 +1043,7 @@
         </div>
 
     @endif
+
+    <livewire:expert-statistics.reports.share-report-modal />
 
 </div>

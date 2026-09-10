@@ -389,6 +389,7 @@ return [
 
         // Share/schedule report modal
         'comingSoon' => 'Coming soon',
+        'defaultReportName' => 'Dashboard report',
         'reportNicknamePlaceholder' => 'Report name…',
         'reportType' => 'Frequency',
         'daily' => 'Daily',

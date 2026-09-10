@@ -389,6 +389,7 @@ return [
 
         // Modal envoi/planification de rapport
         'comingSoon' => 'Bientôt disponible',
+        'defaultReportName' => 'Rapport tableau de bord',
         'reportNicknamePlaceholder' => 'Nom du rapport…',
         'reportType' => 'Fréquence',
         'daily' => 'Quotidien',

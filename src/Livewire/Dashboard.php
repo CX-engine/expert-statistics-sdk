@@ -128,6 +128,28 @@ class Dashboard extends Component
         $this->tab = $tab;
     }
 
+    /** Opens CXEngine\ExpertStatistics\Livewire\Reports\ShareReportModal in "send" mode. */
+    public function shareReport(): void
+    {
+        $this->dispatch('open-share-report',
+            startDate: $this->startDate,
+            endDate: $this->endDate,
+            startTime: $this->startTime,
+            endTime: $this->endTime,
+        );
+    }
+
+    /** Opens CXEngine\ExpertStatistics\Livewire\Reports\ShareReportModal in "schedule" mode. */
+    public function scheduleReport(): void
+    {
+        $this->dispatch('open-schedule-report',
+            startDate: $this->startDate,
+            endDate: $this->endDate,
+            startTime: $this->startTime,
+            endTime: $this->endTime,
+        );
+    }
+
     public function updateTimeRange(): void
     {
         $this->loadData();

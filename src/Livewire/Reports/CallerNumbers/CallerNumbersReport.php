@@ -236,6 +236,40 @@ class CallerNumbersReport extends Component
         $this->loadData();
     }
 
+    /** Opens CXEngine\ExpertStatistics\Livewire\Reports\ShareReportModal in "send" mode. */
+    public function shareReport(): void
+    {
+        $this->dispatch('open-share-report',
+            urlType: $this->urlType,
+            startDate: $this->startDate,
+            endDate: $this->endDate,
+            startTime: $this->startTime,
+            endTime: $this->endTime,
+            callerFilters: $this->activeTab === 'groupless'
+                ? ['groupless' => true]
+                : ($this->isAllGroupsSelected()
+                    ? ['all_groups' => true, 'queues' => $this->selectedQueues]
+                    : ['group_names' => $this->groupSelectedName, 'queues' => $this->selectedQueues]),
+        );
+    }
+
+    /** Opens CXEngine\ExpertStatistics\Livewire\Reports\ShareReportModal in "schedule" mode. */
+    public function scheduleReport(): void
+    {
+        $this->dispatch('open-schedule-report',
+            urlType: $this->urlType,
+            startDate: $this->startDate,
+            endDate: $this->endDate,
+            startTime: $this->startTime,
+            endTime: $this->endTime,
+            callerFilters: $this->activeTab === 'groupless'
+                ? ['groupless' => true]
+                : ($this->isAllGroupsSelected()
+                    ? ['all_groups' => true, 'queues' => $this->selectedQueues]
+                    : ['group_names' => $this->groupSelectedName, 'queues' => $this->selectedQueues]),
+        );
+    }
+
     public function loadData(): void
     {
         $this->normalizeGroupSelection();

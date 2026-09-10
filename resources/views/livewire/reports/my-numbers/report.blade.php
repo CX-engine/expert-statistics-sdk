@@ -3,6 +3,8 @@
         {{-- Element selector --}}
         <x-expert-statistics::element-selector :urlType="$urlType" :pbxElements="$pbxElements"
             :selectedElements="$selectedElements" />
+
+        <x-expert-statistics::report-action-buttons />
     </div>
 
     {{-- Filter bar --}}
@@ -291,5 +293,7 @@
 
     </div>
     @endif
+
+    <livewire:expert-statistics.reports.share-report-modal />
 
 </div>
