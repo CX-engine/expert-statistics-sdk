@@ -47,6 +47,18 @@
     />
 
     @if ($tab === 'period')
+    {{--
+        Keyed per-tab wrapper: every chart in this component uses wire:ignore
+        so Alpine/ApexCharts state survives normal Livewire re-renders (data
+        refresh, filter changes). But wire:ignore also makes morphdom treat
+        those nodes as opaque during a *structural* change like this @if/@else
+        tab swap - without a wire:key forcing Livewire to recognize the whole
+        branch as a different element, an ignored chart from the previous tab
+        can linger in the DOM instead of being torn down, only fixed by a full
+        page reload. Keying the branch itself (not just each chart) guarantees
+        a clean unmount/remount on every tab switch.
+    --}}
+    <div wire:key="dashboard-tab-period">
 
         {{-- ==================== Total calls ==================== --}}
         <div class="relative mb-5">
@@ -791,7 +803,9 @@
             @endif
         </div>
 
+    </div>
     @else
+    <div wire:key="dashboard-tab-trend">
 
         {{-- ==================== Trend KPI cards ==================== --}}
         <div class="relative mb-5">
@@ -1047,6 +1061,7 @@
             @endif
         </div>
 
+    </div>
     @endif
 
     <livewire:expert-statistics.reports.share-report-modal />
