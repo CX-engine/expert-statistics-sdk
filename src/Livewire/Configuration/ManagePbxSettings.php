@@ -2,7 +2,7 @@
 
 namespace CXEngine\ExpertStatistics\Livewire\Configuration;
 
-use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
+use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsModification;
 use CXEngine\ExpertStatistics\Exceptions\NoActivePbxHostException;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use Illuminate\Contracts\View\View;
@@ -21,12 +21,14 @@ use Throwable;
  * Deliberately does NOT use RequiresExpertStatisticsActivation: agent labels,
  * queue pre-answer times, report-table thresholds, AI alert settings, groups
  * and wallboards must stay configurable regardless of the host's trial/
- * subscription state — only AuthorizesExpertStatisticsAccess (permission
- * gate) applies here, same as the free Dashboard.
+ * subscription state — only AuthorizesExpertStatisticsModification (permission
+ * gate) applies here. Unlike the free Dashboard, this page changes
+ * configuration, so it requires the dedicated expert-statistics.modify
+ * permission (or the broader wildcard) rather than plain view access.
  */
 class ManagePbxSettings extends Component
 {
-    use AuthorizesExpertStatisticsAccess;
+    use AuthorizesExpertStatisticsModification;
 
     #[Url]
     public string $tab = 'agent';

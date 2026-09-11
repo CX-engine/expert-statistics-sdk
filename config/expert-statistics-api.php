@@ -36,7 +36,12 @@ return [
     | the Dashboard page, and deliberately also accepts the broader
     | `expert-statistics.*` permissions - a user with full module access
     | shouldn't lose the Dashboard just because they were never explicitly
-    | granted `dashboard.*` too.
+    | granted `dashboard.*` too. `modification_permissions` gates the
+    | Configuration pages specifically (host selection, PBX settings) -
+    | deliberately NOT satisfied by `expert-statistics.view` alone, so a
+    | client granted read-only report access can't also change
+    | configuration; only `expert-statistics.modify` (or full `*` access,
+    | which already implies it) unlocks those pages.
     */
     'permissions' => [
         'expert-statistics.view',
@@ -47,6 +52,11 @@ return [
         'dashboard.view',
         'dashboard.*',
         'expert-statistics.view',
+        'expert-statistics.*',
+    ],
+
+    'modification_permissions' => [
+        'expert-statistics.modify',
         'expert-statistics.*',
     ],
 ];
