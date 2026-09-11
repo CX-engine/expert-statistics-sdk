@@ -386,7 +386,6 @@
                                 @foreach ($data['shortcuts'] as $shortcut)
                                     <a
                                         href="{{ route('expert-stats.ai.chat', ['send' => $shortcut['query'] ?? $shortcut['label'] ?? '']) }}"
-                                        wire:navigate
                                         class="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 hover:bg-purple-50 hover:border-purple-200 dark:hover:bg-purple-950/30 dark:hover:border-purple-800 transition-colors"
                                     >
                                         <x-heroicon-o-bolt class="w-3.5 h-3.5 text-gray-400 shrink-0" />

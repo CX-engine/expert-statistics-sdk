@@ -10,7 +10,7 @@
             :component="$feature['icon']"
             class="absolute left-0 top-0.5 h-5 w-5 text-primary-600 dark:text-primary-400"
           />
-          <a href="{{ $feature['url'] }}" wire:navigate class="hover:underline">{{ $feature['name'] }}.</a>
+          <a href="{{ $feature['url'] }}" class="hover:underline">{{ $feature['name'] }}.</a>
         </dt>
         {{ ' ' }}
         <dd class="inline text-sm text-gray-600 dark:text-gray-400">{{ $feature['description'] }}</dd>
