@@ -29,11 +29,25 @@ class AiChat extends Component
 
     public bool $isLoading = false;
 
+    public bool $autoSend = false;
+
     public ?string $errorMessage = null;
 
+    /**
+     * Accepts a `?send=` query string so other pages (e.g. the AI Dashboard's
+     * Quick Actions) can deep-link straight into a pre-filled, auto-sent
+     * message instead of only opening an empty chat.
+     */
     public function mount(): void
     {
         $this->loadHistory();
+
+        $prefill = trim((string) request()->query('send', ''));
+
+        if ($prefill !== '') {
+            $this->inputMessage = $prefill;
+            $this->autoSend = true;
+        }
     }
 
     public function loadHistory(): void

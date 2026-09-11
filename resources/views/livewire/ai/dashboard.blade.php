@@ -380,14 +380,18 @@
                             </div>
                         @endif
 
-                        {{-- ── quick_action: shortcut labels ───────────────────── --}}
+                        {{-- ── quick_action: clickable shortcuts → AI Chat ─────── --}}
                         @if ($type === 'quick_action' && ! empty($data['shortcuts']))
                             <div class="px-4 pb-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
                                 @foreach ($data['shortcuts'] as $shortcut)
-                                    <div class="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                                    <a
+                                        href="{{ route('expert-stats.ai.chat', ['send' => $shortcut['query'] ?? $shortcut['label'] ?? '']) }}"
+                                        wire:navigate
+                                        class="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 hover:bg-purple-50 hover:border-purple-200 dark:hover:bg-purple-950/30 dark:hover:border-purple-800 transition-colors"
+                                    >
                                         <x-heroicon-o-bolt class="w-3.5 h-3.5 text-gray-400 shrink-0" />
                                         <span class="text-xs font-medium text-gray-600 dark:text-gray-300 leading-tight">{{ $shortcut['label'] ?? '' }}</span>
-                                    </div>
+                                    </a>
                                 @endforeach
                             </div>
                         @endif

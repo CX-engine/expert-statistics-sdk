@@ -3,7 +3,10 @@
     :subtitle="__('expert-statistics::pbx.expert_statistics.home_feature_ai_desc')"
 >
 
-<div class="flex gap-4 h-[calc(100vh-12rem)] min-h-[500px]">
+<div
+    class="flex gap-4 h-[calc(100vh-12rem)] min-h-[500px]"
+    @if ($autoSend) x-data x-init="$wire.sendMessage()" @endif
+>
 
     {{-- ── Sidebar — conversation history ──────────────────────────────── --}}
     <div class="w-64 flex-shrink-0 flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
