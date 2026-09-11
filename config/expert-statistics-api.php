@@ -24,14 +24,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Permission gate
+    | Permission gates
     |--------------------------------------------------------------------------
     |
-    | Spatie permission string(s) checked before rendering any Dashboard /
-    | Expert Statistics Livewire page. A user passes if they have any one of
-    | these permissions.
+    | Spatie permission string(s) checked before rendering an Expert
+    | Statistics Livewire page. A user passes if they have any one of the
+    | listed permissions.
+    |
+    | `permissions` gates the 10 report/config/AI/etc. pages (everything
+    | except the free-standing Dashboard). `dashboard_permissions` gates only
+    | the Dashboard page, and deliberately also accepts the broader
+    | `expert-statistics.*` permissions - a user with full module access
+    | shouldn't lose the Dashboard just because they were never explicitly
+    | granted `dashboard.*` too.
     */
     'permissions' => [
+        'expert-statistics.view',
+        'expert-statistics.*',
+    ],
+
+    'dashboard_permissions' => [
+        'dashboard.view',
+        'dashboard.*',
         'expert-statistics.view',
         'expert-statistics.*',
     ],

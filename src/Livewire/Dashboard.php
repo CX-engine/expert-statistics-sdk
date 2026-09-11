@@ -3,7 +3,7 @@
 namespace CXEngine\ExpertStatistics\Livewire;
 
 use Carbon\Carbon;
-use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
+use CXEngine\ExpertStatistics\Concerns\AuthorizesDashboardAccess;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use CXEngine\ExpertStatistics\Support\PbxDataProcessor;
 use Illuminate\Contracts\View\View;
@@ -21,7 +21,7 @@ use Livewire\Component;
  */
 class Dashboard extends Component
 {
-    use AuthorizesExpertStatisticsAccess;
+    use AuthorizesDashboardAccess;
 
     #[Url]
     public string $tab = 'period';
