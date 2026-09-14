@@ -650,6 +650,14 @@ class ExpertStatisticsService
     // --- Reports ---
     // Scheduled report definitions. Does not wrap the public "generate"/
     // "unsubscribe" routes hit directly by email recipients.
+    //
+    // NOT cached - ManageScheduledReports' list is paginated/searchable, so
+    // remember()'s cache key already varies by $query; create/update/delete
+    // can only forget() the exact page+search the mutation itself doesn't
+    // know about, so a stale list kept being served (up to cache_ttl) after
+    // every edit or delete looked like the action silently failed. Same
+    // reasoning as AI chat history - this list must reflect a just-made
+    // change immediately.
 
     /**
      * @param  array<string, mixed>  $query
@@ -657,11 +665,9 @@ class ExpertStatisticsService
      */
     public function getReports(array $query = []): array
     {
-        return $this->remember('reports', $query, fn (string $host): array => $this->connector
-            ->report()
-            ->index($host, $query)
-            ->throw()
-            ->json());
+        $host = $this->hostName();
+
+        return $this->connector->report()->index($host, $query)->throw()->json();
     }
 
     /**
@@ -672,11 +678,7 @@ class ExpertStatisticsService
     {
         $host = $this->hostName();
 
-        $result = $this->connector->report()->store($host, $data)->throw()->json();
-
-        $this->forget($host, 'reports');
-
-        return $result;
+        return $this->connector->report()->store($host, $data)->throw()->json();
     }
 
     /**
@@ -687,11 +689,7 @@ class ExpertStatisticsService
     {
         $host = $this->hostName();
 
-        $result = $this->connector->report()->update($host, $id, $data)->throw()->json();
-
-        $this->forget($host, 'reports');
-
-        return $result;
+        return $this->connector->report()->update($host, $id, $data)->throw()->json();
     }
 
     /**
@@ -701,11 +699,7 @@ class ExpertStatisticsService
     {
         $host = $this->hostName();
 
-        $result = $this->connector->report()->delete($host, $id)->throw()->json();
-
-        $this->forget($host, 'reports');
-
-        return $result;
+        return $this->connector->report()->delete($host, $id)->throw()->json();
     }
 
     // --- Alerts ---
