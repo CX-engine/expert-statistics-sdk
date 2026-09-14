@@ -1,6 +1,4 @@
-@unless ($embedded)
 <x-pages.index :title="__('expert-statistics::pbx.navigation.configuration')">
-@endunless
 
 <div class="space-y-6">
 
@@ -59,6 +57,4 @@
 
 </div>
 
-@unless ($embedded)
 </x-pages.index>
-@endunless

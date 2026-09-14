@@ -33,14 +33,6 @@ class ManagePbxSettings extends Component
     #[Url]
     public string $tab = 'agent';
 
-    /**
-     * When true, renders without its own <x-pages.index> page chrome so a
-     * host app can embed this component as one tab of a larger page (e.g.
-     * alongside host selection / activation) instead of it owning the whole
-     * route.
-     */
-    public bool $embedded = false;
-
     // ── Shared feedback banner ───────────────────────────────────────────
     public ?string $statusType = null; // success|error|warning
 
