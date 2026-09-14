@@ -1,12 +1,10 @@
 @props(['title' => null, 'subtitle' => null])
 
 {{--
-    Shared page shell for every Expert Statistics report/monitoring/AI page,
-    matching Filament's cluster sub-navigation pattern (a secondary nav
-    listing the cluster's own pages, rendered alongside the page content -
-    see https://filamentphp.com/docs/navigation/clusters, "start" position).
-    Deliberately excludes the free-standing Dashboard page, which isn't part
-    of this cluster.
+    Shared page shell for every Expert Statistics page, matching Filament's
+    cluster sub-navigation pattern (a secondary nav listing the cluster's
+    own pages, rendered alongside the page content - see
+    https://filamentphp.com/docs/navigation/clusters, "start" position).
 --}}
 <x-pages.index :title="$title" :subtitle="$subtitle">
     <div class="lg:flex lg:items-start lg:gap-8">
@@ -16,6 +14,11 @@
                     :title="__('expert-statistics::pbx.expert_statistics.home_nav_label')"
                     route="expert-stats.home"
                     icon="phosphor-house"
+                />
+                <x-menus.item
+                    :title="__('expert-statistics::pbx.expert_statistics.nav_dashboard')"
+                    path="/expert-stats/dashboard"
+                    icon="phosphor-chart-line"
                 />
                 <x-menus.item
                     :title="__('expert-statistics::pbx.expert_statistics.nav_group_my_numbers')"
