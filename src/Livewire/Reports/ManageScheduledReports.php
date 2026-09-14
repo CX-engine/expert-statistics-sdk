@@ -3,6 +3,7 @@
 namespace CXEngine\ExpertStatistics\Livewire\Reports;
 
 use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
+use CXEngine\ExpertStatistics\Concerns\HasConfirmation;
 use CXEngine\ExpertStatistics\Exceptions\NoActivePbxHostException;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use Illuminate\Contracts\View\View;
@@ -28,6 +29,7 @@ use Throwable;
 class ManageScheduledReports extends Component
 {
     use AuthorizesExpertStatisticsAccess;
+    use HasConfirmation;
 
     // ── Shared feedback banner ───────────────────────────────────────────────
     public ?string $statusType = null; // success|error|warning
@@ -60,7 +62,7 @@ class ManageScheduledReports extends Component
 
     public bool $showEditPanel = false;
 
-    public ?int $editingReportId = null;
+    public ?string $editingReportId = null;
 
     /** @var array<string, mixed> */
     public array $editForm = [
@@ -127,7 +129,7 @@ class ManageScheduledReports extends Component
         }
     }
 
-    public function deleteReport(int $id): void
+    public function deleteReport(string $id): void
     {
         try {
             $this->service()->deleteReport($id);
@@ -140,7 +142,7 @@ class ManageScheduledReports extends Component
 
     // ── Edit panel actions ────────────────────────────────────────────────────
 
-    public function openEditReport(int $id): void
+    public function openEditReport(string $id): void
     {
         $report = collect($this->reportRows)->firstWhere('id', $id);
         if ($report === null) {
@@ -265,7 +267,7 @@ class ManageScheduledReports extends Component
         ];
 
         try {
-            $this->service()->updateReport((int) $this->editingReportId, $payload);
+            $this->service()->updateReport((string) $this->editingReportId, $payload);
             $this->cancelEditReport();
             $this->loadReports();
             $this->flashSuccess('saved');

@@ -683,7 +683,7 @@ class ExpertStatisticsService
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    public function updateReport(int $id, array $data): array
+    public function updateReport(string $id, array $data): array
     {
         $host = $this->hostName();
 
@@ -697,7 +697,7 @@ class ExpertStatisticsService
     /**
      * @return array<string, mixed>
      */
-    public function deleteReport(int $id): array
+    public function deleteReport(string $id): array
     {
         $host = $this->hostName();
 

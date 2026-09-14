@@ -68,7 +68,8 @@
                     <tbody class="divide-y divide-gray-100 dark:divide-white/5 bg-white dark:bg-transparent">
                         @forelse ($rows as $row)
                             @php
-                                $rowId = (int) $row['id'];
+                                $rowId = (string) $row['id'];
+                                $rowIdJs = \Illuminate\Support\Js::from($rowId);
                                 $dns = $row['dns'] ?? '';
                                 $dnsList = ($dns && $dns !== '*') ? explode(',', $dns) : [];
                                 $groupName = $row['resource_group']['name'] ?? null;
@@ -120,21 +121,20 @@
                                 <td class="px-4 py-3.5 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ $row['repeat_pattern'] ?? '—' }}</td>
                                 <td class="px-4 py-3.5">
                                     <div class="flex items-center gap-1">
-                                        <button type="button" wire:click="openEditReport({{ $rowId }})"
+                                        <button type="button" wire:click="openEditReport({{ $rowIdJs }})"
                                             wire:loading.attr="disabled"
                                             wire:loading.class="opacity-60 cursor-wait"
-                                            wire:target="openEditReport({{ $rowId }})"
+                                            wire:target="openEditReport({{ $rowIdJs }})"
                                             title="{{ __('expert-statistics::pbx.reports.editTitle') }}"
                                             class="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-600 shadow-sm hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600 transition-colors dark:border-white/10 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-primary-900/30 dark:hover:text-primary-400">
-                                            <svg wire:loading wire:target="openEditReport({{ $rowId }})" class="animate-spin w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24">
+                                            <svg wire:loading wire:target="openEditReport({{ $rowIdJs }})" class="animate-spin w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24">
                                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                                             </svg>
-                                            <x-heroicon-m-pencil-square wire:loading.remove wire:target="openEditReport({{ $rowId }})" class="w-4 h-4" />
+                                            <x-heroicon-m-pencil-square wire:loading.remove wire:target="openEditReport({{ $rowIdJs }})" class="w-4 h-4" />
                                         </button>
                                         <button type="button"
-                                            wire:click="deleteReport({{ $rowId }})"
-                                            wire:confirm="{{ __('expert-statistics::pbx.reports.confirmDelete') }}"
+                                            @click="$wire.askConfirm({{ \Illuminate\Support\Js::from(__('expert-statistics::pbx.reports.delete')) }}, {{ \Illuminate\Support\Js::from(__('expert-statistics::pbx.reports.confirmDelete')) }}, 'deleteReport', [{{ $rowIdJs }}])"
                                             title="{{ __('expert-statistics::pbx.reports.delete') }}"
                                             class="inline-flex items-center rounded-md border border-gray-200 bg-white px-2 py-1 text-gray-600 shadow-sm hover:border-red-300 hover:bg-red-50 hover:text-red-600 transition-colors dark:border-white/10 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-red-900/30 dark:hover:text-red-400">
                                             <x-heroicon-m-trash class="w-4 h-4" />
@@ -363,6 +363,8 @@
             </div>
         </div>
     @endif
+
+    <x-expert-statistics::confirm-modal />
 
 </div>
 
