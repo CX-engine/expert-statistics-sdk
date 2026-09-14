@@ -7,6 +7,7 @@
         "php": "^8.2",
         "illuminate/support": "^11.0|^12.0",
         "livewire/livewire": "^3.0",
+        "filament/notifications": "^4.0",
         "cx-engine/expert-stats-api-sdk-php": "dev-main",
         "nesbot/carbon": "^2.72|^3.0"
     },

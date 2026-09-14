@@ -3,6 +3,7 @@
 namespace CXEngine\ExpertStatistics\Livewire\Reports;
 
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
+use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
@@ -157,9 +158,16 @@ class ShareReportModal extends Component
 
             app(ExpertStatisticsService::class)->createReport($payload);
 
-            $this->flash('success', $this->isDashboardMode()
-                ? ($this->isSchedule ? 'dashboards.report_scheduled' : 'dashboards.report_sent')
-                : ($this->isSchedule ? 'expert_statistics.report_scheduled' : 'expert_statistics.report_sent'));
+            // The modal closes immediately below, so the inline $statusMessage
+            // banner (used for the error path, where the modal stays open)
+            // would never be visible here - a Filament notification is used
+            // instead, since it survives the modal closing.
+            Notification::make()
+                ->title(__('expert-statistics::pbx.'.($this->isDashboardMode()
+                    ? ($this->isSchedule ? 'dashboards.report_scheduled' : 'dashboards.report_sent')
+                    : ($this->isSchedule ? 'expert_statistics.report_scheduled' : 'expert_statistics.report_sent'))))
+                ->success()
+                ->send();
 
             $this->isOpen = false;
         } catch (Throwable) {
