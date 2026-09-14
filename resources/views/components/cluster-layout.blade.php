@@ -54,7 +54,7 @@
                 </x-menus.item-dropdown>
 
                 <x-menus.item-dropdown
-                    :title="__('expert-statistics::pbx.expert_statistics.nav_group_agent_monitoring')"
+                    :title="__('expert-statistics::pbx.expert_statistics.nav_group_agent_monitoring_short')"
                     icon="phosphor-headset"
                     openPath="/expert-stats/agent-monitoring/*"
                 >

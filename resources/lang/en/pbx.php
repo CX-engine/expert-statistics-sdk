@@ -747,6 +747,10 @@ return [
 
         // Agent Monitoring navigation
         'nav_group_agent_monitoring' => 'Agent Monitoring',
+        // Shorter variant for the cluster sidebar nav item, where the full
+        // label wraps/crowds the icon + chevron - the Home page feature
+        // card keeps the full nav_group_agent_monitoring label above.
+        'nav_group_agent_monitoring_short' => 'Agents',
         'nav_realtime_status' => 'Real-time Status',
         'nav_agent_monitoring_live' => 'Live',
         'nav_agent_monitoring_status_breakdown' => 'Status breakdown',

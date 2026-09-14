@@ -746,6 +746,10 @@ return [
 
         // Navigation — Supervision des agents
         'nav_group_agent_monitoring' => 'Supervision des agents',
+        // Shorter variant for the cluster sidebar nav item, where the full
+        // label wraps/crowds the icon + chevron - the Home page feature
+        // card keeps the full nav_group_agent_monitoring label above.
+        'nav_group_agent_monitoring_short' => 'Agents',
         'nav_realtime_status' => 'Statut en temps réel',
         'nav_agent_monitoring_live' => 'En direct',
         'nav_agent_monitoring_status_breakdown' => 'Répartition des statuts',
