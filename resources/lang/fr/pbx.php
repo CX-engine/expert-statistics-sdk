@@ -32,6 +32,7 @@ return [
         // Onglets
         'tab' => [
             'pbx' => 'Hôte PBX',
+            'activeHost' => 'Hôte actif',
             'agent' => 'Agent',
             'queue' => 'File d\'attente',
             'reportTable' => 'Tableau de rapport',
@@ -169,6 +170,14 @@ return [
             'description' => 'Sélectionnez l\'hôte 3CX à utiliser pour les statistiques et la configuration.',
             'hostLabel' => 'Hôte',
             'noHosts' => 'Aucun hôte PBX disponible.',
+        ],
+
+        // Onglet hôte actif
+        'activeHost' => [
+            'title' => 'Hôte actif',
+            'description' => 'Choisissez l\'hôte lié utilisé par défaut pour les statistiques de ce client.',
+            'select' => 'Hôte actif',
+            'noHosts' => 'Aucun hôte actif n\'est encore lié à ce client.',
         ],
 
         // Onglet agent

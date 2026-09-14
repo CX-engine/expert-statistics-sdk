@@ -4,6 +4,7 @@ namespace CXEngine\ExpertStatistics\Livewire\Configuration;
 
 use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
 use CXEngine\ExpertStatistics\Concerns\ChecksExpertStatisticsModifyPermission;
+use CXEngine\ExpertStatistics\Contracts\ResolvesActivePbxHost;
 use CXEngine\ExpertStatistics\Exceptions\NoActivePbxHostException;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use Illuminate\Contracts\View\View;
@@ -44,6 +45,12 @@ class ManagePbxSettings extends Component
     public ?string $statusType = null; // success|error|warning
 
     public ?string $statusMessage = null;
+
+    // ── Active host tab ───────────────────────────────────────────────────
+    /** @var array<int, array{name: string, label: string, active: bool}> */
+    public array $availableHosts = [];
+
+    public ?string $selectedActiveHostName = null;
 
     // ── Agent tab ─────────────────────────────────────────────────────────
     /** @var array<string, mixed> */
@@ -261,6 +268,7 @@ class ManagePbxSettings extends Component
     private function loadTabData(): void
     {
         match ($this->tab) {
+            'active-host' => $this->loadActiveHosts(),
             'agent' => $this->loadAgentConfig(),
             'queue' => $this->loadQueueData(),
             'report-table' => $this->loadReportTableConfig(),
@@ -269,6 +277,28 @@ class ManagePbxSettings extends Component
             'wallboard' => $this->loadWallboards(),
             default => null,
         };
+    }
+
+    // ── Active host tab ───────────────────────────────────────────────────
+
+    private function loadActiveHosts(): void
+    {
+        $this->availableHosts = app(ResolvesActivePbxHost::class)->getAvailableHosts();
+        $active = collect($this->availableHosts)->firstWhere('active', true);
+        $this->selectedActiveHostName = $active['name'] ?? null;
+    }
+
+    public function selectActiveHost(): void
+    {
+        $this->ensureCanModify();
+
+        if ($this->selectedActiveHostName === null) {
+            return;
+        }
+
+        app(ResolvesActivePbxHost::class)->setActiveHost($this->selectedActiveHostName);
+        $this->loadActiveHosts();
+        $this->flashSuccess('config.saved');
     }
 
     private function service(): ExpertStatisticsService

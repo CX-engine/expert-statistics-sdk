@@ -6,6 +6,7 @@
     <div class="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1 overflow-x-auto">
         @php
             $tabs = [
+                'active-host' => ['label' => __('expert-statistics::pbx.config.tab.activeHost'), 'icon' => 'heroicon-m-server-stack'],
                 'agent' => ['label' => __('expert-statistics::pbx.config.tab.agent'), 'icon' => 'heroicon-m-user'],
                 'queue' => ['label' => __('expert-statistics::pbx.config.tab.queue'), 'icon' => 'heroicon-m-queue-list'],
                 'report-table' => ['label' => __('expert-statistics::pbx.config.tab.reportTable'), 'icon' => 'heroicon-m-table-cells'],
@@ -47,7 +48,9 @@
     @endif
 
     <div class="px-1">
-        @if ($tab === 'agent')
+        @if ($tab === 'active-host')
+            @include('expert-statistics::livewire.configuration._active-host')
+        @elseif ($tab === 'agent')
             @include('expert-statistics::livewire.configuration._agent')
         @elseif ($tab === 'queue')
             @include('expert-statistics::livewire.configuration._queue')

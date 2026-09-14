@@ -32,6 +32,7 @@ return [
         // Tabs
         'tab' => [
             'pbx' => 'PBX Host',
+            'activeHost' => 'Active Host',
             'agent' => 'Agent',
             'queue' => 'Queue',
             'reportTable' => 'Report Table',
@@ -169,6 +170,14 @@ return [
             'description' => 'Select the 3CX host to use for statistics and configuration.',
             'hostLabel' => 'Host',
             'noHosts' => 'No PBX hosts available.',
+        ],
+
+        // Active host tab
+        'activeHost' => [
+            'title' => 'Active Host',
+            'description' => 'Choose which linked host is used by default for this customer\'s statistics.',
+            'select' => 'Active host',
+            'noHosts' => 'No active hosts are linked to this customer yet.',
         ],
 
         // Agent tab
