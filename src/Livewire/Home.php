@@ -73,12 +73,6 @@ class Home extends Component
                     'route' => 'expert-stats.agent-monitoring.realtime-status',
                 ],
                 [
-                    'name' => __('expert-statistics::pbx.dashboards.scheduleReport'),
-                    'description' => __('expert-statistics::pbx.expert_statistics.home_feature_scheduled_reports_desc'),
-                    'icon' => 'heroicon-o-paper-airplane',
-                    'route' => 'expert-stats.reports.scheduled',
-                ],
-                [
                     'name' => __('expert-statistics::pbx.expert_statistics.nav_ai_insights'),
                     'description' => __('expert-statistics::pbx.expert_statistics.home_feature_ai_desc'),
                     'icon' => 'heroicon-o-sparkles',
