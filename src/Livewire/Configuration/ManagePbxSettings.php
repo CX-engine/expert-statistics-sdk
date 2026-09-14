@@ -2,7 +2,8 @@
 
 namespace CXEngine\ExpertStatistics\Livewire\Configuration;
 
-use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsModification;
+use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
+use CXEngine\ExpertStatistics\Concerns\ChecksExpertStatisticsModifyPermission;
 use CXEngine\ExpertStatistics\Exceptions\NoActivePbxHostException;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use Illuminate\Contracts\View\View;
@@ -21,14 +22,20 @@ use Throwable;
  * Deliberately does NOT use RequiresExpertStatisticsActivation: agent labels,
  * queue pre-answer times, report-table thresholds, AI alert settings, groups
  * and wallboards must stay configurable regardless of the host's trial/
- * subscription state — only AuthorizesExpertStatisticsModification (permission
- * gate) applies here. Unlike the free Dashboard, this page changes
- * configuration, so it requires the dedicated expert-statistics.modify
- * permission (or the broader wildcard) rather than plain view access.
+ * subscription state.
+ *
+ * Viewable by anyone with plain expert-statistics.view access
+ * (AuthorizesExpertStatisticsAccess) — a read-only client can browse every
+ * tab. Actually changing something requires expert-statistics.modify (or
+ * the broader wildcard): every method that persists a change calls
+ * ensureCanModify() first, and the Blade views hide/disable the
+ * save/create/delete controls for view-only users via canModify()
+ * (ChecksExpertStatisticsModifyPermission).
  */
 class ManagePbxSettings extends Component
 {
-    use AuthorizesExpertStatisticsModification;
+    use AuthorizesExpertStatisticsAccess;
+    use ChecksExpertStatisticsModifyPermission;
 
     #[Url]
     public string $tab = 'agent';
@@ -331,6 +338,8 @@ class ManagePbxSettings extends Component
 
     public function saveAgentConfig(): void
     {
+        $this->ensureCanModify();
+
         if ($this->activeHostName() === null) {
             $this->flashWarning('config.noHost');
 
@@ -421,6 +430,8 @@ class ManagePbxSettings extends Component
 
     public function saveQueueConfig(): void
     {
+        $this->ensureCanModify();
+
         if (empty($this->selectedQueues)) {
             $this->flashWarning('config.selectQueue');
 
@@ -454,6 +465,8 @@ class ManagePbxSettings extends Component
 
     public function deletePreanswerTime(int $id): void
     {
+        $this->ensureCanModify();
+
         try {
             $this->service()->bulkDeletePreanswerTimes([$id]);
             $this->selectedItems = array_values(array_filter($this->selectedItems, fn ($i) => $i !== $id));
@@ -466,6 +479,8 @@ class ManagePbxSettings extends Component
 
     public function bulkDeletePreanswerTimes(): void
     {
+        $this->ensureCanModify();
+
         if (empty($this->selectedItems)) {
             return;
         }
@@ -514,6 +529,8 @@ class ManagePbxSettings extends Component
 
     public function saveReportTableForm(): void
     {
+        $this->ensureCanModify();
+
         $hostname = $this->activeHostName();
         if ($hostname === null) {
             $this->flashWarning('config.noHost');
@@ -544,6 +561,8 @@ class ManagePbxSettings extends Component
 
     public function activateAll(string $section): void
     {
+        $this->ensureCanModify();
+
         foreach (['red', 'orange', 'yellow', 'green'] as $level) {
             $this->reportTableForm["{$section}_{$level}_active"] = true;
         }
@@ -551,6 +570,8 @@ class ManagePbxSettings extends Component
 
     public function deactivateAll(string $section): void
     {
+        $this->ensureCanModify();
+
         foreach (['red', 'orange', 'yellow', 'green'] as $level) {
             $this->reportTableForm["{$section}_{$level}_active"] = false;
         }
@@ -630,6 +651,8 @@ class ManagePbxSettings extends Component
 
     public function saveGroup(): void
     {
+        $this->ensureCanModify();
+
         if ($this->activeHostName() === null) {
             $this->flashWarning('config.groups.noHost');
 
@@ -663,6 +686,8 @@ class ManagePbxSettings extends Component
 
     public function deleteGroup(int $id): void
     {
+        $this->ensureCanModify();
+
         try {
             $this->service()->deleteResourceGroup($id);
             $this->groups = array_values(array_filter($this->groups, fn ($g) => $g['id'] !== $id));
@@ -743,6 +768,8 @@ class ManagePbxSettings extends Component
 
     public function saveAiAlertSettings(): void
     {
+        $this->ensureCanModify();
+
         if ($this->activeHostName() === null) {
             $this->flashWarning('config.noHost');
 
@@ -941,6 +968,8 @@ class ManagePbxSettings extends Component
 
     public function saveWallboard(): void
     {
+        $this->ensureCanModify();
+
         if ($this->activeHostName() === null) {
             $this->flashWarning('config.noHost');
 
@@ -986,6 +1015,8 @@ class ManagePbxSettings extends Component
 
     public function deleteWallboard(string $uuid): void
     {
+        $this->ensureCanModify();
+
         try {
             $this->service()->deleteWallboard($uuid);
             if ($this->selectedWallboardUuid === $uuid) {
@@ -1000,6 +1031,8 @@ class ManagePbxSettings extends Component
 
     public function revertWallboard(string $uuid): void
     {
+        $this->ensureCanModify();
+
         try {
             $this->service()->revertWallboard($uuid);
             $this->loadWallboards();
@@ -1012,6 +1045,8 @@ class ManagePbxSettings extends Component
 
     public function toggleWallboardActive(string $uuid): void
     {
+        $this->ensureCanModify();
+
         $wb = collect($this->wallboards)->firstWhere('uuid', $uuid);
         $active = ! (bool) ($wb['active'] ?? true);
 
@@ -1031,6 +1066,8 @@ class ManagePbxSettings extends Component
 
     public function buildWallboardWithAi(): void
     {
+        $this->ensureCanModify();
+
         if ($this->activeHostName() === null || trim($this->wallboardPrompt) === '') {
             return;
         }
@@ -1053,6 +1090,8 @@ class ManagePbxSettings extends Component
 
     public function saveAiWallboard(): void
     {
+        $this->ensureCanModify();
+
         if ($this->activeHostName() === null || $this->wallboardAiResult === null) {
             return;
         }

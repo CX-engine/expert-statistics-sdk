@@ -28,7 +28,7 @@
             @endforeach
         </div>
 
-        @if ($this->activeHostName() && ! $showGroupForm)
+        @if ($this->activeHostName() && ! $showGroupForm && $this->canModify())
             <button wire:click="openCreateGroupForm" type="button"
                 class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 px-3.5 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors">
                 <x-heroicon-m-plus class="h-4 w-4" />
@@ -205,16 +205,20 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-3.5">
-                                    <div class="flex items-center justify-end gap-1">
-                                        <button wire:click="openEditGroupForm({{ $group['id'] }})" type="button"
-                                            class="inline-flex items-center rounded-md border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-2 py-1 text-gray-600 dark:text-gray-400 shadow-sm hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-950/30 dark:hover:text-primary-400 transition-colors">
-                                            <x-heroicon-m-pencil-square class="w-4 h-4" />
-                                        </button>
-                                        <button wire:click="deleteGroup({{ $group['id'] }})" wire:confirm="{{ __('expert-statistics::pbx.config.groups.confirmDelete') }}" type="button"
-                                            class="inline-flex items-center rounded-md border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-2 py-1 text-gray-600 dark:text-gray-400 shadow-sm hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400 transition-colors">
-                                            <x-heroicon-m-trash class="w-4 h-4" />
-                                        </button>
-                                    </div>
+                                    @if ($this->canModify())
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button wire:click="openEditGroupForm({{ $group['id'] }})" type="button"
+                                                class="inline-flex items-center rounded-md border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-2 py-1 text-gray-600 dark:text-gray-400 shadow-sm hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-950/30 dark:hover:text-primary-400 transition-colors">
+                                                <x-heroicon-m-pencil-square class="w-4 h-4" />
+                                            </button>
+                                            <button wire:click="deleteGroup({{ $group['id'] }})" wire:confirm="{{ __('expert-statistics::pbx.config.groups.confirmDelete') }}" type="button"
+                                                class="inline-flex items-center rounded-md border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-2 py-1 text-gray-600 dark:text-gray-400 shadow-sm hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400 transition-colors">
+                                                <x-heroicon-m-trash class="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-gray-400 dark:text-gray-500">—</span>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

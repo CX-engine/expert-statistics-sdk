@@ -3,6 +3,7 @@
 namespace CXEngine\ExpertStatistics\Livewire\Reports;
 
 use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
+use CXEngine\ExpertStatistics\Concerns\ChecksExpertStatisticsModifyPermission;
 use CXEngine\ExpertStatistics\Concerns\HasConfirmation;
 use CXEngine\ExpertStatistics\Exceptions\NoActivePbxHostException;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
@@ -24,11 +25,14 @@ use Throwable;
  *
  * A normal permission-gated page (AuthorizesExpertStatisticsAccess only, same as
  * ManagePbxSettings) — not gated behind RequiresExpertStatisticsActivation like the
- * detailed report pages.
+ * detailed report pages. Viewable by anyone with plain expert-statistics.view
+ * access; editing or deleting a report requires expert-statistics.modify (see
+ * canModify()/ensureCanModify(), ChecksExpertStatisticsModifyPermission).
  */
 class ManageScheduledReports extends Component
 {
     use AuthorizesExpertStatisticsAccess;
+    use ChecksExpertStatisticsModifyPermission;
     use HasConfirmation;
 
     // ── Shared feedback banner ───────────────────────────────────────────────
@@ -131,6 +135,8 @@ class ManageScheduledReports extends Component
 
     public function deleteReport(string $id): void
     {
+        $this->ensureCanModify();
+
         try {
             $this->service()->deleteReport($id);
             $this->loadReports();
@@ -144,6 +150,8 @@ class ManageScheduledReports extends Component
 
     public function openEditReport(string $id): void
     {
+        $this->ensureCanModify();
+
         $report = collect($this->reportRows)->firstWhere('id', $id);
         if ($report === null) {
             $this->flashWarning('notFound');
@@ -251,6 +259,8 @@ class ManageScheduledReports extends Component
 
     public function saveEditReport(): void
     {
+        $this->ensureCanModify();
+
         if (empty($this->editForm['emails'])) {
             $this->flashWarning('noRecipients');
 

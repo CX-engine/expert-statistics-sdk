@@ -27,6 +27,13 @@
         @endforeach
     </div>
 
+    {{-- Read-only notice --}}
+    @unless ($this->canModify())
+        <div class="rounded-xl border px-4 py-3 text-sm bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400">
+            {{ __('expert-statistics::pbx.config.readOnly') }}
+        </div>
+    @endunless
+
     {{-- Feedback banner --}}
     @if ($statusMessage)
         <div @class([

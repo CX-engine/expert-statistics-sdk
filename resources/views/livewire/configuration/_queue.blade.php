@@ -33,8 +33,8 @@
             @endif
 
             <div class="flex justify-end">
-                <button wire:click="saveQueueConfig" type="button"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors">
+                <button wire:click="saveQueueConfig" type="button" @disabled(! $this->canModify())
+                    class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                     {{ __('expert-statistics::pbx.config.save') }}
                 </button>
             </div>
@@ -58,7 +58,7 @@
         </div>
 
         {{-- Bulk delete --}}
-        @if (count($selectedItems) > 0)
+        @if ($this->canModify() && count($selectedItems) > 0)
             <div class="flex justify-end mb-2">
                 <button wire:click="bulkDeletePreanswerTimes" wire:confirm="{{ __('expert-statistics::pbx.config.queue.confirmBulkDelete') }}" type="button"
                     class="inline-flex items-center gap-1.5 rounded-lg bg-red-600 hover:bg-red-700 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors">
@@ -105,8 +105,8 @@
                                 <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $record['preanswer_seconds'] }}s</td>
                                 <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $record['created_by'] ?? '—' }}</td>
                                 <td class="px-4 py-3">
-                                    <button wire:click="deletePreanswerTime({{ $record['id'] }})" wire:confirm="{{ __('expert-statistics::pbx.config.queue.confirmDelete') }}" type="button"
-                                        class="rounded-md px-2 py-1 text-sm font-semibold ring-1 ring-inset ring-gray-300 dark:ring-gray-600 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-500 hover:ring-red-400 transition-colors">
+                                    <button wire:click="deletePreanswerTime({{ $record['id'] }})" wire:confirm="{{ __('expert-statistics::pbx.config.queue.confirmDelete') }}" type="button" @disabled(! $this->canModify())
+                                        class="rounded-md px-2 py-1 text-sm font-semibold ring-1 ring-inset ring-gray-300 dark:ring-gray-600 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-500 hover:ring-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                         <x-heroicon-m-trash class="w-4 h-4" />
                                     </button>
                                 </td>
@@ -158,8 +158,8 @@
                                 </td>
                                 <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $record['created_by'] ?? '—' }}</td>
                                 <td class="px-4 py-3">
-                                    <button wire:click="deletePreanswerTime({{ $record['id'] }})" wire:confirm="{{ __('expert-statistics::pbx.config.queue.confirmDelete') }}" type="button"
-                                        class="rounded-md px-2 py-1 text-sm font-semibold ring-1 ring-inset ring-gray-300 dark:ring-gray-600 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-500 hover:ring-red-400 transition-colors">
+                                    <button wire:click="deletePreanswerTime({{ $record['id'] }})" wire:confirm="{{ __('expert-statistics::pbx.config.queue.confirmDelete') }}" type="button" @disabled(! $this->canModify())
+                                        class="rounded-md px-2 py-1 text-sm font-semibold ring-1 ring-inset ring-gray-300 dark:ring-gray-600 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-500 hover:ring-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                         <x-heroicon-m-trash class="w-4 h-4" />
                                     </button>
                                 </td>

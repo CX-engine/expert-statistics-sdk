@@ -67,10 +67,10 @@
                     <div class="flex items-center justify-between mb-4">
                         <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $meta['title'] }}</p>
                         <div class="flex gap-3 text-xs">
-                            <button wire:click="activateAll('{{ $section }}')" type="button" class="text-green-600 hover:underline">
+                            <button wire:click="activateAll('{{ $section }}')" type="button" @disabled(! $this->canModify()) class="text-green-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed">
                                 {{ __('expert-statistics::pbx.config.reportTable.activateAll') }}
                             </button>
-                            <button wire:click="deactivateAll('{{ $section }}')" type="button" class="text-red-600 hover:underline">
+                            <button wire:click="deactivateAll('{{ $section }}')" type="button" @disabled(! $this->canModify()) class="text-red-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed">
                                 {{ __('expert-statistics::pbx.config.reportTable.deactivateAll') }}
                             </button>
                         </div>
@@ -99,8 +99,8 @@
     </div>
 
     <div class="flex justify-end">
-        <button wire:click="saveReportTableForm" type="button"
-            class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors">
+        <button wire:click="saveReportTableForm" type="button" @disabled(! $this->canModify())
+            class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {{ __('expert-statistics::pbx.config.save') }}
         </button>
     </div>

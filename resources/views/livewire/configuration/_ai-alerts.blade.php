@@ -118,8 +118,8 @@
     </div>
 
     <div class="flex justify-end">
-        <button wire:click="saveAiAlertSettings" type="button"
-            class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors">
+        <button wire:click="saveAiAlertSettings" type="button" @disabled(! $this->canModify())
+            class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {{ __('expert-statistics::pbx.config.save') }}
         </button>
     </div>

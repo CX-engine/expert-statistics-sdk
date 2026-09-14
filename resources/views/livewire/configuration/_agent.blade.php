@@ -16,8 +16,8 @@
                     class="block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 dark:text-white shadow-sm text-sm focus:ring-primary-500 focus:border-primary-500" />
             </div>
             <div class="flex justify-end pt-2">
-                <button wire:click="saveAgentConfig" type="button"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors">
+                <button wire:click="saveAgentConfig" type="button" @disabled(! $this->canModify())
+                    class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                     {{ __('expert-statistics::pbx.config.save') }}
                 </button>
             </div>

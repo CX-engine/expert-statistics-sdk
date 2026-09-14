@@ -155,6 +155,7 @@ return [
         'search' => 'Search…',
         'prev' => 'Previous',
         'next' => 'Next',
+        'readOnly' => 'You have read-only access. Contact an administrator to change these settings.',
         'noHost' => 'No PBX host configured. Please select one on the PBX Host tab.',
         'selectQueue' => 'Please select at least one queue.',
         'saved' => 'Settings saved.',

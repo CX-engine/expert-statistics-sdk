@@ -141,7 +141,7 @@
                 </div>
 
                 <div class="flex justify-end">
-                    <button wire:click="buildWallboardWithAi" wire:loading.attr="disabled" wire:target="buildWallboardWithAi" type="button"
+                    <button wire:click="buildWallboardWithAi" wire:loading.attr="disabled" wire:target="buildWallboardWithAi" type="button" @disabled(! $this->canModify())
                         class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors disabled:opacity-60">
                         <x-heroicon-m-sparkles class="w-4 h-4" wire:loading.remove wire:target="buildWallboardWithAi" />
                         <span wire:loading.remove wire:target="buildWallboardWithAi">{{ __('expert-statistics::pbx.config.wallboard.aiGenerate') }}</span>
@@ -185,8 +185,8 @@
                                     <x-heroicon-m-x-mark class="h-3.5 w-3.5" />
                                     {{ __('expert-statistics::pbx.config.wallboard.discard') }}
                                 </button>
-                                <button wire:click="saveAiWallboard" type="button"
-                                    class="inline-flex items-center gap-1 rounded-lg bg-primary-600 hover:bg-primary-700 px-3 py-1.5 text-xs font-medium text-white shadow-sm">
+                                <button wire:click="saveAiWallboard" type="button" @disabled(! $this->canModify())
+                                    class="inline-flex items-center gap-1 rounded-lg bg-primary-600 hover:bg-primary-700 px-3 py-1.5 text-xs font-medium text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
                                     <x-heroicon-m-check class="h-3.5 w-3.5" />
                                     {{ __('expert-statistics::pbx.config.wallboard.saveAi') }}
                                 </button>
@@ -309,8 +309,8 @@
                         class="inline-flex items-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         {{ __('expert-statistics::pbx.config.wallboard.cancel') }}
                     </button>
-                    <button wire:click="saveWallboard" type="button"
-                        class="inline-flex items-center rounded-lg bg-primary-600 hover:bg-primary-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors">
+                    <button wire:click="saveWallboard" type="button" @disabled(! $this->canModify())
+                        class="inline-flex items-center rounded-lg bg-primary-600 hover:bg-primary-700 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         {{ __('expert-statistics::pbx.config.save') }}
                     </button>
                 </div>
@@ -324,7 +324,7 @@
                     {{ __('expert-statistics::pbx.config.wallboard.listTitle') }}
                     <span class="text-xs font-normal text-gray-400 dark:text-gray-500">({{ count($wallboards) }}/{{ $wallboardMax }})</span>
                 </h2>
-                <button wire:click="openCreateWallboardForm" type="button" @disabled(count($wallboards) >= $wallboardMax)
+                <button wire:click="openCreateWallboardForm" type="button" @disabled(! $this->canModify() || count($wallboards) >= $wallboardMax)
                     class="inline-flex items-center gap-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                     {{ __('expert-statistics::pbx.config.wallboard.new') }}
                 </button>
@@ -354,10 +354,11 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <button wire:click="toggleWallboardActive('{{ $wb['uuid'] }}')" type="button" @class([
+                                    <button wire:click="toggleWallboardActive('{{ $wb['uuid'] }}')" type="button" @disabled(! $this->canModify()) @class([
                                         'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold',
                                         'bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200' => $wb['active'] ?? false,
                                         'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400' => ! ($wb['active'] ?? false),
+                                        'disabled:cursor-not-allowed disabled:opacity-75' => ! $this->canModify(),
                                     ])>
                                         {{ ($wb['active'] ?? false) ? __('expert-statistics::pbx.config.wallboard.active') : __('expert-statistics::pbx.config.wallboard.inactive') }}
                                     </button>
@@ -385,15 +386,17 @@
                                         </button>
                                         <a href="{{ $this->shareUrl($wb['share_key'] ?? '') }}" target="_blank"
                                             class="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-800">{{ __('expert-statistics::pbx.config.wallboard.open') }}</a>
-                                        <button wire:click="openEditWallboard('{{ $wb['uuid'] }}')" type="button" class="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-800">
-                                            {{ __('expert-statistics::pbx.config.wallboard.edit') }}
-                                        </button>
-                                        @if ($wb['is_default'] ?? false)
-                                            <button wire:click="revertWallboard('{{ $wb['uuid'] }}')" wire:confirm="{{ __('expert-statistics::pbx.config.wallboard.confirmRevert') }}" type="button"
-                                                class="text-xs font-semibold text-amber-600 hover:text-amber-700">{{ __('expert-statistics::pbx.config.wallboard.revert') }}</button>
-                                        @else
-                                            <button wire:click="deleteWallboard('{{ $wb['uuid'] }}')" wire:confirm="{{ __('expert-statistics::pbx.config.wallboard.confirmDelete') }}" type="button"
-                                                class="text-xs font-semibold text-red-600 hover:text-red-700">{{ __('expert-statistics::pbx.config.delete') }}</button>
+                                        @if ($this->canModify())
+                                            <button wire:click="openEditWallboard('{{ $wb['uuid'] }}')" type="button" class="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-800">
+                                                {{ __('expert-statistics::pbx.config.wallboard.edit') }}
+                                            </button>
+                                            @if ($wb['is_default'] ?? false)
+                                                <button wire:click="revertWallboard('{{ $wb['uuid'] }}')" wire:confirm="{{ __('expert-statistics::pbx.config.wallboard.confirmRevert') }}" type="button"
+                                                    class="text-xs font-semibold text-amber-600 hover:text-amber-700">{{ __('expert-statistics::pbx.config.wallboard.revert') }}</button>
+                                            @else
+                                                <button wire:click="deleteWallboard('{{ $wb['uuid'] }}')" wire:confirm="{{ __('expert-statistics::pbx.config.wallboard.confirmDelete') }}" type="button"
+                                                    class="text-xs font-semibold text-red-600 hover:text-red-700">{{ __('expert-statistics::pbx.config.delete') }}</button>
+                                            @endif
                                         @endif
                                     </div>
                                 </td>

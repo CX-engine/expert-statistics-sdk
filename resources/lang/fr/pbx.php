@@ -155,6 +155,7 @@ return [
         'search' => 'Rechercher…',
         'prev' => 'Précédent',
         'next' => 'Suivant',
+        'readOnly' => 'Vous disposez d\'un accès en lecture seule. Contactez un administrateur pour modifier ces paramètres.',
         'noHost' => 'Aucun hôte PBX configuré. Veuillez en sélectionner un dans l\'onglet Hôte PBX.',
         'selectQueue' => 'Veuillez sélectionner au moins une file d\'attente.',
         'saved' => 'Paramètres enregistrés.',
