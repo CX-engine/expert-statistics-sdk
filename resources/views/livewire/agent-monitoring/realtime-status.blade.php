@@ -4,7 +4,7 @@
     $rows = $this->getTableData();
 @endphp
 
-<x-pages.index
+<x-expert-statistics::cluster-layout
     :title="__('expert-statistics::pbx.expert_statistics.nav_realtime_status')"
     :subtitle="__('expert-statistics::pbx.expert_statistics.agent_monitoring_subtitle')"
 >
@@ -491,4 +491,4 @@
 
 </div>
 
-</x-pages.index>
+</x-expert-statistics::cluster-layout>

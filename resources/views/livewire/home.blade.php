@@ -1,4 +1,4 @@
-<x-pages.index
+<x-expert-statistics::cluster-layout
   :title="__('expert-statistics::pbx.expert_statistics.home_title')"
   :subtitle="__('expert-statistics::pbx.expert_statistics.home_subtitle', ['count' => count($this->getFeatures())])"
 >
@@ -17,4 +17,4 @@
       </div>
     @endforeach
   </dl>
-</x-pages.index>
+</x-expert-statistics::cluster-layout>

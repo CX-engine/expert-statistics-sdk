@@ -1,4 +1,4 @@
-<x-pages.index
+<x-expert-statistics::cluster-layout
     :title="__('expert-statistics::pbx.expert_statistics.ai_chat_title')"
     :subtitle="__('expert-statistics::pbx.expert_statistics.home_feature_ai_desc')"
 >
@@ -320,4 +320,4 @@
     });
 </script>
 
-</x-pages.index>
+</x-expert-statistics::cluster-layout>

@@ -693,6 +693,7 @@ return [
         // Agent Monitoring navigation
         // Sub-navigation items
         'nav_dashboard' => 'Dashboard',
+        'nav_report' => 'Report',
         'nav_kpi' => 'KPI',
         'nav_origins' => 'Origins',
 

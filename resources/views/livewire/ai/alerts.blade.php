@@ -22,7 +22,7 @@
     ];
 @endphp
 
-<x-pages.index :title="__('expert-statistics::pbx.expert_statistics.nav_ai_alerts')">
+<x-expert-statistics::cluster-layout :title="__('expert-statistics::pbx.expert_statistics.nav_ai_alerts')">
 
 <div class="space-y-5">
 
@@ -285,4 +285,4 @@
 
 </div>
 
-</x-pages.index>
+</x-expert-statistics::cluster-layout>

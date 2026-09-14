@@ -692,6 +692,7 @@ return [
 
         // Sous-navigation
         'nav_dashboard' => 'Tableau de Bord',
+        'nav_report' => 'Rapport',
         'nav_kpi' => 'KPI',
         'nav_origins' => 'Origines',
 

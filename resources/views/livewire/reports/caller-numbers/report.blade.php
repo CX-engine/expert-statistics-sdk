@@ -1,4 +1,4 @@
-<x-pages.index :title="__('expert-statistics::pbx.expert_statistics.caller_numbers_title')">
+<x-expert-statistics::cluster-layout :title="__('expert-statistics::pbx.expert_statistics.caller_numbers_title')">
 
 <div class="space-y-5">
     <div class="flex justify-between items-center">
@@ -399,4 +399,4 @@
 
 </div>
 
-</x-pages.index>
+</x-expert-statistics::cluster-layout>

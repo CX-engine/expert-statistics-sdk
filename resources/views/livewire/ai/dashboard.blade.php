@@ -1,4 +1,4 @@
-<x-pages.index
+<x-expert-statistics::cluster-layout
     :title="__('expert-statistics::pbx.expert_statistics.nav_ai_insights')"
     :subtitle="__('expert-statistics::pbx.expert_statistics.ai_dashboard_subtitle')"
 >
@@ -426,4 +426,4 @@
 
 </div>
 
-</x-pages.index>
+</x-expert-statistics::cluster-layout>
