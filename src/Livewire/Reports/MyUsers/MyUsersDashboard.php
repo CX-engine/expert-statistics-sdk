@@ -13,11 +13,11 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 /**
- * Ported from bluerocktelclients' MyUsersDashboard Filament page plus the
- * App\Filament\Widgets\Pbx\InboundCallsWidget / TrendKpiWidget /
- * TrendChartsWidget it dispatched a `filterChanged` event to. This package has
- * no Filament widget bus, so each former widget's loadData() logic is folded
- * into a dedicated load*() method below, called together from loadData().
+ * Ported from bluerocktelclients' MyUsersDashboard Filament page's
+ * App\Filament\Widgets\Pbx\InboundCallsWidget, which it dispatched a
+ * `filterChanged` event to. The 12-month trend panel (originally also part
+ * of that page, via TrendKpiWidget/TrendChartsWidget) only exists on the
+ * main CXEngine\ExpertStatistics\Livewire\Dashboard component in this port.
  */
 class MyUsersDashboard extends Component
 {
@@ -26,10 +26,6 @@ class MyUsersDashboard extends Component
     use HasPbxElementSelector;
 
     public string $urlType = 'extension';
-
-    /** Which panel is displayed: 'period' (inbound KPIs/chart) or 'trend' (12-month trend). */
-    #[Url]
-    public string $tab = 'period';
 
     #[Url]
     public string $selectedPeriod = 'lastMonth';
@@ -64,15 +60,6 @@ class MyUsersDashboard extends Component
     /** @var array<string, mixed> */
     public array $chartByDay = [];
 
-    /** @var array<string, mixed> */
-    public array $trends = [];
-
-    /** @var array<string, mixed> */
-    public array $answeredChart = [];
-
-    /** @var array<string, mixed> */
-    public array $waitTimeChart = [];
-
     public function mount(): void
     {
         $this->restoreExpertStatsFilters();
@@ -88,11 +75,6 @@ class MyUsersDashboard extends Component
         $this->applyPeriod($value);
         $this->saveExpertStatsPeriod();
         $this->loadData();
-    }
-
-    public function switchTab(string $tab): void
-    {
-        $this->tab = $tab;
     }
 
     public function setChartView(string $view): void
@@ -120,18 +102,12 @@ class MyUsersDashboard extends Component
     public function loadData(): void
     {
         $this->loadInbound();
-        $this->loadTrends();
-    }
-
-    public function formatDuration(mixed $seconds): string
-    {
-        return PbxDataProcessor::formatSecsToMinSec((int) $seconds);
     }
 
     /**
-     * Reshape the period tab's answered/unanswered chart series (categories +
-     * series) into the {period, answered, unanswered, total, rate, avg_wait}
-     * row shape expected by the reusable charts.kpi-chart component.
+     * Reshape the answered/unanswered chart series (categories + series) into
+     * the {period, answered, unanswered, total, rate, avg_wait} row shape
+     * expected by the reusable charts.kpi-chart component.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -157,41 +133,6 @@ class MyUsersDashboard extends Component
                 'total' => $total,
                 'rate' => $total > 0 ? round($ans / $total * 100, 1) : 0,
                 'avg_wait' => 0,
-            ];
-        }
-
-        return $rows;
-    }
-
-    /**
-     * Reshape the trend tab's 12-month answered/wait-time chart series into
-     * the {period, answered, unanswered, total, rate, avg_wait} row shape
-     * expected by the reusable charts.kpi-chart component.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    public function getTrendRows(): array
-    {
-        $labels = $this->answeredChart['labels'] ?? [];
-        $series = collect($this->answeredChart['series'] ?? []);
-        $totalCalls = $series->firstWhere('name', 'Total Calls')['data'] ?? [];
-        $answeredCalls = $series->firstWhere('name', 'Answered Calls')['data'] ?? [];
-        $rates = $series->firstWhere('name', 'Answer Rate %')['data'] ?? [];
-        $waitTimes = $this->waitTimeChart['series'][0]['data'] ?? [];
-
-        $rows = [];
-
-        foreach ($labels as $i => $label) {
-            $total = (int) ($totalCalls[$i] ?? 0);
-            $answered = (int) ($answeredCalls[$i] ?? 0);
-
-            $rows[] = [
-                'period' => (string) $label,
-                'answered' => $answered,
-                'unanswered' => max(0, $total - $answered),
-                'total' => $total,
-                'rate' => $rates[$i] ?? 0,
-                'avg_wait' => (int) round((float) ($waitTimes[$i] ?? 0)),
             ];
         }
 
@@ -240,29 +181,6 @@ class MyUsersDashboard extends Component
             $this->kpis = [];
             $this->chartByDay = [];
             $this->chartByHour = [];
-        }
-    }
-
-    private function loadTrends(): void
-    {
-        try {
-            $query = [
-                'start_time' => $this->startTime,
-                'end_time' => $this->endTime,
-                'exclude_closed_hours' => $this->excludeClosedHours ? 1 : 0,
-            ];
-
-            $raw = app(ExpertStatisticsService::class)->getTrendMonthly($query);
-
-            $this->trends = PbxDataProcessor::calcTrends($raw);
-
-            $charts = PbxDataProcessor::buildTrendCharts($raw);
-            $this->answeredChart = $charts['answered'];
-            $this->waitTimeChart = $charts['waitTime'];
-        } catch (\Throwable) {
-            $this->trends = [];
-            $this->answeredChart = [];
-            $this->waitTimeChart = [];
         }
     }
 

@@ -3,6 +3,7 @@
 namespace CXEngine\ExpertStatistics\Livewire\Ai;
 
 use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
+use CXEngine\ExpertStatistics\Concerns\RequiresExpertStatisticsActivation;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -18,6 +19,7 @@ use Livewire\Component;
 class AiFloatingChat extends Component
 {
     use AuthorizesExpertStatisticsAccess;
+    use RequiresExpertStatisticsActivation;
 
     public bool $isOpen = false;
 

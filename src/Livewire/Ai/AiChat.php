@@ -3,6 +3,7 @@
 namespace CXEngine\ExpertStatistics\Livewire\Ai;
 
 use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
+use CXEngine\ExpertStatistics\Concerns\RequiresExpertStatisticsActivation;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -16,6 +17,7 @@ use Livewire\Component;
 class AiChat extends Component
 {
     use AuthorizesExpertStatisticsAccess;
+    use RequiresExpertStatisticsActivation;
 
     /** @var array<int, array<string, mixed>> */
     public array $conversations = [];

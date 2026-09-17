@@ -5,6 +5,7 @@ namespace CXEngine\ExpertStatistics\Livewire\AgentMonitoring;
 use Carbon\Carbon;
 use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
 use CXEngine\ExpertStatistics\Concerns\HasPbxElementSelector;
+use CXEngine\ExpertStatistics\Concerns\RequiresExpertStatisticsActivation;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use CXEngine\ExpertStatistics\Support\PbxDataProcessor;
 use Illuminate\Contracts\View\View;
@@ -22,6 +23,7 @@ use Livewire\Component;
 class StatusBreakdown extends Component
 {
     use AuthorizesExpertStatisticsAccess;
+    use RequiresExpertStatisticsActivation;
     use HasPbxElementSelector;
 
     public string $urlType = 'extension';

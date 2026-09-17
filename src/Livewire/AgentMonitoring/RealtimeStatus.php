@@ -3,6 +3,7 @@
 namespace CXEngine\ExpertStatistics\Livewire\AgentMonitoring;
 
 use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
+use CXEngine\ExpertStatistics\Concerns\RequiresExpertStatisticsActivation;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use CXEngine\ExpertStatistics\Support\PbxDataProcessor;
 use Illuminate\Contracts\View\View;
@@ -18,6 +19,7 @@ use Livewire\Component;
 class RealtimeStatus extends Component
 {
     use AuthorizesExpertStatisticsAccess;
+    use RequiresExpertStatisticsActivation;
 
     public string $searchTerm = '';
 

@@ -32,9 +32,6 @@ class MyQueuesDashboard extends Component
     public string $urlType = 'queue';
 
     #[Url]
-    public string $tab = 'period';
-
-    #[Url]
     public string $selectedPeriod = 'lastMonth';
 
     #[Url]
@@ -56,7 +53,7 @@ class MyQueuesDashboard extends Component
 
     public bool $excludeClosedHours = false;
 
-    /** hour|day view toggle for the period tab's inbound calls chart */
+    /** hour|day view toggle for the inbound calls chart */
     public string $chartView = 'hour';
 
     /** @var array<string, mixed> */
@@ -67,15 +64,6 @@ class MyQueuesDashboard extends Component
 
     /** @var array<string, mixed> */
     public array $chartByDay = [];
-
-    /** @var array<string, mixed> */
-    public array $trends = [];
-
-    /** @var array<string, mixed> */
-    public array $answeredChart = [];
-
-    /** @var array<string, mixed> */
-    public array $waitTimeChart = [];
 
     public function mount(): void
     {
@@ -92,11 +80,6 @@ class MyQueuesDashboard extends Component
         $this->applyPeriod($value);
         $this->saveExpertStatsPeriod();
         $this->loadData();
-    }
-
-    public function switchTab(string $tab): void
-    {
-        $this->tab = $tab;
     }
 
     public function setChartView(string $view): void
@@ -131,8 +114,6 @@ class MyQueuesDashboard extends Component
     public function loadData(): void
     {
         $this->loadInboundCalls();
-        $this->loadTrendKpi();
-        $this->loadTrendCharts();
     }
 
     public function loadInboundCalls(): void
@@ -175,41 +156,6 @@ class MyQueuesDashboard extends Component
         }
     }
 
-    public function loadTrendKpi(): void
-    {
-        try {
-            $query = [
-                'start_time' => $this->startTime,
-                'end_time' => $this->endTime,
-                'exclude_closed_hours' => $this->excludeClosedHours ? 1 : 0,
-            ];
-
-            $raw = app(ExpertStatisticsService::class)->getTrendMonthly($query);
-            $this->trends = PbxDataProcessor::calcTrends($raw);
-        } catch (\Throwable) {
-            $this->trends = [];
-        }
-    }
-
-    public function loadTrendCharts(): void
-    {
-        try {
-            $query = [
-                'start_time' => $this->startTime,
-                'end_time' => $this->endTime,
-                'exclude_closed_hours' => $this->excludeClosedHours ? 1 : 0,
-            ];
-
-            $raw = app(ExpertStatisticsService::class)->getTrendMonthly($query);
-            $charts = PbxDataProcessor::buildTrendCharts($raw);
-            $this->answeredChart = $charts['answered'];
-            $this->waitTimeChart = $charts['waitTime'];
-        } catch (\Throwable) {
-            $this->answeredChart = [];
-            $this->waitTimeChart = [];
-        }
-    }
-
     /**
      * Reshape the period tab's answered/unanswered chart series (categories +
      * series) into the {period, answered, unanswered, total, rate, avg_wait}
@@ -243,46 +189,6 @@ class MyQueuesDashboard extends Component
         }
 
         return $rows;
-    }
-
-    /**
-     * Reshape the trend tab's 12-month answered/wait-time chart series into
-     * the {period, answered, unanswered, total, rate, avg_wait} row shape
-     * expected by the reusable charts.kpi-chart component.
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    public function getTrendRows(): array
-    {
-        $labels = $this->answeredChart['labels'] ?? [];
-        $series = collect($this->answeredChart['series'] ?? []);
-        $totalCalls = $series->firstWhere('name', 'Total Calls')['data'] ?? [];
-        $answeredCalls = $series->firstWhere('name', 'Answered Calls')['data'] ?? [];
-        $rates = $series->firstWhere('name', 'Answer Rate %')['data'] ?? [];
-        $waitTimes = $this->waitTimeChart['series'][0]['data'] ?? [];
-
-        $rows = [];
-
-        foreach ($labels as $i => $label) {
-            $total = (int) ($totalCalls[$i] ?? 0);
-            $answered = (int) ($answeredCalls[$i] ?? 0);
-
-            $rows[] = [
-                'period' => (string) $label,
-                'answered' => $answered,
-                'unanswered' => max(0, $total - $answered),
-                'total' => $total,
-                'rate' => $rates[$i] ?? 0,
-                'avg_wait' => (int) round((float) ($waitTimes[$i] ?? 0)),
-            ];
-        }
-
-        return $rows;
-    }
-
-    public function formatDuration(mixed $seconds): string
-    {
-        return PbxDataProcessor::formatSecsToMinSec((int) $seconds);
     }
 
     public function render(): View
