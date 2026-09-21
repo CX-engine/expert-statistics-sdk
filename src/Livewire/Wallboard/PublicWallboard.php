@@ -4,6 +4,7 @@ namespace CXEngine\ExpertStatistics\Livewire\Wallboard;
 
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Saloon\Exceptions\Request\Statuses\ForbiddenException;
 use Throwable;
@@ -19,7 +20,15 @@ use Throwable;
  *
  * The source polled via vanilla-JS fetch()/setInterval; this uses
  * Livewire's own wire:poll instead, calling refresh() on each tick.
+ *
+ * Livewire always wraps a routed full-page component in the host app's
+ * default layout (config('livewire.layout')), even when the component's
+ * own view is already a complete <html> document - that layout is where
+ * the host app's authenticated nav/sidebar lives, which has no business
+ * wrapping a chromeless public display. #[Layout] points at a pass-through
+ * view so the wallboard's own markup is the only <html> in the response.
  */
+#[Layout('expert-statistics::livewire.wallboard.layout')]
 class PublicWallboard extends Component
 {
     public string $key = '';
