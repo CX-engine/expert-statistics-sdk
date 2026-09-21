@@ -105,7 +105,7 @@
                             {{-- Caller number search + chips --}}
                             <div class="relative">
                                 <input type="text" wire:model.live.debounce.400ms="callerSearch"
-                                    placeholder="{{ __('expert-statistics::pbx.cfa_caller_search_placeholder') }}" autocomplete="off"
+                                    placeholder="{{ __('expert-statistics::pbx.expert_statistics.cfa_caller_search_placeholder') }}" autocomplete="off"
                                     class="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500" />
                                 @if (count($callerSearchResults) > 0)
                                     <ul class="absolute z-20 mt-1 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg max-h-48 overflow-y-auto">
@@ -119,7 +119,7 @@
                                 @elseif (\strlen($callerSearch) >= 2 && count($callerSearchResults) === 0)
                                     <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ __('expert-statistics::pbx.config.queue.noQueues') }}</p>
                                 @else
-                                    <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ __('expert-statistics::pbx.cfa_caller_title') }} (min. 2 chars)</p>
+                                    <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">{{ __('expert-statistics::pbx.expert_statistics.cfa_caller_title') }} (min. 2 chars)</p>
                                 @endif
                             </div>
 
