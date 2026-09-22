@@ -120,7 +120,7 @@
                         @else
                             @foreach ($catalog as $group)
                                 <p class="mb-1 mt-4 px-1 text-xs font-medium uppercase tracking-wide text-gray-400 first:mt-0">
-                                    {{ $group['group'] }}
+                                    {{ $this->groupTitle($group['group']) }}
                                 </p>
                                 <ul class="mb-2 space-y-0.5">
                                     @foreach ($group['sections'] as $section)
@@ -134,7 +134,7 @@
                                                     'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800' => ! $activeSection || $activeSection['id'] !== $section['id'],
                                                 ])
                                             >
-                                                {{ $section['title'] }}
+                                                {{ $this->sectionTitle($section['id']) }}
                                             </button>
                                         </li>
                                     @endforeach
@@ -155,9 +155,9 @@
                         <div class="mb-4 sm:hidden">
                             <select wire:model.live="activeSectionId" class="w-full rounded-md border-gray-300 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
                                 @foreach ($catalog as $group)
-                                    <optgroup label="{{ $group['group'] }}">
+                                    <optgroup label="{{ $this->groupTitle($group['group']) }}">
                                         @foreach ($group['sections'] as $section)
-                                            <option value="{{ $section['id'] }}">{{ $section['title'] }}</option>
+                                            <option value="{{ $section['id'] }}">{{ $this->sectionTitle($section['id']) }}</option>
                                         @endforeach
                                     </optgroup>
                                 @endforeach

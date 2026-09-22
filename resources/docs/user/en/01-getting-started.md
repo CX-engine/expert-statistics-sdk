@@ -11,7 +11,7 @@ and AI-generated insights, so you can see how your queues, users and numbers are
    **Configuration → PBX Settings → Active Host** (see [PBX Settings](10-pbx-settings.md)).
 2. **Expert Statistics activated for that host.** Activation (free trial or paid subscription) is
    something an administrator turns on per host — see
-   [Permissions & Access](02-permissions.md#activation-a-separate-switch). If you open any report
+   [Permissions & Access](02-permissions.md#layer-2--activation-a-separate-switch). If you open any report
    page and see *"This host doesn't have Expert Statistics activated yet"*, that's what's missing —
    ask an administrator to activate it.
 3. **Permission to view or edit Expert Statistics**, granted by your administrator. See

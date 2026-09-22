@@ -6,12 +6,14 @@
 
 use CXEngine\ExpertStatistics\Support\DocsCatalog;
 
-it('references a Markdown file that actually exists on disk for every section', function () {
-    foreach (DocsCatalog::sections() as $section) {
-        $path = __DIR__.'/../../../resources/docs/user/'.$section['file'];
+it('references a Markdown file that actually exists on disk, in every supported locale, for every section', function () {
+    foreach (DocsCatalog::LOCALES as $locale) {
+        foreach (DocsCatalog::sections() as $section) {
+            $path = __DIR__.'/../../../resources/docs/user/'.$locale.'/'.$section['file'];
 
-        expect(is_file($path))->toBeTrue("Missing doc file for section '{$section['id']}': {$section['file']}")
-            ->and(trim((string) file_get_contents($path)))->not->toBe('');
+            expect(is_file($path))->toBeTrue("Missing [{$locale}] doc file for section '{$section['id']}': {$section['file']}")
+                ->and(trim((string) file_get_contents($path)))->not->toBe('');
+        }
     }
 });
 
@@ -25,7 +27,6 @@ it('finds a section by id', function () {
     $section = DocsCatalog::find('dashboard');
 
     expect($section)->not->toBeNull()
-        ->and($section['title'])->toBe('Dashboard')
         ->and($section['file'])->toBe('03-dashboard.md');
 });
 
@@ -48,4 +49,27 @@ it('every section belongs to exactly one group', function () {
     $sectionsFromGroups = array_merge(...array_column(DocsCatalog::catalog(), 'sections'));
 
     expect(count($sectionsFromGroups))->toBe(count(DocsCatalog::sections()));
+});
+
+it('falls back to English for an unsupported locale', function () {
+    expect(DocsCatalog::resolveLocale('de'))->toBe('en')
+        ->and(DocsCatalog::resolveLocale(null))->toBe('en')
+        ->and(DocsCatalog::resolveLocale('fr'))->toBe('fr')
+        ->and(DocsCatalog::resolveLocale('en'))->toBe('en');
+});
+
+it('has a translation label, in every supported locale, for every group and section', function () {
+    foreach (DocsCatalog::LOCALES as $locale) {
+        $lang = require __DIR__."/../../../resources/lang/{$locale}/pbx.php";
+
+        foreach (DocsCatalog::catalog() as $group) {
+            expect($lang['docs']['groups'][$group['group']] ?? null)
+                ->not->toBeNull("Missing [{$locale}] docs.groups.{$group['group']} translation");
+
+            foreach ($group['sections'] as $section) {
+                expect($lang['docs']['sections'][$section['id']] ?? null)
+                    ->not->toBeNull("Missing [{$locale}] docs.sections.{$section['id']} translation");
+            }
+        }
+    }
 });

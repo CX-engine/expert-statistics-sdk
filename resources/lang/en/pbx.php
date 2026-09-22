@@ -995,5 +995,29 @@ return [
         'search_placeholder' => 'Search the docs…',
         'search_results' => 'Search results',
         'no_results' => 'No matching articles.',
+
+        'groups' => [
+            'start_here' => 'Start here',
+            'dashboards_reports' => 'Dashboards & reports',
+            'configuration' => 'Configuration',
+            'reference' => 'Reference',
+        ],
+
+        'sections' => [
+            'getting-started' => 'Getting Started',
+            'permissions' => 'Permissions & Access',
+            'dashboard' => 'Dashboard',
+            'my-queues' => 'My Queues',
+            'my-users' => 'My Users',
+            'numbers' => 'My Numbers & Caller Numbers',
+            'call-analysis' => 'Call Analyser',
+            'agent-monitoring' => 'Agent Monitoring',
+            'ai-insights' => 'AI Insights',
+            'pbx-settings' => 'PBX Settings',
+            'scheduled-reports' => 'Scheduled Reports & Sharing',
+            'wallboard' => 'Wallboard & Live Data',
+            'glossary' => 'KPI & Report Glossary',
+            'faq' => 'FAQ & Troubleshooting',
+        ],
     ],
 ];

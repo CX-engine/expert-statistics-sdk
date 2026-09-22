@@ -3,7 +3,7 @@
 **"I see a message saying this host doesn't have Expert Statistics activated yet."**
 Activation is separate from your view/edit permissions — it's a per-host switch (trial or paid
 subscription) that only an administrator can turn on. Ask your administrator to activate it from
-the PBX Activation page. See [Permissions & Access](02-permissions.md#activation-a-separate-switch).
+the PBX Activation page. See [Permissions & Access](02-permissions.md#layer-2--activation-a-separate-switch).
 
 **"A Save/Create/Delete button is greyed out or missing."**
 You have `expert-statistics.view` (read-only) but not `expert-statistics.modify`. Everything is

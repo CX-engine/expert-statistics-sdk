@@ -993,5 +993,29 @@ return [
         'search_placeholder' => 'Rechercher dans la documentation…',
         'search_results' => 'Résultats de recherche',
         'no_results' => 'Aucun article ne correspond.',
+
+        'groups' => [
+            'start_here' => 'Pour commencer',
+            'dashboards_reports' => 'Tableaux de bord & rapports',
+            'configuration' => 'Configuration',
+            'reference' => 'Référence',
+        ],
+
+        'sections' => [
+            'getting-started' => 'Premiers pas',
+            'permissions' => 'Permissions & accès',
+            'dashboard' => 'Tableau de bord',
+            'my-queues' => 'Mes files d\'attente',
+            'my-users' => 'Mes utilisateurs',
+            'numbers' => 'Mes numéros & numéros appelants',
+            'call-analysis' => 'Analyseur d\'appels',
+            'agent-monitoring' => 'Supervision des agents',
+            'ai-insights' => 'Analyses IA',
+            'pbx-settings' => 'Paramètres PBX',
+            'scheduled-reports' => 'Rapports programmés & partage',
+            'wallboard' => 'Wallboard & données en direct',
+            'glossary' => 'Glossaire des KPI & rapports',
+            'faq' => 'FAQ & dépannage',
+        ],
     ],
 ];
