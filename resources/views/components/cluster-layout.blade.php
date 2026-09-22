@@ -85,4 +85,8 @@
             {{ $slot }}
         </div>
     </div>
+
+    @if (config('expert-statistics-api.docs_panel_enabled', true))
+        <livewire:expert-statistics.docs.helper-panel />
+    @endif
 </x-pages.index>

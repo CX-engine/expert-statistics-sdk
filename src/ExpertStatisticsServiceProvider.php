@@ -12,6 +12,7 @@ use CXEngine\ExpertStatistics\Livewire\Ai\AiFloatingChat;
 use CXEngine\ExpertStatistics\Livewire\CallAnalysis\CallAnalysis;
 use CXEngine\ExpertStatistics\Livewire\Configuration\ManagePbxSettings;
 use CXEngine\ExpertStatistics\Livewire\Dashboard;
+use CXEngine\ExpertStatistics\Livewire\Docs\DocsHelperPanel;
 use CXEngine\ExpertStatistics\Livewire\Home;
 use CXEngine\ExpertStatistics\Livewire\Reports\CallerNumbers\CallerNumbersReport;
 use CXEngine\ExpertStatistics\Livewire\Reports\ManageScheduledReports;
@@ -106,6 +107,8 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
             Livewire::component('expert-statistics.ai.dashboard', AiDashboard::class);
             Livewire::component('expert-statistics.ai.alerts', AiAlerts::class);
             Livewire::component('expert-statistics.ai.floating-chat', AiFloatingChat::class);
+
+            Livewire::component('expert-statistics.docs.helper-panel', DocsHelperPanel::class);
         }
     }
 }

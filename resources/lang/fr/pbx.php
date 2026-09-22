@@ -985,4 +985,13 @@ return [
             'Taux d\'abandon aujourd\'hui ?',
         ],
     ],
+
+    'docs' => [
+        'button_label' => 'Aide',
+        'panel_title' => 'Documentation',
+        'close' => 'Fermer',
+        'search_placeholder' => 'Rechercher dans la documentation…',
+        'search_results' => 'Résultats de recherche',
+        'no_results' => 'Aucun article ne correspond.',
+    ],
 ];

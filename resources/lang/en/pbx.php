@@ -987,4 +987,13 @@ return [
         ],
 
     ],
+
+    'docs' => [
+        'button_label' => 'Docs',
+        'panel_title' => 'Documentation',
+        'close' => 'Close',
+        'search_placeholder' => 'Search the docs…',
+        'search_results' => 'Search results',
+        'no_results' => 'No matching articles.',
+    ],
 ];

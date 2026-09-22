@@ -65,4 +65,15 @@ return [
         'expert-statistics.modify',
         'expert-statistics.*',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Documentation help panel
+    |--------------------------------------------------------------------------
+    |
+    | Toggles the "Documentation" slide-over panel (Livewire\Docs\DocsHelperPanel)
+    | included on every Expert Statistics page. Renders the Markdown guide
+    | shipped in resources/docs/user/*.md - see CXEngine\ExpertStatistics\Support\DocsCatalog.
+    */
+    'docs_panel_enabled' => (bool) env('EXPERT_STATISTICS_DOCS_PANEL_ENABLED', true),
 ];
