@@ -45,7 +45,7 @@
     </button>
 
     {{-- Overlay + slide-over panel --}}
-    <div class="pointer-events-none fixed inset-0 z-50" :class="{ 'pointer-events-auto': open }">
+    <div class="fixed inset-0 z-50" :class="open ? 'pointer-events-auto' : 'pointer-events-none'">
         <div
             x-show="open"
             x-transition.opacity
