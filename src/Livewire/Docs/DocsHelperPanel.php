@@ -24,22 +24,17 @@ use Livewire\Component;
  * (app()->getLocale(), falling back to English - see DocsCatalog::resolveLocale()),
  * same as every other Expert Statistics page.
  *
- * Owns two modes sharing one panel shell: "browse" (this class) and "ask"
- * (nested Livewire\Docs\DocsAssistantChat, only shown when
- * config('expert-statistics-api.docs_assistant.enabled') is true). Kept as
- * one entry point rather than a second floating button, to avoid stacking
- * FABs alongside the existing (dormant) Livewire\Ai\AiFloatingChat.
- *
- * Deliberately unrelated to Livewire\Ai\AiChat / AiFloatingChat, which
- * answer questions about the user's call *data*, not about how to use the
- * UI - DocsAssistantChat never touches ExpertStatisticsService and never
- * persists anything, see that class's own docblock.
+ * Floating trigger sits bottom-left. The "Ask AI" assistant
+ * (Livewire\Docs\DocsAssistantChat) is a deliberately separate floating
+ * bubble (bottom-right), not a tab in here - see that class's own docblock.
+ * The two are still coordinated: when the assistant suggests a doc section
+ * that has no dedicated app page to link to, it dispatches
+ * 'docs-assistant.show-section', which this panel listens for below to open
+ * itself on that section.
  */
 class DocsHelperPanel extends Component
 {
     public bool $open = false;
-
-    public string $mode = 'browse';
 
     public ?string $activeSectionId = null;
 
@@ -62,16 +57,6 @@ class DocsHelperPanel extends Component
         $this->search = '';
     }
 
-    public function showBrowse(): void
-    {
-        $this->mode = 'browse';
-    }
-
-    public function showAsk(): void
-    {
-        $this->mode = 'ask';
-    }
-
     public function select(string $sectionId): void
     {
         if (DocsCatalog::find($sectionId) !== null) {
@@ -81,15 +66,14 @@ class DocsHelperPanel extends Component
     }
 
     /**
-     * The docs assistant chat (nested component) asks to jump back to the
-     * Browse tab on a specific section, e.g. after suggesting a doc page
-     * that has no dedicated app route to link to directly.
+     * The docs assistant chat (a separate component) asks to jump to a
+     * specific section, e.g. after suggesting a doc page that has no
+     * dedicated app route to link to directly.
      */
     #[On('docs-assistant.show-section')]
     public function showSuggestedSection(string $sectionId): void
     {
         $this->select($sectionId);
-        $this->showBrowse();
         $this->open = true;
     }
 
@@ -100,12 +84,6 @@ class DocsHelperPanel extends Component
     public function catalog(): array
     {
         return DocsCatalog::catalog();
-    }
-
-    #[Computed]
-    public function assistantEnabled(): bool
-    {
-        return (bool) config('expert-statistics-api.docs_assistant.enabled', false);
     }
 
     #[Computed]

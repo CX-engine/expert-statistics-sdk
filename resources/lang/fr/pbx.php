@@ -993,8 +993,6 @@ return [
         'search_placeholder' => 'Rechercher dans la documentation…',
         'search_results' => 'Résultats de recherche',
         'no_results' => 'Aucun article ne correspond.',
-        'tab_browse' => 'Parcourir',
-        'tab_ask' => 'Demander à l\'IA',
 
         'groups' => [
             'start_here' => 'Pour commencer',
@@ -1022,6 +1020,9 @@ return [
     ],
 
     'docs_assistant' => [
+        'button_label' => 'Demander à l\'IA',
+        'panel_title' => 'Demander à l\'IA',
+        'close' => 'Fermer',
         'disclaimer' => 'Cet assistant répond uniquement aux questions sur l\'utilisation d\'Expert Statistics — il ne peut ni voir vos données d\'appels ni générer de rapports pour vous.',
         'welcome' => 'Demandez-moi comment utiliser Expert Statistics — où trouver quelque chose, comment fonctionne une fonctionnalité, ce que fait un paramètre.',
         'input_placeholder' => 'Posez une question…',

@@ -2,11 +2,12 @@
 
 ## What's built (as of this note)
 
-The "Ask AI" tab inside the Documentation panel (`Livewire\Docs\DocsHelperPanel`, mode toggle
-Browse/Ask) is a working, read-only Q&A assistant:
+The "Ask AI" floating chat bubble (bottom-right, next to the Documentation panel's own bottom-left
+bubble) is a working, read-only Q&A assistant:
 
-- `Livewire\Docs\DocsAssistantChat` — the chat UI, nested inside the Documentation panel rather
-  than a second floating button. No persistence: `$messages` lives only in the component's own
+- `Livewire\Docs\DocsAssistantChat` — the chat UI, its own independent floating bubble (deliberately
+  *not* merged into the Documentation panel - the two are separate bubbles that happen to
+  coordinate one-way, see below). No persistence: `$messages` lives only in the component's own
   in-memory state for the current page session (see that class's docblock for the three hard
   boundaries it was built with).
 - `Contracts\AnswersDocsQuestions` — the responder contract, letting a host app swap the

@@ -17,9 +17,18 @@ function fakeAnswer(?string $sectionId = null): StructuredResponseFake
     ]);
 }
 
-it('starts with no messages', function () {
+it('starts closed with no messages', function () {
     Livewire::test(DocsAssistantChat::class)
+        ->assertSet('open', false)
         ->assertSet('messages', []);
+});
+
+it('opens and closes independently of the Documentation panel', function () {
+    Livewire::test(DocsAssistantChat::class)
+        ->call('openPanel')
+        ->assertSet('open', true)
+        ->call('closePanel')
+        ->assertSet('open', false);
 });
 
 it('does nothing for a blank question', function () {
@@ -108,9 +117,11 @@ describe('suggestedUrl / goToSuggestion', function () {
             ->assertRedirect(route('expert-stats.dashboard'));
     });
 
-    it('asks the parent panel to switch to Browse mode when there is no route to link to', function () {
+    it('closes itself and asks the Documentation panel to open on the section, when there is no route to link to', function () {
         Livewire::test(DocsAssistantChat::class)
+            ->call('openPanel')
             ->call('goToSuggestion', 'permissions')
+            ->assertSet('open', false)
             ->assertDispatched('docs-assistant.show-section', sectionId: 'permissions');
     });
 

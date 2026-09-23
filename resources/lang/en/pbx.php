@@ -995,8 +995,6 @@ return [
         'search_placeholder' => 'Search the docs…',
         'search_results' => 'Search results',
         'no_results' => 'No matching articles.',
-        'tab_browse' => 'Browse',
-        'tab_ask' => 'Ask AI',
 
         'groups' => [
             'start_here' => 'Start here',
@@ -1024,6 +1022,9 @@ return [
     ],
 
     'docs_assistant' => [
+        'button_label' => 'Ask AI',
+        'panel_title' => 'Ask AI',
+        'close' => 'Close',
         'disclaimer' => 'This assistant only answers questions about using Expert Statistics — it can\'t see your call data or generate reports for you.',
         'welcome' => 'Ask me how to use Expert Statistics — where to find something, how a feature works, what a setting does.',
         'input_placeholder' => 'Ask a question…',

@@ -70,4 +70,7 @@
     @if (config('expert-statistics-api.docs_panel_enabled', true))
         <livewire:expert-statistics.docs.helper-panel />
     @endif
+    @if (config('expert-statistics-api.docs_assistant.enabled', false))
+        <livewire:expert-statistics.docs.assistant-chat />
+    @endif
 </x-pages.index>

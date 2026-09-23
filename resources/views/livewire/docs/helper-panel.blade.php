@@ -74,49 +74,16 @@
                             {{ __('expert-statistics::pbx.docs.panel_title') }}
                         </h2>
                     </div>
-                    <div class="flex items-center gap-3">
-                        @if ($this->assistantEnabled)
-                            <div class="flex rounded-full bg-gray-100 p-0.5 text-sm dark:bg-gray-800">
-                                <button
-                                    type="button"
-                                    wire:click="showBrowse"
-                                    @class([
-                                        'rounded-full px-3 py-1 transition',
-                                        'bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white' => $mode === 'browse',
-                                        'text-gray-500 dark:text-gray-400' => $mode !== 'browse',
-                                    ])
-                                >
-                                    {{ __('expert-statistics::pbx.docs.tab_browse') }}
-                                </button>
-                                <button
-                                    type="button"
-                                    wire:click="showAsk"
-                                    @class([
-                                        'rounded-full px-3 py-1 transition',
-                                        'bg-white text-gray-900 shadow dark:bg-gray-700 dark:text-white' => $mode === 'ask',
-                                        'text-gray-500 dark:text-gray-400' => $mode !== 'ask',
-                                    ])
-                                >
-                                    {{ __('expert-statistics::pbx.docs.tab_ask') }}
-                                </button>
-                            </div>
-                        @endif
-                        <button
-                            type="button"
-                            @click="open = false"
-                            class="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-                        >
-                            <x-heroicon-o-x-mark class="h-5 w-5" />
-                            <span class="sr-only">{{ __('expert-statistics::pbx.docs.close') }}</span>
-                        </button>
-                    </div>
+                    <button
+                        type="button"
+                        @click="open = false"
+                        class="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+                    >
+                        <x-heroicon-o-x-mark class="h-5 w-5" />
+                        <span class="sr-only">{{ __('expert-statistics::pbx.docs.close') }}</span>
+                    </button>
                 </div>
 
-                @if ($mode === 'ask' && $this->assistantEnabled)
-                    <div class="min-h-0 flex-1" wire:key="docs-assistant-chat-wrapper">
-                        <livewire:expert-statistics.docs.assistant-chat wire:key="docs-assistant-chat" />
-                    </div>
-                @else
                 <div class="flex min-h-0 flex-1">
                     {{-- Table of contents --}}
                     <nav class="hidden w-64 shrink-0 overflow-y-auto border-r border-gray-200 p-4 sm:block dark:border-gray-700">
@@ -204,7 +171,6 @@
                         @endif
                     </div>
                 </div>
-                @endif
             </div>
         </div>
     </div>

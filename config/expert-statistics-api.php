@@ -82,9 +82,9 @@ return [
     | Docs assistant (AI chat, "how do I..." / "where do I find...")
     |--------------------------------------------------------------------------
     |
-    | A separate "Ask AI" mode inside the Documentation panel
-    | (Livewire\Docs\DocsAssistantChat, backed by
-    | Contracts\AnswersDocsQuestions => Services\PrismDocsAssistantResponder).
+    | A separate "Ask AI" floating chat bubble (bottom-right, next to the
+    | Documentation panel's own bottom-left bubble) - Livewire\Docs\DocsAssistantChat,
+    | backed by Contracts\AnswersDocsQuestions => Services\PrismDocsAssistantResponder.
     | Only ever grounded in resources/docs/user/*.md - it never queries
     | ExpertStatisticsService, never sees call data, and never persists a
     | conversation (in-memory only, for the current page session). Disabled

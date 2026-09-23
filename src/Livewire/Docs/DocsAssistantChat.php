@@ -10,11 +10,16 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Component;
 
 /**
- * "Ask AI" chat mode nested inside the Documentation panel
- * (Livewire\Docs\DocsHelperPanel). Answers "how do I use this feature" /
- * "where do I find that" questions, grounded only in the Markdown docs
- * (Contracts\AnswersDocsQuestions => Services\PrismDocsAssistantResponder
+ * "Ask AI" floating chat bubble (bottom-right), a deliberately separate
+ * floating button from the "Documentation" panel (Livewire\Docs\DocsHelperPanel,
+ * bottom-left) rather than a tab inside it. Answers "how do I use this
+ * feature" / "where do I find that" questions, grounded only in the
+ * Markdown docs (Contracts\AnswersDocsQuestions => Services\PrismDocsAssistantResponder
  * by default).
+ *
+ * Coordinates with DocsHelperPanel one-way: when a suggested doc section has
+ * no dedicated app route to link to, this dispatches 'docs-assistant.show-section'
+ * so that panel opens itself on that section - see goToSuggestion().
  *
  * Three hard boundaries, by design, not by convention:
  * - No storage: $messages lives only in this component's own public state
@@ -33,12 +38,24 @@ use Livewire\Component;
  */
 class DocsAssistantChat extends Component
 {
+    public bool $open = false;
+
     /**
      * @var array<int, array{role: 'user'|'assistant', content: string, suggestedSectionId?: string|null}>
      */
     public array $messages = [];
 
     public string $question = '';
+
+    public function openPanel(): void
+    {
+        $this->open = true;
+    }
+
+    public function closePanel(): void
+    {
+        $this->open = false;
+    }
 
     public function ask(): void
     {
@@ -110,8 +127,9 @@ class DocsAssistantChat extends Component
             return;
         }
 
-        // No dedicated page for this section - ask the parent panel
-        // (DocsHelperPanel) to switch to Browse mode on it instead.
+        // No dedicated page for this section - ask the Documentation panel
+        // (a separate component/bubble) to open itself on it instead.
+        $this->open = false;
         $this->dispatch('docs-assistant.show-section', sectionId: $sectionId);
     }
 
