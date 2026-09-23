@@ -4,9 +4,9 @@ Three AI-powered pages, all grounded in your own PBX host's actual call/queue/ag
 generic chatbot knowledge.
 
 > Note: this "AI Insights" module (Chat / Dashboard / Alerts) answers **questions about your call
-> data** ("how many calls did we lose last week?"). It's a different feature from the documentation
-> assistant described in this help panel, which answers questions about **how to use Expert
-> Statistics itself**.
+> data** ("how many calls did we lose last week?"). It's a different feature from the **Ask AI**
+> tab in this same Documentation panel (next to Browse), which answers questions about **how to
+> use Expert Statistics itself** and can't see your call data at all.
 
 ## AI Chat
 

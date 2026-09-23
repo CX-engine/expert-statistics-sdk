@@ -1,65 +1,53 @@
-# Plan: AI Documentation Assistant (floating chat) — not yet built
+# AI Documentation Assistant — status & next steps
 
-This is a groundwork note, not an implementation. Nothing described here exists in code yet — it's
-recorded so a future session can build it without re-deriving the design from scratch.
+## What's built (as of this note)
 
-## What this is (and isn't)
+The "Ask AI" tab inside the Documentation panel (`Livewire\Docs\DocsHelperPanel`, mode toggle
+Browse/Ask) is a working, read-only Q&A assistant:
 
-A future floating chat button (FAB), separate from the module's existing **AI Chat**
-(`src/Livewire/Ai/AiChat.php`) and **AI Floating Chat** (`src/Livewire/Ai/AiFloatingChat.php`)
-components. Those answer questions **about the user's call data** ("how many calls did we lose last
-week?"), grounded in the backend's `ai/chat` endpoint for the active PBX host.
+- `Livewire\Docs\DocsAssistantChat` — the chat UI, nested inside the Documentation panel rather
+  than a second floating button. No persistence: `$messages` lives only in the component's own
+  in-memory state for the current page session (see that class's docblock for the three hard
+  boundaries it was built with).
+- `Contracts\AnswersDocsQuestions` — the responder contract, letting a host app swap the
+  implementation without touching the Livewire component.
+- `Services\PrismDocsAssistantResponder` — the default implementation. Retrieves the most relevant
+  doc sections via `Support\DocsSearch` (plain lexical term-overlap scoring, no embeddings/vector
+  store), feeds only that excerpt text to an LLM via Prism (`config('expert-statistics-api.docs_assistant')`
+  — provider/model, disabled by default), and asks for a grounded plain-text answer plus an
+  optional `suggested_section_id` chosen only from the real catalog.
+- Enforced architecturally, not just by convention (see `tests/Architecture/DocsAssistantArchTest.php`):
+  neither class references `ExpertStatisticsService`, `DB`, `Cache`, or `Session` at all — it is not
+  possible for this assistant to answer a data question or persist a conversation, regardless of
+  what the LLM is asked to do.
 
-This new assistant answers a different category of question entirely: **"how do I use Expert
-Statistics?" / "where do I find X?"** — navigation and how-to help, grounded in the documentation
-written for this module (`resources/docs/user/*.md`, rendered in-app via the
-`DocsHelperPanel` component — see that component's own doc comment for the render pipeline). It
-should never call the stats API and never see call data. Keep the two chat features visually and
-architecturally distinct so users don't confuse "ask about my calls" with "ask how this page works."
+This deliberately answers a different category of question than the module's existing **AI Chat**
+(`src/Livewire/Ai/AiChat.php`) / **AI Floating Chat** (`src/Livewire/Ai/AiFloatingChat.php`), which
+answer questions **about the user's call data** ("how many calls did we lose last week?"), grounded
+in the backend's `ai/chat` endpoint. This assistant answers **"how do I use Expert Statistics?" /
+"where do I find X?"** — navigation and how-to help, grounded only in `resources/docs/user/*.md`.
+`AiFloatingChat` is unrelated and still dormant (not referenced in the host app) — its FAB/expand
+visual structure was a useful reference when designing the chat bubbles, nothing more; don't wire
+this assistant through it or its route (`expert-stats.ai.chat`).
 
-## Why not just extend `AiFloatingChat`
+## Explicitly not built (next step, when asked for)
 
-`AiFloatingChat` already exists in this package but — per a code search done while building the
-Documentation Helper panel — is not referenced anywhere in the host app (`bluerocktel-cx`); it's
-dormant. Its FAB/expand/tabs/message-bubble structure is a reasonable **visual** reference to copy
-from, but its purpose (data Q&A) and its backend call (`ExpertStatisticsService::sendAiChatMessage()`)
-are wrong for this feature — don't wire this new assistant through it or its route
-(`expert-stats.ai.chat`).
+Everything above is read-only: the assistant can only ever *talk about* creating a report, creating
+a resource group, or changing the active host — it has no way to actually do any of those things.
+Making it able to requires a real, separate design pass before any code goes here, not a quiet
+capability creep into `PrismDocsAssistantResponder`:
 
-## Proposed shape
-
-- **Component**: `src/Livewire/Docs/DocsAssistantChat.php` (new, separate from `Ai/*`), rendering a
-  FAB in the opposite screen corner from `AiFloatingChat`'s `fixed bottom-6 right-6` (e.g.
-  `bottom-6 left-6`) so the two can coexist without overlapping once `AiFloatingChat` is eventually
-  wired up too.
-- **Responder contract**: a small interface, e.g. `Contracts\AnswersDocsQuestions`, with one method
-  along the lines of `answer(string $question, ?string $currentRouteName): DocsAssistantAnswer`
-  (a DTO with `answer: string`, `sources: array<sectionId>`, `suggestedRouteName: ?string`). This
-  indirection lets the first implementation be simple keyword/section matching against the
-  `DocsCatalog` (see below), with a real LLM-backed implementation swapped in later without
-  touching the Livewire component.
-- **First (non-AI) implementation**: score each doc section in `DocsCatalog::sections()` by keyword
-  overlap with the question (a cheap RAG-lite: no embeddings, just term matching against section
-  titles + a short excerpt), return the best-matching section's content plus its route (if the
-  section maps to a page — see `DocsCatalog`'s route-context mapping, already built for the help
-  panel's auto-open behaviour) as `suggestedRouteName`. This alone would satisfy "answer questions
-  and redirect to the right page" without any external AI call.
-- **Real AI implementation** (later): given this codebase already has a Mistral-backed AI stack on
-  the backend (`expert-stats`'s `MistralKeyPoolService`, `AiChatController`) and this app already
-  uses Prism elsewhere per `bluerocktel-cx`'s own conventions, either route would work — feed the
-  matched doc section(s) as context alongside the user's question (retrieval-augmented, not
-  fine-tuning) rather than sending the entire doc set on every request.
-- **Config**: a new top-level key in `config/expert-statistics-api.php`, e.g.
-  `'docs_assistant' => ['enabled' => env('EXPERT_STATISTICS_DOCS_ASSISTANT_ENABLED', false), ...]`,
-  matching the existing `env()`-backed, commented-block convention in that file. Ship it disabled by
-  default until an implementation actually backs it.
-- **Translations**: a new `docs_assistant.*` group in `resources/lang/{en,fr}/pbx.php`, matching the
-  existing `ai_widget_*` naming pattern already used for `AiFloatingChat`'s strings.
-
-## Explicitly deferred
-
-- No Livewire component, route, or service class for this exists yet — do not half-build the FAB
-  without a working responder behind it (an empty/non-functional floating button is worse than no
-  button).
-- No decision has been made on LLM provider/cost for the "real AI implementation" step — that's a
-  product/budget call for whoever picks this up, not an engineering default to assume.
+- An explicit **tool-calling** layer (Prism supports `withTools()`) - e.g. a `create_resource_group`
+  tool wrapping `ExpertStatisticsService`'s existing group-management calls, a
+  `set_active_host` tool wrapping `ResolvesActivePbxHost::setActiveHost()`, a
+  `schedule_report` tool wrapping the same path `ShareReportModal` uses.
+- Every such tool **must** check `expert-statistics.modify` (the same permission
+  `ChecksExpertStatisticsModifyPermission` already gates manual edits behind) before acting - a
+  view-only user asking the assistant to "create a group for me" must be refused exactly like the
+  manual UI refuses them, not routed around that check via the chat.
+- This is a materially different trust boundary than today's read-only assistant (which cannot
+  mutate anything no matter what it's asked), so it deserves its own confirmation step in the UI
+  (e.g. "I'll create a group named X with these members - confirm?") rather than acting silently on
+  a single message.
+- No decision has been made on which actions to expose first, or the confirmation UX - that's a
+  product call for whoever picks this up.

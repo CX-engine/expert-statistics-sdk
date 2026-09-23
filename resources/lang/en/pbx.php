@@ -995,6 +995,8 @@ return [
         'search_placeholder' => 'Search the docs…',
         'search_results' => 'Search results',
         'no_results' => 'No matching articles.',
+        'tab_browse' => 'Browse',
+        'tab_ask' => 'Ask AI',
 
         'groups' => [
             'start_here' => 'Start here',
@@ -1018,6 +1020,21 @@ return [
             'wallboard' => 'Wallboard & Live Data',
             'glossary' => 'KPI & Report Glossary',
             'faq' => 'FAQ & Troubleshooting',
+        ],
+    ],
+
+    'docs_assistant' => [
+        'disclaimer' => 'This assistant only answers questions about using Expert Statistics — it can\'t see your call data or generate reports for you.',
+        'welcome' => 'Ask me how to use Expert Statistics — where to find something, how a feature works, what a setting does.',
+        'input_placeholder' => 'Ask a question…',
+        'send' => 'Send',
+        'new_conversation' => 'New conversation',
+        'go_to_page' => 'Go to :page',
+        'error_message' => 'Sorry, I couldn\'t come up with an answer just now. Try rephrasing, or browse the documentation instead.',
+        'starter_suggestions' => [
+            'How do I create a resource group?',
+            'Where can I schedule a report?',
+            'What does "exclude closed hours" do?',
         ],
     ],
 ];

@@ -993,6 +993,8 @@ return [
         'search_placeholder' => 'Rechercher dans la documentation…',
         'search_results' => 'Résultats de recherche',
         'no_results' => 'Aucun article ne correspond.',
+        'tab_browse' => 'Parcourir',
+        'tab_ask' => 'Demander à l\'IA',
 
         'groups' => [
             'start_here' => 'Pour commencer',
@@ -1016,6 +1018,21 @@ return [
             'wallboard' => 'Wallboard & données en direct',
             'glossary' => 'Glossaire des KPI & rapports',
             'faq' => 'FAQ & dépannage',
+        ],
+    ],
+
+    'docs_assistant' => [
+        'disclaimer' => 'Cet assistant répond uniquement aux questions sur l\'utilisation d\'Expert Statistics — il ne peut ni voir vos données d\'appels ni générer de rapports pour vous.',
+        'welcome' => 'Demandez-moi comment utiliser Expert Statistics — où trouver quelque chose, comment fonctionne une fonctionnalité, ce que fait un paramètre.',
+        'input_placeholder' => 'Posez une question…',
+        'send' => 'Envoyer',
+        'new_conversation' => 'Nouvelle conversation',
+        'go_to_page' => 'Aller à :page',
+        'error_message' => 'Désolé, je n\'ai pas pu trouver de réponse pour le moment. Essayez de reformuler, ou parcourez la documentation.',
+        'starter_suggestions' => [
+            'Comment créer un groupe de ressources ?',
+            'Où puis-je programmer un rapport ?',
+            'Que fait « exclure les heures de fermeture » ?',
         ],
     ],
 ];

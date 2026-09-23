@@ -76,4 +76,30 @@ return [
     | shipped in resources/docs/user/*.md - see CXEngine\ExpertStatistics\Support\DocsCatalog.
     */
     'docs_panel_enabled' => (bool) env('EXPERT_STATISTICS_DOCS_PANEL_ENABLED', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Docs assistant (AI chat, "how do I..." / "where do I find...")
+    |--------------------------------------------------------------------------
+    |
+    | A separate "Ask AI" mode inside the Documentation panel
+    | (Livewire\Docs\DocsAssistantChat, backed by
+    | Contracts\AnswersDocsQuestions => Services\PrismDocsAssistantResponder).
+    | Only ever grounded in resources/docs/user/*.md - it never queries
+    | ExpertStatisticsService, never sees call data, and never persists a
+    | conversation (in-memory only, for the current page session). Disabled
+    | by default: it costs real LLM tokens per message and needs a working
+    | provider API key configured, unlike the plain Documentation panel.
+    |
+    | `provider`/`model` follow prism-php/prism's Provider enum values
+    | (config/prism.php in the host app holds the actual API keys) -
+    | defaults match this app's existing AI-feature convention
+    | (Modules\Crm\Actions\CrmCall\AuditGrid\EvaluateCriteria).
+    */
+    'docs_assistant' => [
+        'enabled' => (bool) env('EXPERT_STATISTICS_DOCS_ASSISTANT_ENABLED', false),
+        'provider' => env('EXPERT_STATISTICS_DOCS_ASSISTANT_PROVIDER', 'mistral'),
+        'model' => env('EXPERT_STATISTICS_DOCS_ASSISTANT_MODEL', 'mistral-small-latest'),
+        'max_context_sections' => (int) env('EXPERT_STATISTICS_DOCS_ASSISTANT_MAX_SECTIONS', 3),
+    ],
 ];

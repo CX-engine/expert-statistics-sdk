@@ -5,8 +5,9 @@ votre hôte PBX — pas sur des connaissances génériques de chatbot.
 
 > Remarque : ce module « Analyses IA » (Chat / Tableau de bord / Alertes) répond aux **questions sur
 > vos données d'appels** (« combien d'appels avons-nous perdus la semaine dernière ? »). C'est une
-> fonctionnalité différente de l'assistant documentaire décrit dans ce panneau d'aide, qui répond
-> aux questions sur **la façon d'utiliser Expert Statistics lui-même**.
+> fonctionnalité différente de l'onglet **Demander à l'IA** de ce même panneau Documentation (à côté
+> de Parcourir), qui répond aux questions sur **la façon d'utiliser Expert Statistics lui-même** et
+> ne peut absolument pas voir vos données d'appels.
 
 ## Chat IA
 

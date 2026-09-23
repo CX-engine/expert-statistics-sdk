@@ -12,6 +12,7 @@ use CXEngine\ExpertStatistics\Livewire\Ai\AiFloatingChat;
 use CXEngine\ExpertStatistics\Livewire\CallAnalysis\CallAnalysis;
 use CXEngine\ExpertStatistics\Livewire\Configuration\ManagePbxSettings;
 use CXEngine\ExpertStatistics\Livewire\Dashboard;
+use CXEngine\ExpertStatistics\Livewire\Docs\DocsAssistantChat;
 use CXEngine\ExpertStatistics\Livewire\Docs\DocsHelperPanel;
 use CXEngine\ExpertStatistics\Livewire\Home;
 use CXEngine\ExpertStatistics\Livewire\Reports\CallerNumbers\CallerNumbersReport;
@@ -28,6 +29,7 @@ use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersReport;
 use CXEngine\ExpertStatistics\Livewire\Reports\ShareReportModal;
 use CXEngine\ExpertStatistics\Livewire\Wallboard\PublicWallboard;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
+use CXEngine\ExpertStatistics\Services\PrismDocsAssistantResponder;
 use CXEngine\ExpertStats\ExpertStatisticsConnector;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -53,6 +55,11 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
                 defaultTtl: (int) config('expert-statistics-api.cache_ttl', 300),
             );
         });
+
+        // Deliberately NOT given an ExpertStatisticsService - see that
+        // class's own docblock for why the docs assistant must never be
+        // able to reach call data.
+        $this->app->bind(Contracts\AnswersDocsQuestions::class, PrismDocsAssistantResponder::class);
     }
 
     public function boot(): void
@@ -109,6 +116,7 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
             Livewire::component('expert-statistics.ai.floating-chat', AiFloatingChat::class);
 
             Livewire::component('expert-statistics.docs.helper-panel', DocsHelperPanel::class);
+            Livewire::component('expert-statistics.docs.assistant-chat', DocsAssistantChat::class);
         }
     }
 }

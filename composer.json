@@ -8,8 +8,10 @@
         "illuminate/support": "^11.0|^12.0",
         "livewire/livewire": "^3.0",
         "filament/notifications": "^4.0",
+        "blade-ui-kit/blade-heroicons": "^2.5",
         "cx-engine/expert-stats-api-sdk-php": "dev-main",
-        "nesbot/carbon": "^2.72|^3.0"
+        "nesbot/carbon": "^2.72|^3.0",
+        "prism-php/prism": "^0.99.0"
     },
     "require-dev": {
         "pestphp/pest": "^3.0",

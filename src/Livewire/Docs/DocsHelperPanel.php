@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace CXEngine\ExpertStatistics\Livewire\Docs;
 
 use CXEngine\ExpertStatistics\Support\DocsCatalog;
+use CXEngine\ExpertStatistics\Support\DocsContent;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use League\CommonMark\Extension\HeadingPermalink\HeadingPermalinkExtension;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 /**
@@ -22,14 +24,22 @@ use Livewire\Component;
  * (app()->getLocale(), falling back to English - see DocsCatalog::resolveLocale()),
  * same as every other Expert Statistics page.
  *
+ * Owns two modes sharing one panel shell: "browse" (this class) and "ask"
+ * (nested Livewire\Docs\DocsAssistantChat, only shown when
+ * config('expert-statistics-api.docs_assistant.enabled') is true). Kept as
+ * one entry point rather than a second floating button, to avoid stacking
+ * FABs alongside the existing (dormant) Livewire\Ai\AiFloatingChat.
+ *
  * Deliberately unrelated to Livewire\Ai\AiChat / AiFloatingChat, which
  * answer questions about the user's call *data*, not about how to use the
- * UI. See resources/docs/ai-helper-architecture-plan.md for the (not yet
- * built) AI-powered version of this panel.
+ * UI - DocsAssistantChat never touches ExpertStatisticsService and never
+ * persists anything, see that class's own docblock.
  */
 class DocsHelperPanel extends Component
 {
     public bool $open = false;
+
+    public string $mode = 'browse';
 
     public ?string $activeSectionId = null;
 
@@ -52,6 +62,16 @@ class DocsHelperPanel extends Component
         $this->search = '';
     }
 
+    public function showBrowse(): void
+    {
+        $this->mode = 'browse';
+    }
+
+    public function showAsk(): void
+    {
+        $this->mode = 'ask';
+    }
+
     public function select(string $sectionId): void
     {
         if (DocsCatalog::find($sectionId) !== null) {
@@ -61,12 +81,31 @@ class DocsHelperPanel extends Component
     }
 
     /**
+     * The docs assistant chat (nested component) asks to jump back to the
+     * Browse tab on a specific section, e.g. after suggesting a doc page
+     * that has no dedicated app route to link to directly.
+     */
+    #[On('docs-assistant.show-section')]
+    public function showSuggestedSection(string $sectionId): void
+    {
+        $this->select($sectionId);
+        $this->showBrowse();
+        $this->open = true;
+    }
+
+    /**
      * @return array<int, array{group: string, sections: array<int, array{id: string, file: string, routes: array<int, string>}>}>
      */
     #[Computed]
     public function catalog(): array
     {
         return DocsCatalog::catalog();
+    }
+
+    #[Computed]
+    public function assistantEnabled(): bool
+    {
+        return (bool) config('expert-statistics-api.docs_assistant.enabled', false);
     }
 
     #[Computed]
@@ -84,7 +123,7 @@ class DocsHelperPanel extends Component
             return '';
         }
 
-        return $this->renderMarkdown($this->readSectionMarkdown($section['file']));
+        return $this->renderMarkdown(DocsContent::raw($section['id'], app()->getLocale()));
     }
 
     public function groupTitle(string $group): string
@@ -114,7 +153,7 @@ class DocsHelperPanel extends Component
         foreach ($this->catalog as $group) {
             foreach ($group['sections'] as $section) {
                 $title = $this->sectionTitle($section['id']);
-                $haystack = $title.' '.$this->readSectionMarkdown($section['file']);
+                $haystack = $title.' '.DocsContent::raw($section['id'], app()->getLocale());
 
                 if (Str::contains($haystack, $term, ignoreCase: true)) {
                     $results[] = [
@@ -162,18 +201,6 @@ class DocsHelperPanel extends Component
         ], [
             new HeadingPermalinkExtension,
         ]);
-    }
-
-    private function readSectionMarkdown(string $file): string
-    {
-        $locale = DocsCatalog::resolveLocale(app()->getLocale());
-        $path = __DIR__.'/../../../resources/docs/user/'.$locale.'/'.$file;
-
-        if (! is_file($path) && $locale !== DocsCatalog::DEFAULT_LOCALE) {
-            $path = __DIR__.'/../../../resources/docs/user/'.DocsCatalog::DEFAULT_LOCALE.'/'.$file;
-        }
-
-        return is_file($path) ? (string) file_get_contents($path) : '';
     }
 
     public function render()
