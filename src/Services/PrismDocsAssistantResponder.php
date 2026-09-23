@@ -32,12 +32,27 @@ use Throwable;
  */
 class PrismDocsAssistantResponder implements AnswersDocsQuestions
 {
+    /**
+     * Where any real call-data/statistics/analysis question must be
+     * redirected to, per the system prompt's rule 1 - the AI Chat page
+     * (Livewire\Ai\AiChat), a *different* feature from this assistant that
+     * actually is grounded in the user's real call data. Its excerpt is
+     * always included in context (see answer()) so the model has real
+     * grounding for *why* to redirect there, not just an id to parrot back.
+     */
+    private const DATA_QUESTION_REDIRECT_SECTION_ID = 'ai-insights';
+
     public function answer(string $question, string $locale, array $history = []): DocsAssistantAnswer
     {
         $resolvedLocale = DocsCatalog::resolveLocale($locale);
         $maxSections = (int) config('expert-statistics-api.docs_assistant.max_context_sections', 3);
 
         $sectionIds = DocsSearch::topSectionIds($question, $resolvedLocale, $maxSections);
+
+        if (! in_array(self::DATA_QUESTION_REDIRECT_SECTION_ID, $sectionIds, true)) {
+            $sectionIds[] = self::DATA_QUESTION_REDIRECT_SECTION_ID;
+        }
+
         $excerpts = $this->excerpts($sectionIds, $resolvedLocale);
 
         try {
@@ -50,6 +65,7 @@ class PrismDocsAssistantResponder implements AnswersDocsQuestions
                 ->withSystemPrompt(view('expert-statistics::prompts.docs-assistant-system', [
                     'locale' => $resolvedLocale,
                     'knownSectionIds' => array_column(DocsCatalog::sections(), 'id'),
+                    'dataRedirectSectionId' => self::DATA_QUESTION_REDIRECT_SECTION_ID,
                     'excerpts' => $excerpts,
                 ]))
                 ->withMessages([...$this->historyMessages($history), new UserMessage($question)])
@@ -129,7 +145,7 @@ class PrismDocsAssistantResponder implements AnswersDocsQuestions
                 ),
                 new StringSchema(
                     name: 'suggested_section_id',
-                    description: 'The single most relevant documentation section id for this question, chosen only from the provided list of known section ids. Omit / null if none of them are genuinely relevant.',
+                    description: 'The single most relevant documentation section id for this question, chosen only from the provided list of known section ids. If this question asks for real call data/statistics/analysis, this MUST be set to "'.self::DATA_QUESTION_REDIRECT_SECTION_ID.'" (the AI Chat page) - see system prompt rule 1. Omit / null if nothing is genuinely relevant.',
                     nullable: true,
                 ),
             ],

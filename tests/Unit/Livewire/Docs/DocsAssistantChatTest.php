@@ -61,6 +61,21 @@ it('a starter suggestion asks its question immediately', function () {
         ->assertSet('messages.0.content', 'How do I schedule a report?');
 });
 
+it('end-to-end: a data question redirects to the real AI Chat page when clicked', function () {
+    Route::get('/expert-stats/ai/chat', fn () => '')->name('expert-stats.ai.chat');
+
+    Prism::fake([
+        fakeAnswer('ai-insights'), // simulates the model following the "redirect data questions" rule
+    ]);
+
+    Livewire::test(DocsAssistantChat::class)
+        ->set('question', 'How many calls did we lose last week?')
+        ->call('ask')
+        ->assertSet('messages.1.suggestedSectionId', 'ai-insights')
+        ->call('goToSuggestion', 'ai-insights')
+        ->assertRedirect(route('expert-stats.ai.chat'));
+});
+
 describe('suggestedUrl / goToSuggestion', function () {
     it('returns null for a section with no associated app route', function () {
         // 'permissions' is a documentation-only section - see DocsCatalog.
