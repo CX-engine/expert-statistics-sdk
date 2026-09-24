@@ -62,7 +62,10 @@ class DocsAssistantChat extends Component
      * until the assistant's reply is generated. Lets the browser render the
      * user's own message (and a "thinking" indicator) in one quick request,
      * before the slower LLM call happens in a second request - see
-     * sendMessage()/getResponse() and the Alpine chaining in the view.
+     * sendMessage()/getResponse(). Also drives disabling the input while a
+     * reply is pending, so clearConversation() resets it too - otherwise a
+     * getResponse() call that somehow never fired would leave the whole
+     * input permanently disabled with no way to recover except a reload.
      */
     public bool $thinking = false;
 
@@ -90,12 +93,12 @@ class DocsAssistantChat extends Component
      * Split into two calls so the user's own message can appear immediately
      * instead of waiting for the (slower) LLM round trip: sendMessage() is
      * the fast half (just appends to $messages), getResponse() is the slow
-     * half (the actual model call). The view chains them client-side via
-     * Alpine ($wire.sendMessage().then(() => $wire.getResponse())) so the
-     * browser renders the user's message + a "thinking" indicator from the
-     * first request before the second one even starts. ask() keeps both
-     * steps in a single call for callers (tests, useSuggestion) that don't
-     * need the two-request UX.
+     * half (the actual model call). sendMessage() queues getResponse() via
+     * $this->js() - Livewire's own "run this after the DOM updates" hook -
+     * rather than chaining $wire calls with a hand-written Promise in the
+     * view, so the follow-up call doesn't depend on a client-side .then()
+     * ever firing. ask() keeps both steps in a single call for callers
+     * (tests) that don't need the two-request UX.
      */
     public function ask(): void
     {
@@ -107,13 +110,15 @@ class DocsAssistantChat extends Component
     {
         $question = trim($this->question);
 
-        if ($question === '') {
+        if ($question === '' || $this->thinking) {
             return;
         }
 
         $this->messages[] = ['role' => 'user', 'content' => $question];
         $this->question = '';
         $this->thinking = true;
+
+        $this->js('$wire.getResponse()');
     }
 
     public function getResponse(): void
@@ -170,6 +175,10 @@ class DocsAssistantChat extends Component
     {
         $this->messages = [];
         $this->pendingAction = null;
+        // Also a safety net: if getResponse() somehow never ran after a
+        // sendMessage() (stuck thinking = true would otherwise permanently
+        // disable the input with no way back except a page reload).
+        $this->thinking = false;
     }
 
     /**

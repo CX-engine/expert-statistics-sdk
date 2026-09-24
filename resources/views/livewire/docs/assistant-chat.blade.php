@@ -74,7 +74,7 @@
                                 @foreach ($this->starterSuggestions() as $suggestion)
                                     <button
                                         type="button"
-                                        @click="$wire.useSuggestion(@js($suggestion)).then(() => $wire.getResponse())"
+                                        wire:click="useSuggestion(@js($suggestion))"
                                         class="rounded-full border border-gray-300 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                                     >
                                         {{ $suggestion }}
@@ -179,10 +179,10 @@
                     @endif
                 </div>
 
-                {{-- sendMessage() (fast: just appends the message) then getResponse() (the actual LLM
-                     call) are chained client-side so the browser renders the user's own message before
+                {{-- sendMessage() (fast: just appends the message) queues getResponse() (the actual LLM
+                     call) itself via $this->js(), so the browser renders the user's own message before
                      the slower request even starts, instead of both appearing together at the end. --}}
-                <form @submit.prevent="$wire.sendMessage().then(() => $wire.getResponse())" class="flex items-center gap-2 border-t border-gray-200 px-4 py-3 dark:border-gray-700">
+                <form wire:submit="sendMessage" class="flex items-center gap-2 border-t border-gray-200 px-4 py-3 dark:border-gray-700">
                     @if ($messages !== [])
                         <button
                             type="button"

@@ -154,6 +154,32 @@ describe('sendMessage()/getResponse() split (so the user turn renders before the
             ->call('getResponse')
             ->assertSet('messages', []);
     });
+
+    it('sendMessage ignores a new message while already thinking, so it cannot be double-sent', function () {
+        Prism::fake([]);
+
+        Livewire::test(DocsAssistantChat::class)
+            ->set('question', 'First question')
+            ->call('sendMessage')
+            ->set('question', 'Second question')
+            ->call('sendMessage')
+            ->assertSet('messages', [
+                ['role' => 'user', 'content' => 'First question'],
+            ])
+            ->assertSet('question', 'Second question');
+    });
+
+    it('clearConversation resets a stuck thinking flag, as a recovery path', function () {
+        Prism::fake([]);
+
+        Livewire::test(DocsAssistantChat::class)
+            ->set('question', 'A question')
+            ->call('sendMessage')
+            ->assertSet('thinking', true)
+            ->call('clearConversation')
+            ->assertSet('thinking', false)
+            ->assertSet('messages', []);
+    });
 });
 
 it('end-to-end: a data question redirects to the real AI Chat page when clicked', function () {
