@@ -149,6 +149,8 @@ class PrismActionAssistantResponder implements PerformsExpertStatisticsActions
                     'pendingAction' => $pendingAction,
                     'availableQueues' => $this->availableQueues(),
                     'availableExtensions' => $this->availableExtensions(),
+                    'availableResourceGroups' => $this->availableResourceGroups(),
+                    'today' => now()->toDateString(),
                     'reportTypes' => self::REPORT_TYPES,
                     'repeatPatterns' => self::REPEAT_PATTERNS,
                     'resourceGroupTypes' => self::RESOURCE_GROUP_TYPES,
@@ -304,6 +306,51 @@ class PrismActionAssistantResponder implements PerformsExpertStatisticsActions
         } catch (Throwable) {
             return [];
         }
+    }
+
+    /**
+     * Existing resource groups for the active host — the grounding a
+     * "send a report to the Top 5 Agents group" style request needs to
+     * resolve a NAME to a real pbx3cx_host_resource_group_id, instead of
+     * the model inventing/guessing one. Without this, a referenced group
+     * can never actually be matched, only talked about.
+     *
+     * @return array<int, array{id: int, name: string, type: string, members: array<int, string>}>
+     */
+    private function availableResourceGroups(): array
+    {
+        try {
+            return collect($this->service->getResourceGroups())
+                ->map(function (array $group): array {
+                    $resources = $group['resources'] ?? [];
+
+                    if (is_string($resources)) {
+                        $resources = json_decode($resources, true) ?? [];
+                    }
+
+                    return [
+                        'id' => (int) $group['id'],
+                        'name' => (string) $group['name'],
+                        'type' => $this->resourceGroupTypeToLabel((int) $group['type']),
+                        'members' => array_map('strval', is_array($resources) ? $resources : []),
+                    ];
+                })
+                ->values()
+                ->all();
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    private function resourceGroupTypeToLabel(int $type): string
+    {
+        return match ($type) {
+            0 => 'extension',
+            1 => 'did',
+            4 => 'queue',
+            99 => 'caller',
+            default => (string) $type,
+        };
     }
 
     private function schema(): ObjectSchema

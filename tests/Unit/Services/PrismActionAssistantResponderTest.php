@@ -163,6 +163,8 @@ it('passes the current pendingAction through to the finalize prompt, for revisio
         ],
         'availableQueues' => [],
         'availableExtensions' => [],
+        'availableResourceGroups' => [],
+        'today' => '2026-09-24',
         'reportTypes' => ['report'],
         'repeatPatterns' => ['week'],
         'resourceGroupTypes' => ['queue'],
@@ -182,10 +184,39 @@ it('the finalize prompt states the exactly-two-skills scope limit', function () 
         'pendingAction' => null,
         'availableQueues' => [],
         'availableExtensions' => [],
+        'availableResourceGroups' => [],
+        'today' => '2026-09-24',
         'reportTypes' => [],
         'repeatPatterns' => [],
         'resourceGroupTypes' => [],
     ]);
 
     expect($rendered)->toContain('EXACTLY two mutation skills');
+});
+
+it('the finalize prompt grounds resource-group name resolution and enforces date/report-type defaults', function () {
+    $rendered = (string) view('expert-statistics::prompts.action-assistant-finalize-system', [
+        'locale' => 'en',
+        'knownSectionIds' => [],
+        'dataRedirectSectionId' => 'ai-insights',
+        'excerpts' => [],
+        'reasoning' => '',
+        'pendingAction' => null,
+        'availableQueues' => [],
+        'availableExtensions' => [],
+        'availableResourceGroups' => [
+            ['id' => 42, 'name' => 'Top 5 Agents', 'type' => 'extension', 'members' => ['100', '101']],
+        ],
+        'today' => '2026-09-24',
+        'reportTypes' => ['report', 'userReport'],
+        'repeatPatterns' => ['week'],
+        'resourceGroupTypes' => ['extension'],
+    ]);
+
+    expect($rendered)
+        ->toContain('42: Top 5 Agents (extension group, members: 100, 101)')
+        ->and($rendered)->toContain("Today's date: 2026-09-24")
+        ->and($rendered)->toContain('describe its members')
+        ->and($rendered)->toContain('propose a sensible')
+        ->and($rendered)->toContain('default to report_type "report"');
 });
