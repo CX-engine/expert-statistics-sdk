@@ -58,6 +58,15 @@ class DocsAssistantChat extends Component
     public string $question = '';
 
     /**
+     * True from the moment the user's message is appended to $messages
+     * until the assistant's reply is generated. Lets the browser render the
+     * user's own message (and a "thinking" indicator) in one quick request,
+     * before the slower LLM call happens in a second request - see
+     * sendMessage()/getResponse() and the Alpine chaining in the view.
+     */
+    public bool $thinking = false;
+
+    /**
      * @var array{type: 'report'|'resource_group', parameters: array<string, mixed>, summary: string, missingFields: array<int, string>, readyToConfirm: bool}|null
      */
     public ?array $pendingAction = null;
@@ -77,7 +86,24 @@ class DocsAssistantChat extends Component
         return (bool) config('expert-statistics-api.ai_actions.enabled', false);
     }
 
+    /**
+     * Split into two calls so the user's own message can appear immediately
+     * instead of waiting for the (slower) LLM round trip: sendMessage() is
+     * the fast half (just appends to $messages), getResponse() is the slow
+     * half (the actual model call). The view chains them client-side via
+     * Alpine ($wire.sendMessage().then(() => $wire.getResponse())) so the
+     * browser renders the user's message + a "thinking" indicator from the
+     * first request before the second one even starts. ask() keeps both
+     * steps in a single call for callers (tests, useSuggestion) that don't
+     * need the two-request UX.
+     */
     public function ask(): void
+    {
+        $this->sendMessage();
+        $this->getResponse();
+    }
+
+    public function sendMessage(): void
     {
         $question = trim($this->question);
 
@@ -85,13 +111,31 @@ class DocsAssistantChat extends Component
             return;
         }
 
-        $history = array_map(
-            fn (array $turn) => ['role' => $turn['role'], 'content' => $turn['content']],
-            $this->messages,
-        );
-
         $this->messages[] = ['role' => 'user', 'content' => $question];
         $this->question = '';
+        $this->thinking = true;
+    }
+
+    public function getResponse(): void
+    {
+        if (! $this->thinking) {
+            return;
+        }
+
+        $this->thinking = false;
+
+        $lastMessage = end($this->messages);
+
+        if ($lastMessage === false || $lastMessage['role'] !== 'user') {
+            return;
+        }
+
+        $question = $lastMessage['content'];
+
+        $history = array_map(
+            fn (array $turn) => ['role' => $turn['role'], 'content' => $turn['content']],
+            array_slice($this->messages, 0, -1),
+        );
 
         if ($this->actionsEnabled()) {
             $turn = app(PerformsExpertStatisticsActions::class)
@@ -119,7 +163,7 @@ class DocsAssistantChat extends Component
     public function useSuggestion(string $question): void
     {
         $this->question = $question;
-        $this->ask();
+        $this->sendMessage();
     }
 
     public function clearConversation(): void

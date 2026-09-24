@@ -74,7 +74,7 @@
                                 @foreach ($this->starterSuggestions() as $suggestion)
                                     <button
                                         type="button"
-                                        wire:click="useSuggestion(@js($suggestion))"
+                                        @click="$wire.useSuggestion(@js($suggestion)).then(() => $wire.getResponse())"
                                         class="rounded-full border border-gray-300 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
                                     >
                                         {{ $suggestion }}
@@ -164,16 +164,25 @@
                         </div>
                     @endif
 
-                    <div wire:loading wire:target="ask,useSuggestion,confirmAction" class="flex justify-start">
-                        <div class="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-gray-100 px-4 py-3 dark:bg-gray-800">
-                            <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.3s]"></span>
-                            <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.15s]"></span>
-                            <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400"></span>
+                    {{-- Driven by the server-side $thinking flag (set by sendMessage(), cleared by
+                         getResponse()) rather than wire:loading, so it reflects "user message sent,
+                         reply not generated yet" across the two chained requests, not just whichever
+                         one happens to be in flight. --}}
+                    @if ($thinking)
+                        <div class="flex justify-start">
+                            <div class="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-gray-100 px-4 py-3 dark:bg-gray-800">
+                                <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.3s]"></span>
+                                <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.15s]"></span>
+                                <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400"></span>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
 
-                <form wire:submit="ask" class="flex items-center gap-2 border-t border-gray-200 px-4 py-3 dark:border-gray-700">
+                {{-- sendMessage() (fast: just appends the message) then getResponse() (the actual LLM
+                     call) are chained client-side so the browser renders the user's own message before
+                     the slower request even starts, instead of both appearing together at the end. --}}
+                <form @submit.prevent="$wire.sendMessage().then(() => $wire.getResponse())" class="flex items-center gap-2 border-t border-gray-200 px-4 py-3 dark:border-gray-700">
                     @if ($messages !== [])
                         <button
                             type="button"
@@ -191,13 +200,13 @@
                         wire:model="question"
                         placeholder="{{ __('expert-statistics::pbx.docs_assistant.input_placeholder') }}"
                         autocomplete="off"
-                        class="min-w-0 flex-1 rounded-full border-gray-300 text-sm focus:border-gray-500 focus:ring-gray-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                        :disabled="$wire.thinking"
+                        class="min-w-0 flex-1 rounded-full border-gray-300 text-sm focus:border-gray-500 focus:ring-gray-500 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
                     />
 
                     <button
                         type="submit"
-                        wire:loading.attr="disabled"
-                        wire:target="ask"
+                        :disabled="$wire.thinking"
                         class="shrink-0 rounded-full bg-gray-900 p-2 text-white transition hover:bg-gray-700 disabled:opacity-50 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
                     >
                         <x-heroicon-m-paper-airplane class="h-4 w-4" />

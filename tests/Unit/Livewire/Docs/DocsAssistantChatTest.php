@@ -112,6 +112,50 @@ it('a starter suggestion asks its question immediately', function () {
         ->assertSet('messages.0.content', 'How do I schedule a report?');
 });
 
+describe('sendMessage()/getResponse() split (so the user turn renders before the reply)', function () {
+    it('sendMessage appends only the user turn, sets thinking, and never calls the model', function () {
+        Prism::fake([]);
+
+        Livewire::test(DocsAssistantChat::class)
+            ->set('question', 'How do I create a resource group?')
+            ->call('sendMessage')
+            ->assertSet('question', '')
+            ->assertSet('thinking', true)
+            ->assertSet('messages', [
+                ['role' => 'user', 'content' => 'How do I create a resource group?'],
+            ]);
+    });
+
+    it('sendMessage does nothing for a blank question', function () {
+        Livewire::test(DocsAssistantChat::class)
+            ->set('question', '   ')
+            ->call('sendMessage')
+            ->assertSet('thinking', false)
+            ->assertSet('messages', []);
+    });
+
+    it('getResponse answers the pending user turn and clears thinking', function () {
+        Prism::fake([fakeAnswer('pbx-settings')]);
+
+        Livewire::test(DocsAssistantChat::class)
+            ->set('question', 'How do I create a resource group?')
+            ->call('sendMessage')
+            ->call('getResponse')
+            ->assertSet('thinking', false)
+            ->assertSet('messages.1.role', 'assistant')
+            ->assertSet('messages.1.content', 'Here is how you do it.')
+            ->assertSet('messages.1.suggestedSectionId', 'pbx-settings');
+    });
+
+    it('getResponse is a no-op when there is nothing pending', function () {
+        Prism::fake([]);
+
+        Livewire::test(DocsAssistantChat::class)
+            ->call('getResponse')
+            ->assertSet('messages', []);
+    });
+});
+
 it('end-to-end: a data question redirects to the real AI Chat page when clicked', function () {
     Route::get('/expert-stats/ai/chat', fn () => '')->name('expert-stats.ai.chat');
 
