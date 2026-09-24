@@ -6,7 +6,9 @@ namespace CXEngine\ExpertStatistics\Tests;
 
 use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
 use BladeUI\Icons\BladeIconsServiceProvider;
+use CXEngine\ExpertStatistics\Contracts\ResolvesActivePbxHost;
 use CXEngine\ExpertStatistics\ExpertStatisticsServiceProvider;
+use CXEngine\ExpertStatistics\Tests\Doubles\FakeActivePbxHostResolver;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Prism\Prism\PrismServiceProvider;
@@ -33,5 +35,11 @@ abstract class TestCase extends Orchestra
     protected function defineEnvironment($app): void
     {
         $app['config']->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
+
+        // The real implementation is bound by the host app (bluerocktel-cx),
+        // never by this package itself - no host app is present in tests,
+        // so anything resolving ExpertStatisticsService (directly or via a
+        // dependency) needs this stand-in. Rebind per-test for different behavior.
+        $app->bind(ResolvesActivePbxHost::class, FakeActivePbxHostResolver::class);
     }
 }

@@ -1,5 +1,6 @@
 @php
     $messages = $this->messages;
+    $pendingAction = $this->pendingAction;
 @endphp
 
 <div x-data="{ open: $wire.entangle('open') }" @keydown.escape.window="open = false">
@@ -57,7 +58,9 @@
 
                 {{-- Boundary disclaimer - sets expectations up front, matches the hard architectural limits in this class's docblock --}}
                 <div class="border-b border-gray-200 bg-blue-50 px-4 py-2 text-xs text-blue-700 dark:border-gray-700 dark:bg-blue-950/40 dark:text-blue-300">
-                    {{ __('expert-statistics::pbx.docs_assistant.disclaimer') }}
+                    {{ $this->actionsEnabled()
+                        ? __('expert-statistics::pbx.docs_assistant.disclaimer_with_actions')
+                        : __('expert-statistics::pbx.docs_assistant.disclaimer') }}
                 </div>
 
                 <div class="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
@@ -78,6 +81,14 @@
                                     </button>
                                 @endforeach
                             </div>
+                            <button
+                                type="button"
+                                wire:click="explainCapabilities"
+                                class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                            >
+                                <x-heroicon-m-question-mark-circle class="h-3.5 w-3.5" />
+                                {{ __('expert-statistics::pbx.docs_assistant.what_can_you_do') }}
+                            </button>
                         </div>
                     @else
                         @foreach ($messages as $message)
@@ -109,7 +120,51 @@
                         @endforeach
                     @endif
 
-                    <div wire:loading wire:target="ask,useSuggestion" class="flex justify-start">
+                    @if ($pendingAction)
+                        <div class="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800/50">
+                            <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                {{ $pendingAction['type'] === 'report'
+                                    ? __('expert-statistics::pbx.docs_assistant.pending_report_label')
+                                    : __('expert-statistics::pbx.docs_assistant.pending_group_label') }}
+                            </p>
+                            <p class="text-sm text-gray-800 dark:text-gray-100">
+                                {{ $pendingAction['summary'] }}
+                            </p>
+
+                            @if (! empty($pendingAction['missingFields']))
+                                <p class="mt-2 text-xs text-amber-700 dark:text-amber-400">
+                                    {{ __('expert-statistics::pbx.docs_assistant.pending_missing_fields', ['fields' => implode(', ', $pendingAction['missingFields'])]) }}
+                                </p>
+                            @endif
+
+                            @if ($pendingAction['readyToConfirm'])
+                                <div class="mt-3 flex gap-2">
+                                    <button
+                                        type="button"
+                                        wire:click="confirmAction"
+                                        wire:loading.attr="disabled"
+                                        wire:target="confirmAction"
+                                        class="inline-flex items-center gap-1 rounded-full bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-700 disabled:opacity-50 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+                                    >
+                                        <x-heroicon-m-check class="h-3.5 w-3.5" />
+                                        {{ __('expert-statistics::pbx.docs_assistant.confirm') }}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        wire:click="cancelAction"
+                                        wire:loading.attr="disabled"
+                                        wire:target="confirmAction"
+                                        class="inline-flex items-center gap-1 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                                    >
+                                        <x-heroicon-m-x-mark class="h-3.5 w-3.5" />
+                                        {{ __('expert-statistics::pbx.docs_assistant.cancel') }}
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
+                    <div wire:loading wire:target="ask,useSuggestion,confirmAction" class="flex justify-start">
                         <div class="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-gray-100 px-4 py-3 dark:bg-gray-800">
                             <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.3s]"></span>
                             <span class="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-400 [animation-delay:-0.15s]"></span>

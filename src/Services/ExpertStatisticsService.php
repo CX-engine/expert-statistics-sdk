@@ -3,6 +3,7 @@
 namespace CXEngine\ExpertStatistics\Services;
 
 use CXEngine\ExpertStatistics\Contracts\ResolvesActivePbxHost;
+use CXEngine\ExpertStatistics\Exceptions\AiFeaturesNotActivatedException;
 use CXEngine\ExpertStatistics\Exceptions\NoActivePbxHostException;
 use CXEngine\ExpertStats\ExpertStatisticsConnector;
 use Illuminate\Support\Facades\Cache;
@@ -1489,6 +1490,89 @@ class ExpertStatisticsService
         $host = $this->hostName();
 
         return $this->connector->stats()->getDidReportFile($host, $data)->throw();
+    }
+
+    // --- AI Helper: narrow, strictly-validated create/schedule actions ---
+    // Deliberately separate from createReport()/createResourceGroup() above,
+    // which call the legacy, loosely-validated manual-UI endpoints. These
+    // back Contracts\PerformsExpertStatisticsActions - see
+    // Services\PrismActionAssistantResponder and
+    // Livewire\Docs\DocsAssistantChat::confirmAction(). Not cached: each
+    // call must reflect the current, freshly-typed conversation state.
+
+    /**
+     * Dry-run validation — never persists anything. Deliberately doesn't
+     * call ->throw(): a 422 {valid: false, errors: {...}} response here is
+     * an expected, meaningful answer to parse, not a failure to propagate.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{valid: bool, errors: array<string, array<int, string>>}
+     */
+    public function validateAiHelperReport(array $data): array
+    {
+        $host = $this->hostName();
+
+        return $this->connector->aiHelper()->validateReport($host, $data)->json();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     *
+     * @throws AiFeaturesNotActivatedException if the active host's `ai_activated` flag is off
+     */
+    public function createAiHelperReport(array $data): array
+    {
+        $host = $this->hostName();
+        $response = $this->connector->aiHelper()->createReport($host, $data);
+
+        if ($response->status() === 403) {
+            throw AiFeaturesNotActivatedException::make();
+        }
+
+        return $response->throw()->json();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{valid: bool, errors: array<string, array<int, string>>}
+     */
+    public function validateAiHelperResourceGroup(array $data): array
+    {
+        $host = $this->hostName();
+
+        return $this->connector->aiHelper()->validateResourceGroup($host, $data)->json();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     *
+     * @throws AiFeaturesNotActivatedException if the active host's `ai_activated` flag is off
+     */
+    public function createAiHelperResourceGroup(array $data): array
+    {
+        $host = $this->hostName();
+        $response = $this->connector->aiHelper()->createResourceGroup($host, $data);
+
+        if ($response->status() === 403) {
+            throw AiFeaturesNotActivatedException::make();
+        }
+
+        return $response->throw()->json();
+    }
+
+    /**
+     * Thin wrapper around the existing sendAiChatMessage() integration —
+     * this is how the action assistant "communicates with the AI analyser"
+     * for data-driven decisions (busiest queues, most active caller
+     * numbers, etc). No new backend endpoint: reuses `ai/chat` as-is.
+     *
+     * @return array<string, mixed>
+     */
+    public function askCallAnalytics(string $question): array
+    {
+        return $this->sendAiChatMessage($question);
     }
 
     /**

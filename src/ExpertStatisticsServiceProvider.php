@@ -29,6 +29,7 @@ use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersReport;
 use CXEngine\ExpertStatistics\Livewire\Reports\ShareReportModal;
 use CXEngine\ExpertStatistics\Livewire\Wallboard\PublicWallboard;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
+use CXEngine\ExpertStatistics\Services\PrismActionAssistantResponder;
 use CXEngine\ExpertStatistics\Services\PrismDocsAssistantResponder;
 use CXEngine\ExpertStats\ExpertStatisticsConnector;
 use Illuminate\Support\ServiceProvider;
@@ -60,6 +61,11 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
         // class's own docblock for why the docs assistant must never be
         // able to reach call data.
         $this->app->bind(Contracts\AnswersDocsQuestions::class, PrismDocsAssistantResponder::class);
+
+        // Unlike the above, this one DOES need ExpertStatisticsService (for
+        // analytics lookups and grounding element lists) - see
+        // PrismActionAssistantResponder's own docblock.
+        $this->app->bind(Contracts\PerformsExpertStatisticsActions::class, PrismActionAssistantResponder::class);
     }
 
     public function boot(): void

@@ -1,13 +1,55 @@
 <?php
 
+use CXEngine\ExpertStatistics\Exceptions\AiFeaturesNotActivatedException;
 use CXEngine\ExpertStatistics\Livewire\Docs\DocsAssistantChat;
+use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use CXEngine\ExpertStatistics\Tests\TestCase;
+use Illuminate\Foundation\Auth\User as GenericUser;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Prism\Prism\Facades\Prism;
 use Prism\Prism\Testing\StructuredResponseFake;
+use Prism\Prism\Testing\TextResponseFake;
 
 uses(TestCase::class);
+
+function userWithModifyPermission(bool $canModify): GenericUser
+{
+    Gate::define('expert-statistics.modify', fn () => $canModify);
+
+    $user = new GenericUser;
+    $user->id = $canModify ? 1 : 2;
+
+    return $user;
+}
+
+function samplePendingReport(): array
+{
+    return [
+        'type' => 'report',
+        'parameters' => [
+            'name' => 'Weekly queues', 'report_type' => 'report', 'element_type' => '4',
+            'dns' => '100,101', 'pbx3cx_host_resource_group_id' => null,
+            'start' => '2026-01-01 00:00:00', 'end' => '2026-01-07 23:59:59',
+            'email' => 'ops@example.com', 'instant' => false, 'repeat' => true, 'repeat_pattern' => 'week',
+        ],
+        'summary' => 'A weekly report for queues 100/101, sent to ops@example.com.',
+        'missingFields' => [],
+        'readyToConfirm' => true,
+    ];
+}
+
+function samplePendingGroup(): array
+{
+    return [
+        'type' => 'resource_group',
+        'parameters' => ['name' => 'Busiest queues', 'type' => 4, 'resources' => ['100', '101']],
+        'summary' => 'A group "Busiest queues" with queues 100 and 101.',
+        'missingFields' => [],
+        'readyToConfirm' => true,
+    ];
+}
 
 function fakeAnswer(?string $sectionId = null): StructuredResponseFake
 {
@@ -130,5 +172,179 @@ describe('suggestedUrl / goToSuggestion', function () {
             ->call('goToSuggestion', null)
             ->assertNotDispatched('docs-assistant.show-section')
             ->assertNoRedirect();
+    });
+});
+
+describe('explainCapabilities', function () {
+    it('appends the plain Q&A capabilities message when actions are disabled', function () {
+        config(['expert-statistics-api.ai_actions.enabled' => false]);
+
+        Livewire::test(DocsAssistantChat::class)
+            ->call('explainCapabilities')
+            ->assertSet('messages.0.content', __('expert-statistics::pbx.docs_assistant.capabilities_message'));
+    });
+
+    it('appends the actions-aware capabilities message when actions are enabled', function () {
+        config(['expert-statistics-api.ai_actions.enabled' => true]);
+
+        Livewire::test(DocsAssistantChat::class)
+            ->call('explainCapabilities')
+            ->assertSet('messages.0.content', __('expert-statistics::pbx.docs_assistant.capabilities_message_with_actions'));
+    });
+});
+
+describe('ask() routing by ai_actions.enabled', function () {
+    it('still uses the plain read-only responder when actions are disabled (default)', function () {
+        config(['expert-statistics-api.ai_actions.enabled' => false]);
+        Prism::fake([fakeAnswer()]);
+
+        Livewire::test(DocsAssistantChat::class)
+            ->set('question', 'How do I create a resource group?')
+            ->call('ask')
+            ->assertSet('pendingAction', null);
+    });
+
+    it('routes to the action-capable responder and stores its pendingAction when enabled', function () {
+        config(['expert-statistics-api.ai_actions.enabled' => true]);
+
+        Prism::fake([
+            TextResponseFake::make()->withText(''),
+            StructuredResponseFake::make()->withStructured([
+                'answer' => 'Here is the proposal.',
+                'suggested_section_id' => null,
+                'pending_report' => null,
+                'pending_resource_group' => [
+                    'name' => 'Busiest queues', 'type' => 'queue', 'members' => ['100', '101'],
+                    'missing_fields' => [], 'summary' => 'A group with queues 100 and 101.',
+                    'ready_to_confirm' => true,
+                ],
+            ]),
+        ]);
+
+        Livewire::test(DocsAssistantChat::class)
+            ->set('question', 'Create a group with queues 100 and 101')
+            ->call('ask')
+            ->assertSet('messages.1.content', 'Here is the proposal.')
+            ->assertSet('pendingAction.type', 'resource_group')
+            ->assertSet('pendingAction.readyToConfirm', true);
+    });
+});
+
+describe('confirmAction', function () {
+    it('does nothing when there is no pending action', function () {
+        Livewire::test(DocsAssistantChat::class)
+            ->call('confirmAction')
+            ->assertSet('messages', []);
+    });
+
+    it('declines gracefully, without calling the backend, when the user lacks modify permission', function () {
+        test()->actingAs(userWithModifyPermission(false));
+
+        $this->mock(ExpertStatisticsService::class, function ($mock) {
+            $mock->shouldNotReceive('validateAiHelperReport');
+            $mock->shouldNotReceive('createAiHelperReport');
+        });
+
+        Livewire::test(DocsAssistantChat::class)
+            ->set('pendingAction', samplePendingReport())
+            ->call('confirmAction')
+            ->assertSet('messages.0.content', __('expert-statistics::pbx.docs_assistant.action_permission_denied'))
+            ->assertSet('pendingAction', null);
+    });
+
+    it('keeps the pending action and shows errors when validation fails — never calls create', function () {
+        test()->actingAs(userWithModifyPermission(true));
+
+        $this->mock(ExpertStatisticsService::class, function ($mock) {
+            $mock->shouldReceive('validateAiHelperReport')->once()->andReturn([
+                'valid' => false,
+                'errors' => ['email' => ['The email field is required.']],
+            ]);
+            $mock->shouldNotReceive('createAiHelperReport');
+        });
+
+        Livewire::test(DocsAssistantChat::class)
+            ->set('pendingAction', samplePendingReport())
+            ->call('confirmAction')
+            ->assertSet('messages.0.content', __('expert-statistics::pbx.docs_assistant.action_validation_failed', [
+                'errors' => 'The email field is required.',
+            ]))
+            ->assertSet('pendingAction.type', 'report');
+    });
+
+    it('validates then creates a report, in that order, and clears the pending action on success', function () {
+        test()->actingAs(userWithModifyPermission(true));
+
+        $this->mock(ExpertStatisticsService::class, function ($mock) {
+            $mock->shouldReceive('validateAiHelperReport')->once()->ordered()->andReturn(['valid' => true, 'errors' => []]);
+            $mock->shouldReceive('createAiHelperReport')->once()->ordered()->andReturn(['id' => 'abc']);
+        });
+
+        Livewire::test(DocsAssistantChat::class)
+            ->set('pendingAction', samplePendingReport())
+            ->call('confirmAction')
+            ->assertSet('messages.0.content', __('expert-statistics::pbx.docs_assistant.action_report_created'))
+            ->assertSet('pendingAction', null);
+    });
+
+    it('validates then creates a resource group, in that order, and clears the pending action on success', function () {
+        test()->actingAs(userWithModifyPermission(true));
+
+        $this->mock(ExpertStatisticsService::class, function ($mock) {
+            $mock->shouldReceive('validateAiHelperResourceGroup')->once()->ordered()->andReturn(['valid' => true, 'errors' => []]);
+            $mock->shouldReceive('createAiHelperResourceGroup')->once()->ordered()->andReturn(['id' => 1]);
+        });
+
+        Livewire::test(DocsAssistantChat::class)
+            ->set('pendingAction', samplePendingGroup())
+            ->call('confirmAction')
+            ->assertSet('messages.0.content', __('expert-statistics::pbx.docs_assistant.action_group_created'))
+            ->assertSet('pendingAction', null);
+    });
+
+    it('shows a friendly message and clears the pending action when the host has no AI features activated', function () {
+        test()->actingAs(userWithModifyPermission(true));
+
+        $this->mock(ExpertStatisticsService::class, function ($mock) {
+            $mock->shouldReceive('validateAiHelperReport')->once()->andReturn(['valid' => true, 'errors' => []]);
+            $mock->shouldReceive('createAiHelperReport')->once()->andThrow(AiFeaturesNotActivatedException::make());
+        });
+
+        Livewire::test(DocsAssistantChat::class)
+            ->set('pendingAction', samplePendingReport())
+            ->call('confirmAction')
+            ->assertSet('messages.0.content', __('expert-statistics::pbx.docs_assistant.action_not_activated'))
+            ->assertSet('pendingAction', null);
+    });
+
+    it('keeps the pending action (so the user can retry) on an unexpected error', function () {
+        test()->actingAs(userWithModifyPermission(true));
+
+        $this->mock(ExpertStatisticsService::class, function ($mock) {
+            $mock->shouldReceive('validateAiHelperReport')->once()->andReturn(['valid' => true, 'errors' => []]);
+            $mock->shouldReceive('createAiHelperReport')->once()->andThrow(new RuntimeException('network blip'));
+        });
+
+        Livewire::test(DocsAssistantChat::class)
+            ->set('pendingAction', samplePendingReport())
+            ->call('confirmAction')
+            ->assertSet('messages.0.content', __('expert-statistics::pbx.docs_assistant.action_error'))
+            ->assertSet('pendingAction.type', 'report');
+    });
+});
+
+describe('cancelAction', function () {
+    it('does nothing when there is no pending action', function () {
+        Livewire::test(DocsAssistantChat::class)
+            ->call('cancelAction')
+            ->assertSet('messages', []);
+    });
+
+    it('clears the pending action and acknowledges the cancellation', function () {
+        Livewire::test(DocsAssistantChat::class)
+            ->set('pendingAction', samplePendingReport())
+            ->call('cancelAction')
+            ->assertSet('pendingAction', null)
+            ->assertSet('messages.0.content', __('expert-statistics::pbx.docs_assistant.action_cancelled'));
     });
 });

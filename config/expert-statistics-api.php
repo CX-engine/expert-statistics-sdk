@@ -102,4 +102,35 @@ return [
         'model' => env('EXPERT_STATISTICS_DOCS_ASSISTANT_MODEL', 'mistral-small-latest'),
         'max_context_sections' => (int) env('EXPERT_STATISTICS_DOCS_ASSISTANT_MAX_SECTIONS', 3),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | AI actions (create/schedule reports, create resource groups)
+    |--------------------------------------------------------------------------
+    |
+    | A separate flag from `docs_assistant.enabled` above, on purpose: a site
+    | can run the "Ask AI" bubble in plain Q&A mode (docs_assistant.enabled
+    | only) without ever exposing mutation capability, until this is
+    | explicitly turned on too. When false, Livewire\Docs\DocsAssistantChat
+    | behaves exactly as it did before this feature existed — still calls
+    | Contracts\AnswersDocsQuestions directly, never
+    | Contracts\PerformsExpertStatisticsActions.
+    |
+    | Backed by Services\PrismActionAssistantResponder, which additionally
+    | needs the active host's `ai_activated` flag set on the expert-stats
+    | backend (Pbx3cxHost::isAiActivated()) before it can actually create
+    | anything — a 403 from the backend surfaces as a friendly in-chat
+    | message, not a crash, regardless of this flag.
+    |
+    | `max_tool_steps` bounds the read-only analytics-lookup tool-calling
+    | loop (see PrismActionAssistantResponder::gather()) — how many times the
+    | model may call ask_call_analytics in a single turn before it must
+    | finalize its answer, to keep latency/cost bounded.
+    */
+    'ai_actions' => [
+        'enabled' => (bool) env('EXPERT_STATISTICS_AI_ACTIONS_ENABLED', false),
+        'provider' => env('EXPERT_STATISTICS_AI_ACTIONS_PROVIDER', 'mistral'),
+        'model' => env('EXPERT_STATISTICS_AI_ACTIONS_MODEL', 'mistral-small-latest'),
+        'max_tool_steps' => (int) env('EXPERT_STATISTICS_AI_ACTIONS_MAX_TOOL_STEPS', 4),
+    ],
 ];
