@@ -1102,7 +1102,7 @@ return [
         'correct_answers' => ':correct / :total correct answers',
         'passed' => 'Passed',
         'failed' => 'Not passed',
-        'pass_mark' => 'Pass mark: :score%',
+        'pass_mark' => 'Minimum score to pass: :score%',
         'by_module' => 'Results by module',
         'module' => 'Module',
         'result' => 'Result',

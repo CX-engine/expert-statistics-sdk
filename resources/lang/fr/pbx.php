@@ -1100,7 +1100,7 @@ return [
         'correct_answers' => ':correct / :total bonnes réponses',
         'passed' => 'Réussie',
         'failed' => 'Non réussie',
-        'pass_mark' => 'Seuil de réussite : :score %',
+        'pass_mark' => 'Score minimum requis : :score %',
         'by_module' => 'Résultats par module',
         'module' => 'Module',
         'result' => 'Résultat',
