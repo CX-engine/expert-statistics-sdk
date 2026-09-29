@@ -3,6 +3,7 @@
 namespace CXEngine\ExpertStatistics\Livewire;
 
 use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
+use CXEngine\ExpertStatistics\Contracts\ProvidesTrainingParticipants;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
@@ -27,58 +28,69 @@ class Home extends Component
      */
     public function getFeatures(): array
     {
+        $features = [
+            [
+                'name' => __('expert-statistics::pbx.expert_statistics.nav_dashboard'),
+                'description' => __('expert-statistics::pbx.expert_statistics.home_feature_dashboard_desc'),
+                'icon' => 'heroicon-o-chart-pie',
+                'route' => 'expert-stats.dashboard',
+            ],
+            [
+                'name' => __('expert-statistics::pbx.expert_statistics.nav_group_my_queues'),
+                'description' => __('expert-statistics::pbx.expert_statistics.home_feature_my_queues_desc'),
+                'icon' => 'heroicon-o-queue-list',
+                'route' => 'expert-stats.my-queues.report',
+            ],
+            [
+                'name' => __('expert-statistics::pbx.expert_statistics.nav_group_my_users'),
+                'description' => __('expert-statistics::pbx.expert_statistics.home_feature_my_users_desc'),
+                'icon' => 'heroicon-o-users',
+                'route' => 'expert-stats.my-users.report',
+            ],
+            [
+                'name' => __('expert-statistics::pbx.expert_statistics.nav_group_my_numbers'),
+                'description' => __('expert-statistics::pbx.expert_statistics.home_feature_my_numbers_desc'),
+                'icon' => 'heroicon-o-phone-arrow-down-left',
+                'route' => 'expert-stats.my-numbers.report',
+            ],
+            [
+                'name' => __('expert-statistics::pbx.expert_statistics.nav_group_caller_numbers'),
+                'description' => __('expert-statistics::pbx.expert_statistics.home_feature_caller_numbers_desc'),
+                'icon' => 'heroicon-o-user-group',
+                'route' => 'expert-stats.caller-numbers.report',
+            ],
+            [
+                'name' => __('expert-statistics::pbx.expert_statistics.nav_call_analysis'),
+                'description' => __('expert-statistics::pbx.expert_statistics.home_feature_call_details_desc'),
+                'icon' => 'heroicon-o-share',
+                'route' => 'expert-stats.call-details.index',
+            ],
+            [
+                'name' => __('expert-statistics::pbx.expert_statistics.nav_group_agent_monitoring'),
+                'description' => __('expert-statistics::pbx.expert_statistics.home_feature_agent_monitoring_desc'),
+                'icon' => 'heroicon-o-signal',
+                'route' => 'expert-stats.agent-monitoring.realtime-status',
+            ],
+            [
+                'name' => __('expert-statistics::pbx.expert_statistics.nav_ai_insights'),
+                'description' => __('expert-statistics::pbx.expert_statistics.home_feature_ai_desc'),
+                'icon' => 'heroicon-o-sparkles',
+                'route' => 'expert-stats.ai.chat',
+            ],
+        ];
+
+        if (Route::has('expert-stats.training') && app(ProvidesTrainingParticipants::class)->isTrainingAvailable()) {
+            $features[] = [
+                'name' => __('expert-statistics::pbx.training.nav_label'),
+                'description' => __('expert-statistics::pbx.training.home_desc'),
+                'icon' => 'heroicon-o-academic-cap',
+                'route' => 'expert-stats.training',
+            ];
+        }
+
         return array_map(
             fn (array $feature): array => [...$feature, 'url' => $this->urlFor($feature['route'])],
-            [
-                [
-                    'name' => __('expert-statistics::pbx.expert_statistics.nav_dashboard'),
-                    'description' => __('expert-statistics::pbx.expert_statistics.home_feature_dashboard_desc'),
-                    'icon' => 'heroicon-o-chart-pie',
-                    'route' => 'expert-stats.dashboard',
-                ],
-                [
-                    'name' => __('expert-statistics::pbx.expert_statistics.nav_group_my_queues'),
-                    'description' => __('expert-statistics::pbx.expert_statistics.home_feature_my_queues_desc'),
-                    'icon' => 'heroicon-o-queue-list',
-                    'route' => 'expert-stats.my-queues.report',
-                ],
-                [
-                    'name' => __('expert-statistics::pbx.expert_statistics.nav_group_my_users'),
-                    'description' => __('expert-statistics::pbx.expert_statistics.home_feature_my_users_desc'),
-                    'icon' => 'heroicon-o-users',
-                    'route' => 'expert-stats.my-users.report',
-                ],
-                [
-                    'name' => __('expert-statistics::pbx.expert_statistics.nav_group_my_numbers'),
-                    'description' => __('expert-statistics::pbx.expert_statistics.home_feature_my_numbers_desc'),
-                    'icon' => 'heroicon-o-phone-arrow-down-left',
-                    'route' => 'expert-stats.my-numbers.report',
-                ],
-                [
-                    'name' => __('expert-statistics::pbx.expert_statistics.nav_group_caller_numbers'),
-                    'description' => __('expert-statistics::pbx.expert_statistics.home_feature_caller_numbers_desc'),
-                    'icon' => 'heroicon-o-user-group',
-                    'route' => 'expert-stats.caller-numbers.report',
-                ],
-                [
-                    'name' => __('expert-statistics::pbx.expert_statistics.nav_call_analysis'),
-                    'description' => __('expert-statistics::pbx.expert_statistics.home_feature_call_details_desc'),
-                    'icon' => 'heroicon-o-share',
-                    'route' => 'expert-stats.call-details.index',
-                ],
-                [
-                    'name' => __('expert-statistics::pbx.expert_statistics.nav_group_agent_monitoring'),
-                    'description' => __('expert-statistics::pbx.expert_statistics.home_feature_agent_monitoring_desc'),
-                    'icon' => 'heroicon-o-signal',
-                    'route' => 'expert-stats.agent-monitoring.realtime-status',
-                ],
-                [
-                    'name' => __('expert-statistics::pbx.expert_statistics.nav_ai_insights'),
-                    'description' => __('expert-statistics::pbx.expert_statistics.home_feature_ai_desc'),
-                    'icon' => 'heroicon-o-sparkles',
-                    'route' => 'expert-stats.ai.chat',
-                ],
-            ],
+            $features,
         );
     }
 

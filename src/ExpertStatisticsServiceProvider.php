@@ -27,10 +27,12 @@ use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersKpi;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersOrigins;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersReport;
 use CXEngine\ExpertStatistics\Livewire\Reports\ShareReportModal;
+use CXEngine\ExpertStatistics\Livewire\Training\Training;
 use CXEngine\ExpertStatistics\Livewire\Wallboard\PublicWallboard;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use CXEngine\ExpertStatistics\Services\PrismActionAssistantResponder;
 use CXEngine\ExpertStatistics\Services\PrismDocsAssistantResponder;
+use CXEngine\ExpertStatistics\Support\NoTrainingParticipants;
 use CXEngine\ExpertStats\ExpertStatisticsConnector;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -66,6 +68,10 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
         // analytics lookups and grounding element lists) - see
         // PrismActionAssistantResponder's own docblock.
         $this->app->bind(Contracts\PerformsExpertStatisticsActions::class, PrismActionAssistantResponder::class);
+
+        // Host apps opt in to the training by binding their own
+        // implementation; until then the Training page is never offered.
+        $this->app->bindIf(Contracts\ProvidesTrainingParticipants::class, NoTrainingParticipants::class);
     }
 
     public function boot(): void
@@ -123,6 +129,8 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
 
             Livewire::component('expert-statistics.docs.helper-panel', DocsHelperPanel::class);
             Livewire::component('expert-statistics.docs.assistant-chat', DocsAssistantChat::class);
+
+            Livewire::component('expert-statistics.training', Training::class);
         }
     }
 }

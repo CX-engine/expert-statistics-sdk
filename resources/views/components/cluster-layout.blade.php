@@ -78,6 +78,14 @@
                     <x-menus.item :title="__('expert-statistics::pbx.expert_statistics.nav_ai_dashboard')" route="expert-stats.ai.dashboard" class="pl-10" />
                     <x-menus.item :title="__('expert-statistics::pbx.expert_statistics.nav_ai_alerts')" route="expert-stats.ai.alerts" class="pl-10" />
                 </x-menus.item-dropdown>
+
+                @if (\Illuminate\Support\Facades\Route::has('expert-stats.training') && app(\CXEngine\ExpertStatistics\Contracts\ProvidesTrainingParticipants::class)->isTrainingAvailable())
+                    <x-menus.item
+                        :title="__('expert-statistics::pbx.training.nav_label')"
+                        route="expert-stats.training"
+                        icon="phosphor-graduation-cap"
+                    />
+                @endif
             </ul>
         </nav>
 

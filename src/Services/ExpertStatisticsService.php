@@ -4,6 +4,7 @@ namespace CXEngine\ExpertStatistics\Services;
 
 use CXEngine\ExpertStatistics\Contracts\ResolvesActivePbxHost;
 use CXEngine\ExpertStatistics\Exceptions\AiFeaturesNotActivatedException;
+use CXEngine\ExpertStatistics\Exceptions\InvalidTrainingKeyException;
 use CXEngine\ExpertStatistics\Exceptions\NoActivePbxHostException;
 use CXEngine\ExpertStats\ExpertStatisticsConnector;
 use Illuminate\Support\Facades\Cache;
@@ -1573,6 +1574,83 @@ class ExpertStatisticsService
     public function askCallAnalytics(string $question): array
     {
         return $this->sendAiChatMessage($question);
+    }
+
+    // --- Training ---
+    // Expert Statistics training (Livewire\Training\Training). Never cached:
+    // every call mutates or reads per-participant state. A 404/410 from the
+    // backend (unknown/expired key + email pair) surfaces as
+    // InvalidTrainingKeyException.
+
+    /**
+     * Creates a training and has the backend email its key. Callers must
+     * check the participant was invited first (ProvidesTrainingParticipants).
+     *
+     * @param  array{email: string, tenant_id: string, tenant_name?: string|null, tenant_code?: string|null, locale?: string|null, training_url?: string|null}  $data
+     * @return array<string, mixed>
+     */
+    public function requestTrainingKey(array $data): array
+    {
+        return $this->connector->training()->store($this->hostName(), $data)->throw()->json();
+    }
+
+    /**
+     * @param  array{email: string, key: string, locale?: string|null}  $data
+     * @return array<string, mixed> training + questions + saved answers, or the summary of a completed training
+     *
+     * @throws InvalidTrainingKeyException
+     */
+    public function startTraining(array $data): array
+    {
+        return $this->trainingCall(fn (string $host) => $this->connector->training()->start($host, $data));
+    }
+
+    /**
+     * @param  array{email: string, key: string, answers: array<int, array{question_id: int, option_id: int}>}  $data
+     * @return array<string, mixed>
+     *
+     * @throws InvalidTrainingKeyException
+     */
+    public function saveTrainingAnswers(array $data): array
+    {
+        return $this->trainingCall(fn (string $host) => $this->connector->training()->saveAnswers($host, $data));
+    }
+
+    /**
+     * @param  array{email: string, key: string}  $data
+     * @return array<string, mixed> the training summary
+     *
+     * @throws InvalidTrainingKeyException
+     */
+    public function completeTraining(array $data): array
+    {
+        return $this->trainingCall(fn (string $host) => $this->connector->training()->complete($host, $data));
+    }
+
+    /**
+     * @param  array{email: string, key: string}  $data
+     * @return array<string, mixed>
+     *
+     * @throws InvalidTrainingKeyException
+     */
+    public function getTrainingSummary(array $data): array
+    {
+        return $this->trainingCall(fn (string $host) => $this->connector->training()->summary($host, $data));
+    }
+
+    /**
+     * @param  \Closure(string): Response  $send
+     * @return array<string, mixed>
+     */
+    private function trainingCall(\Closure $send): array
+    {
+        $response = $send($this->hostName());
+
+        if (in_array($response->status(), [404, 410], true)) {
+            throw InvalidTrainingKeyException::make(expired: $response->status() === 410);
+        }
+
+        return $response->throw()->json();
     }
 
     /**
