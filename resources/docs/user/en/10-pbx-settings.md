@@ -2,9 +2,9 @@
 
 **PBX Settings** is a single tabbed page holding every piece of Expert Statistics configuration
 that isn't PBX host management itself (host connection details are an administrator-only concern —
-see the Reseller/Admin guide). Anyone with `expert-statistics.view` can open every tab and read its
+see the Reseller/Admin guide). Anyone with Read access can open every tab and read its
 current configuration; a read-only banner appears and every Save/Create/Delete control is disabled
-or hidden unless you also have `expert-statistics.modify` (see
+or hidden unless you also have Edit access (see
 [Permissions & Access](02-permissions.md)).
 
 ## Active Host tab

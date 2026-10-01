@@ -9,33 +9,33 @@ Votre administrateur vous accorde l'une de ces permissions :
 
 | Permission | Ce qu'elle vous permet de faire |
 |---|---|
-| **`expert-statistics.view`** (lecture seule) | Parcourir **toutes** les pages d'Expert Statistics — Tableau de bord, Mes files d'attente, Mes utilisateurs, Mes numéros, Numéros appelants, Supervision des agents, Analyseur d'appels, Analyses IA, Rapports programmés, et tous les onglets des Paramètres PBX. Vous pouvez filtrer, changer les périodes, changer d'hôte, et tout consulter. |
-| **`expert-statistics.modify`** (lecture + écriture) | Tout ce que `.view` permet, **plus** la possibilité d'enregistrer des modifications : les onglets des Paramètres PBX (libellés d'agent, temporisation de pré-décroché des files d'attente, seuils du tableau de rapport, seuils d'alertes IA), créer/modifier/supprimer des **Groupes** de ressources, construire/modifier des **Wallboards**, et modifier/supprimer des **Rapports programmés**. |
+| **Accès Lecture** (consultation seule) | Parcourir **toutes** les pages d'Expert Statistics — Tableau de bord, Mes files d'attente, Mes utilisateurs, Mes numéros, Numéros appelants, Supervision des agents, Analyseur d'appels, Analyses IA, Rapports programmés, et tous les onglets des Paramètres PBX. Vous pouvez filtrer, changer les périodes, changer d'hôte, et tout consulter. |
+| **Accès Modification** (consultation + modification) | Tout ce que l'accès Lecture permet, **plus** la possibilité d'enregistrer des modifications : les onglets des Paramètres PBX (libellés d'agent, temporisation de pré-décroché des files d'attente, seuils du tableau de rapport, seuils d'alertes IA), créer/modifier/supprimer des **Groupes** de ressources, construire/modifier des **Wallboards**, et modifier/supprimer des **Rapports programmés**. |
 
-Une permission raccourcie, `expert-statistics.*`, accorde les deux à la fois.
+L'**Accès complet** accorde les deux à la fois.
 
 **Le point important : lecture seule ne veut pas dire « impossible de voir la configuration ».** Si
-vous n'avez que `expert-statistics.view`, vous pouvez tout de même ouvrir les Paramètres PBX et
+vous n'avez que l'accès Lecture, vous pouvez tout de même ouvrir les Paramètres PBX et
 consulter chaque onglet — vous verrez une bannière « lecture seule », et chaque bouton
-Enregistrer/Créer/Supprimer sera désactivé ou masqué. Il faut `.modify` pour réellement changer
+Enregistrer/Créer/Supprimer sera désactivé ou masqué. Il faut l'accès Modification pour réellement changer
 quelque chose.
 
 Cette séparation s'applique à :
 
 - Chaque onglet des **Paramètres PBX** (Hôte actif, Agent, File d'attente, Tableau de rapport,
-  Alertes IA, Groupes, Wallboard) — consultable par toute personne ayant `.view`, modifiable
-  uniquement avec `.modify`.
-- **Rapports programmés** — la liste est consultable par toute personne ayant `.view` ; modifier ou
-  supprimer une programmation existante nécessite `.modify`.
+  Alertes IA, Groupes, Wallboard) — consultable par toute personne ayant l'accès Lecture, modifiable
+  uniquement avec l'accès Modification.
+- **Rapports programmés** — la liste est consultable par toute personne ayant l'accès Lecture ; modifier ou
+  supprimer une programmation existante nécessite l'accès Modification.
 - **Envoyer ou programmer un nouveau rapport** depuis le tableau de bord/les pages de rapport (la
-  fenêtre de partage/programmation) nécessite également `.modify`.
+  fenêtre de partage/programmation) nécessite également l'accès Modification.
 
 Si un bouton semble grisé ou absent et que vous pensez devoir y avoir accès, demandez à votre
-administrateur de vous accorder `expert-statistics.modify`.
+administrateur de vous accorder l'accès Modification.
 
 ## L'activation : un interrupteur indépendant
 
-Même avec la permission complète `expert-statistics.modify`, aucune page de rapport ne fonctionnera
+Même avec l'accès Modification ou l'Accès complet, aucune page de rapport ne fonctionnera
 tant qu'un **administrateur n'a pas activé Expert Statistics pour votre hôte PBX** — soit en essai
 gratuit, soit en abonnement payant. C'est un mécanisme entièrement distinct des permissions
 consultation/modification ci-dessus ; il se gère depuis la page **Activation PBX**, accessible aux
@@ -57,14 +57,14 @@ comment activer un hôte.)
 
 Créer, modifier ou supprimer les hôtes PBX eux-mêmes (détails de connexion, identifiants,
 informations de licence) est une troisième capacité, entièrement distincte et réservée aux
-administrateurs, sans lien avec `expert-statistics.*`. Elle est couverte dans le guide
+administrateurs, sans lien avec les permissions Expert Statistics. Elle est couverte dans le guide
 revendeur/administrateur, pas ici — en tant qu'utilisateur standard, vous n'en aurez jamais besoin.
 
 ## Référence rapide
 
 | Question | Réponse |
 |---|---|
-| « Je vois une page mais chaque bouton Enregistrer est désactivé. » | Vous avez `.view` mais pas `.modify`. Demandez à un administrateur. |
+| « Je vois une page mais chaque bouton Enregistrer est désactivé. » | Vous avez l'accès Lecture mais pas l'accès Modification. Demandez à un administrateur. |
 | « J'obtiens un message 402 / « pas encore activé ». » | L'hôte n'est pas activé. Demandez à un administrateur de l'activer. |
-| « Je ne vois pas du tout Expert Stats dans le menu. » | Vous n'avez pas `expert-statistics.view` (ni `.modify`/`.*`). Demandez à un administrateur. |
+| « Je ne vois pas du tout Expert Stats dans le menu. » | Vous n'avez pas l'accès Lecture (ni l'accès Modification, ni l'Accès complet). Demandez à un administrateur. |
 | « Je ne peux pas créer ou modifier des hôtes PBX. » | C'est normal — la gestion des hôtes est une capacité réservée aux administrateurs, distincte des permissions Expert Statistics. |

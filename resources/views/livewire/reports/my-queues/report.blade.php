@@ -1,3 +1,4 @@
+@use('CXEngine\ExpertStatistics\Support\CallAnalysisLink')
 <x-expert-statistics::cluster-layout :title="__('expert-statistics::pbx.expert_statistics.my_queues_title')">
 
 <div class="space-y-5">
@@ -246,6 +247,21 @@
                                 $declined = max(0, $calls - $answered - $abandoned);
                                 $divisor = $calls - $preanswerAbandoned;
                                 $pct = $divisor > 0 ? ($answered / $divisor) * 100 : 0;
+
+                                // Queue rows filter on the queue as destination; extension rows on the
+                                // extension as destination, reached through its parent queue as origin.
+                                $queueDn = explode('-', $row['queueNameNumber'] ?? '')[0];
+                                $elemDn  = explode('-', $row['elementNameNumber'] ?? '')[0];
+                                $dayDate = $groupData ? null : CallAnalysisLink::dayToDate($row['day'] ?? null);
+                                $cfaQE = array_merge(CallAnalysisLink::period($dayDate ?? $startDate, $dayDate ?? $endDate, $startTime, $endTime), [
+                                    'callWay' => 'inbound',
+                                    'destinationDn' => $isQueue ? $queueDn : $elemDn, 'destinationDnType' => $isQueue ? '4' : '0',
+                                    'originDn' => $isQueue ? '' : $queueDn, 'originDnType' => $isQueue ? '' : '4',
+                                ]);
+                                $urlAll        = CallAnalysisLink::url([...$cfaQE, 'callStatus' => 'all']);
+                                $urlAnswered   = CallAnalysisLink::url([...$cfaQE, 'callStatus' => 'answered']);
+                                // Declined and abandoned share this filter: call analysis can't tell them apart.
+                                $urlUnanswered = CallAnalysisLink::url([...$cfaQE, 'callStatus' => 'unanswered']);
                             @endphp
                             <tr
                                 class="{{ $isQueue && ! $queuesOnlyStats ? 'bg-gray-50/50 dark:bg-gray-900/20 font-medium' : '' }} hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
@@ -263,12 +279,12 @@
                                     </td>
                                 @endif
                                 <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300">
-                                    {{ $calls }}
+                                    <x-expert-statistics::call-analysis-link :href="$urlAll">{{ $calls }}</x-expert-statistics::call-analysis-link>
                                 </td>
                                 <td class="px-4 py-3 text-red-600 dark:text-red-400">
                                     <div class="grid grid-cols-2 gap-2 text-right">
-                                        <span>{{ $declined }}</span>
-                                        <span>{{ $abandoned }}{{ $preanswerAbandoned > 0 ? ' ('.$preanswerAbandoned.')' : '' }}</span>
+                                        <span><x-expert-statistics::call-analysis-link :href="$urlUnanswered">{{ $declined }}</x-expert-statistics::call-analysis-link></span>
+                                        <span><x-expert-statistics::call-analysis-link :href="$urlUnanswered">{{ $abandoned }}{{ $preanswerAbandoned > 0 ? ' ('.$preanswerAbandoned.')' : '' }}</x-expert-statistics::call-analysis-link></span>
                                     </div>
                                 </td>
                                 @if ($queuesOnlyStats)
@@ -281,7 +297,7 @@
                                     </td>
                                 @endif
                                 <td class="px-4 py-3 text-right text-green-600 dark:text-green-400">
-                                    {{ $answered }}
+                                    <x-expert-statistics::call-analysis-link :href="$urlAnswered">{{ $answered }}</x-expert-statistics::call-analysis-link>
                                 </td>
                                 <td class="px-4 py-3 text-right text-blue-600 dark:text-blue-400">
                                     {{ (int) ($row['transferred'] ?? 0) }}

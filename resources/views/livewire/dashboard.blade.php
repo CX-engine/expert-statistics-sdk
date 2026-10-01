@@ -1,3 +1,4 @@
+@use('CXEngine\ExpertStatistics\Support\CallAnalysisLink')
 <x-expert-statistics::cluster-layout
     :title="__('expert-statistics::pbx.expert_statistics.nav_dashboard')"
     :subtitle="__('expert-statistics::pbx.expert_statistics.home_feature_dashboard_desc')"
@@ -205,6 +206,12 @@
                 $inTenSecPct = $inTotalCalls > 0 ? round($inTenSec / $inTotalCalls * 100, 1) : 0;
                 $inUnanswered = $inTotalCalls - $inAnswered;
                 $inAnswerRate = $inTotalCalls > 0 ? round($inAnswered / $inTotalCalls * 100, 1) : 0;
+
+                // Drill-down: inbound calls to the selected queues/extensions as destinations (needs a type)
+                $cfaInbound = [...CallAnalysisLink::period($startDate, $endDate, $startTime, $endTime), 'callWay' => 'inbound', 'destinationDn' => implode(',', $selectedElements), 'destinationDnType' => $urlType === 'extension' ? '0' : '4'];
+                $cfaUrlAll = $urlType !== null ? CallAnalysisLink::url([...$cfaInbound, 'callStatus' => 'all']) : null;
+                $cfaUrlAnswered = $urlType !== null ? CallAnalysisLink::url([...$cfaInbound, 'callStatus' => 'answered']) : null;
+                $cfaUrlUnanswered = $urlType !== null ? CallAnalysisLink::url([...$cfaInbound, 'callStatus' => 'unanswered']) : null;
             @endphp
 
             @if ($inboundNeedsSelect)
@@ -426,24 +433,24 @@
                     </div>
 
                     <div class="grid grid-cols-3 gap-3 mb-5 text-center">
-                        <div class="rounded-xl bg-green-50 dark:bg-green-950/30 px-3 py-3">
+                        <x-expert-statistics::call-analysis-link tile :href="$cfaUrlAnswered" class="rounded-xl bg-green-50 dark:bg-green-950/30 px-3 py-3 hover:ring-green-300 dark:hover:ring-green-700">
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">{{ __('expert-statistics::pbx.dashboards.answered') }}</div>
                             <div class="flex justify-center items-center gap-1">
                                 <div class="text-lg font-semibold text-green-600 dark:text-green-400">{{ $inAnswered }}</div>
                                 <div class="text-lg font-bold text-green-600 dark:text-green-400">({{ $inAnswerRate }}%)</div>
                             </div>
-                        </div>
-                        <div class="rounded-xl bg-red-50 dark:bg-red-950/30 px-3 py-3">
+                        </x-expert-statistics::call-analysis-link>
+                        <x-expert-statistics::call-analysis-link tile :href="$cfaUrlUnanswered" class="rounded-xl bg-red-50 dark:bg-red-950/30 px-3 py-3 hover:ring-red-300 dark:hover:ring-red-700">
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">{{ __('expert-statistics::pbx.dashboards.unanswered') }}</div>
                             <div class="flex justify-center items-center gap-1">
                                 <div class="text-lg font-semibold text-red-500 dark:text-red-400">{{ $inUnanswered }}</div>
                                 <div class="text-lg font-bold text-red-500 dark:text-red-400">({{ round(100 - $inAnswerRate, 1) }}%)</div>
                             </div>
-                        </div>
-                        <div class="rounded-xl bg-gray-50 dark:bg-gray-700/50 px-3 py-3">
+                        </x-expert-statistics::call-analysis-link>
+                        <x-expert-statistics::call-analysis-link tile :href="$cfaUrlAll" class="rounded-xl bg-gray-50 dark:bg-gray-700/50 px-3 py-3 hover:ring-gray-300 dark:hover:ring-gray-500">
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">{{ __('expert-statistics::pbx.dashboards.totalAppeals') }}</div>
                             <div class="text-lg font-semibold text-gray-700 dark:text-gray-200">{{ $inTotalCalls }}</div>
-                        </div>
+                        </x-expert-statistics::call-analysis-link>
                     </div>
 
                     <div class="mb-5">

@@ -56,7 +56,7 @@ Alert *thresholds* aren't set here — they live in
 control whether alerting is enabled at all, how often it checks, which language/email it notifies,
 and the specific warning/critical thresholds for abandon rate, not-answered rate, pre-answer
 abandonment, wait time, and volume-change sensitivity. Changing thresholds requires
-`expert-statistics.modify` — see [Permissions & Access](02-permissions.md).
+Edit access — see [Permissions & Access](02-permissions.md).
 
 ## Related pages
 

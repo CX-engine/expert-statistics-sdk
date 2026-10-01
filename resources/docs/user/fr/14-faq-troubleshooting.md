@@ -7,13 +7,13 @@ interrupteur par hôte (essai ou abonnement payant) que seul un administrateur p
 [Permissions & accès](02-permissions.md#lactivation--un-interrupteur-indépendant).
 
 **« Un bouton Enregistrer/Créer/Supprimer est grisé ou absent. »**
-Vous avez `expert-statistics.view` (lecture seule) mais pas `expert-statistics.modify`. Tout reste
+Vous avez l'accès Lecture mais pas l'accès Modification. Tout reste
 visible, mais le modifier nécessite la permission d'édition. Demandez-la à votre administrateur si
 besoin. Voir [Permissions & accès](02-permissions.md).
 
 **« Je ne vois pas du tout Expert Stats dans le menu. »**
 Vous n'avez actuellement aucune permission Expert Statistics. Demandez à votre administrateur de
-vous accorder au minimum `expert-statistics.view`.
+vous accorder au minimum l'accès Lecture.
 
 **« Un chiffre du tableau de rapport ne correspond pas à ce que j'ai compté manuellement. »**
 Vérifiez la formule exacte dans le [Glossaire des KPI & rapports](13-kpi-and-report-glossary.md) —

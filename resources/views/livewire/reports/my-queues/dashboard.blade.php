@@ -1,3 +1,4 @@
+@use('CXEngine\ExpertStatistics\Support\CallAnalysisLink')
 <x-expert-statistics::cluster-layout :title="__('expert-statistics::pbx.expert_statistics.my_queues_dashboard_title')">
 
 <div class="space-y-5">
@@ -70,6 +71,12 @@
                 $talking = (int) ($kpis['totalTalkingSeconds'] ?? 0);
                 $unanswered = max(0, $totalCalls - $answered);
                 $answerRate = $totalCalls > 0 ? round($answered / $totalCalls * 100, 1) : 0;
+
+                // Drill-down: inbound calls to the selected queues as destinations
+                $cfaInbound = [...CallAnalysisLink::period($startDate, $endDate, $startTime, $endTime), 'callWay' => 'inbound', 'destinationDn' => implode(',', $selectedElements), 'destinationDnType' => '4'];
+                $cfaUrlAll = CallAnalysisLink::url([...$cfaInbound, 'callStatus' => 'all']);
+                $cfaUrlAnswered = CallAnalysisLink::url([...$cfaInbound, 'callStatus' => 'answered']);
+                $cfaUrlUnanswered = CallAnalysisLink::url([...$cfaInbound, 'callStatus' => 'unanswered']);
                 $lostPct = $totalCalls > 0 ? round($lost / $totalCalls * 100, 1) : 0;
                 $tenSecPct = $totalCalls > 0 ? round($tenSec / $totalCalls * 100, 1) : 0;
 
@@ -161,24 +168,24 @@
 
             {{-- KPI summary row --}}
             <div class="grid grid-cols-3 gap-3 text-center">
-                <div class="rounded-xl bg-green-50 dark:bg-green-950/30 px-3 py-3">
+                <x-expert-statistics::call-analysis-link tile :href="$cfaUrlAnswered" class="rounded-xl bg-green-50 dark:bg-green-950/30 px-3 py-3 hover:ring-green-300 dark:hover:ring-green-700">
                     <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">{{ __('expert-statistics::pbx.dashboards.answered') }}</div>
                     <div class="flex justify-center items-center gap-1">
                         <div class="text-lg font-semibold text-green-600 dark:text-green-400">{{ $answered }}</div>
                         <div class="text-lg font-bold text-green-600 dark:text-green-400">({{ $answerRate }}%)</div>
                     </div>
-                </div>
-                <div class="rounded-xl bg-red-50 dark:bg-red-950/30 px-3 py-3">
+                </x-expert-statistics::call-analysis-link>
+                <x-expert-statistics::call-analysis-link tile :href="$cfaUrlUnanswered" class="rounded-xl bg-red-50 dark:bg-red-950/30 px-3 py-3 hover:ring-red-300 dark:hover:ring-red-700">
                     <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">{{ __('expert-statistics::pbx.dashboards.unanswered') }}</div>
                     <div class="flex justify-center items-center gap-1">
                         <div class="text-lg font-semibold text-red-500 dark:text-red-400">{{ $unanswered }}</div>
                         <div class="text-lg font-bold text-red-500 dark:text-red-400">({{ round(100 - $answerRate, 1) }}%)</div>
                     </div>
-                </div>
-                <div class="rounded-xl bg-gray-50 dark:bg-gray-700/50 px-3 py-3">
+                </x-expert-statistics::call-analysis-link>
+                <x-expert-statistics::call-analysis-link tile :href="$cfaUrlAll" class="rounded-xl bg-gray-50 dark:bg-gray-700/50 px-3 py-3 hover:ring-gray-300 dark:hover:ring-gray-500">
                     <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">{{ __('expert-statistics::pbx.dashboards.totalAppeals') }}</div>
                     <div class="text-lg font-semibold text-gray-700 dark:text-gray-200">{{ $totalCalls }}</div>
-                </div>
+                </x-expert-statistics::call-analysis-link>
             </div>
 
             {{-- Insight chips --}}

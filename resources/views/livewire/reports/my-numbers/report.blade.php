@@ -1,3 +1,4 @@
+@use('CXEngine\ExpertStatistics\Support\CallAnalysisLink')
 <x-expert-statistics::cluster-layout :title="__('expert-statistics::pbx.expert_statistics.my_numbers_title')">
 
 <div class="space-y-5">
@@ -169,6 +170,14 @@
                     $declined = max(0, $calls - $answered - $abandoned);
                     $divisor = $calls - $preanswerAbandoned;
                     $pct = $divisor > 0 ? ($answered / $divisor) * 100 : 0;
+
+                    $dayDate = $groupData ? null : CallAnalysisLink::dayToDate($row['day'] ?? null);
+                    $cfaDid = array_merge(CallAnalysisLink::period($dayDate ?? $startDate, $dayDate ?? $endDate, $startTime, $endTime), [
+                        'callWay' => 'inbound', 'didNumber' => $row['did'] ?? '',
+                    ]);
+                    $urlAll        = CallAnalysisLink::url([...$cfaDid, 'callStatus' => 'all']);
+                    $urlAnswered   = CallAnalysisLink::url([...$cfaDid, 'callStatus' => 'answered']);
+                    $urlUnanswered = CallAnalysisLink::url([...$cfaDid, 'callStatus' => 'unanswered']);
                     @endphp
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                         @if (! $groupData)
@@ -179,9 +188,9 @@
                         <td class="px-4 py-3 font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">
                             {{ $row['did'] ?? '—' }}
                         </td>
-                        <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300">{{ $calls }}</td>
-                        <td class="px-4 py-3 text-right text-red-600 dark:text-red-400">{{ $declined }}</td>
-                        <td class="px-4 py-3 text-right text-green-600 dark:text-green-400">{{ $answered }}</td>
+                        <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300"><x-expert-statistics::call-analysis-link :href="$urlAll">{{ $calls }}</x-expert-statistics::call-analysis-link></td>
+                        <td class="px-4 py-3 text-right text-red-600 dark:text-red-400"><x-expert-statistics::call-analysis-link :href="$urlUnanswered">{{ $declined }}</x-expert-statistics::call-analysis-link></td>
+                        <td class="px-4 py-3 text-right text-green-600 dark:text-green-400"><x-expert-statistics::call-analysis-link :href="$urlAnswered">{{ $answered }}</x-expert-statistics::call-analysis-link></td>
                         <td class="px-4 py-3 text-right">
                             <span
                                 class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
@@ -254,6 +263,20 @@
                     $declined = max(0, $calls - $answered - $abandoned);
                     $divisor = $calls - $preanswerAbandoned;
                     $pct = $divisor > 0 ? ($answered / $divisor) * 100 : 0;
+
+                    // Queue rows filter on the queue as destination; extension rows on the
+                    // extension as destination, reached through its parent queue as origin.
+                    $queueDn = explode('-', $row['queueNameNumber'] ?? '')[0];
+                    $elemDn  = explode('-', $row['elementNameNumber'] ?? '')[0];
+                    $dayDate = $groupData ? null : CallAnalysisLink::dayToDate($row['day'] ?? null);
+                    $cfaQE = array_merge(CallAnalysisLink::period($dayDate ?? $startDate, $dayDate ?? $endDate, $startTime, $endTime), [
+                        'callWay' => 'inbound',
+                        'destinationDn' => $isQueue ? $queueDn : $elemDn, 'destinationDnType' => $isQueue ? '4' : '0',
+                        'originDn' => $isQueue ? '' : $queueDn, 'originDnType' => $isQueue ? '' : '4',
+                    ]);
+                    $urlAll        = CallAnalysisLink::url([...$cfaQE, 'callStatus' => 'all']);
+                    $urlAnswered   = CallAnalysisLink::url([...$cfaQE, 'callStatus' => 'answered']);
+                    $urlUnanswered = CallAnalysisLink::url([...$cfaQE, 'callStatus' => 'unanswered']);
                     @endphp
                     <tr
                         class="{{ $isQueue ? 'bg-gray-50/50 dark:bg-gray-900/20 font-medium' : '' }} hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
@@ -268,9 +291,9 @@
                         <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ $row['elementNameNumber'] ?? '—'
                             }}</td>
                         @endif
-                        <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300">{{ $calls }}</td>
-                        <td class="px-4 py-3 text-right text-red-600 dark:text-red-400">{{ $declined }}</td>
-                        <td class="px-4 py-3 text-right text-green-600 dark:text-green-400">{{ $answered }}</td>
+                        <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300"><x-expert-statistics::call-analysis-link :href="$urlAll">{{ $calls }}</x-expert-statistics::call-analysis-link></td>
+                        <td class="px-4 py-3 text-right text-red-600 dark:text-red-400"><x-expert-statistics::call-analysis-link :href="$urlUnanswered">{{ $declined }}</x-expert-statistics::call-analysis-link></td>
+                        <td class="px-4 py-3 text-right text-green-600 dark:text-green-400"><x-expert-statistics::call-analysis-link :href="$urlAnswered">{{ $answered }}</x-expert-statistics::call-analysis-link></td>
                         <td class="px-4 py-3 text-right text-blue-600 dark:text-blue-400">{{ $row['transferred'] ??
                             0 }}</td>
                         <td class="px-4 py-3 text-right">

@@ -1,3 +1,4 @@
+@use('CXEngine\ExpertStatistics\Support\CallAnalysisLink')
 <x-expert-statistics::cluster-layout :title="__('expert-statistics::pbx.expert_statistics.caller_numbers_title')">
 
 <div class="space-y-5">
@@ -172,6 +173,21 @@
                     }
                     return '<svg xmlns="http://www.w3.org/2000/svg" class="inline-block ml-1 h-3 w-3 '.$color.'" viewBox="0 0 16 16" fill="currentColor"><path d="'.$path.'"/></svg>';
                 };
+
+                $cfaTimeParams = [...CallAnalysisLink::period($startDate, $endDate, $startTime, $endTime), 'callWay' => 'inbound'];
+                $cfaUrls = fn (array $filter): array => [
+                    'all' => CallAnalysisLink::url([...$cfaTimeParams, ...$filter, 'callStatus' => 'all']),
+                    'answered' => CallAnalysisLink::url([...$cfaTimeParams, ...$filter, 'callStatus' => 'answered']),
+                    'unanswered' => CallAnalysisLink::url([...$cfaTimeParams, ...$filter, 'callStatus' => 'unanswered']),
+                ];
+
+                // Group name => its phone numbers, so a group row drills into the numbers it covers
+                $groupNumbersMap = [];
+                foreach ($pbxElements as $el) {
+                    if ($el['isConstructor'] ?? false) {
+                        $groupNumbersMap[$el['label']] = array_values(array_filter((array) $el['value']));
+                    }
+                }
             @endphp
             @if ($viewBy === 'queue')
             {{-- Queue view table --}}
@@ -195,12 +211,13 @@
                     @php
                         $rate = (float) ($row['response_rate'] ?? 0);
                         $qDn = explode('-', $row['queue_dn'] ?? '')[0];
+                        $urls = $cfaUrls(['destinationDn' => $qDn, 'destinationDnType' => '4']);
                     @endphp
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                         <td class="px-4 py-3 font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">{{ $queueNameMap[$qDn] ?? ($row['queue_dn'] ?? '—') }}</td>
-                        <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300">{{ $row['inbound_total'] ?? 0 }}</td>
-                        <td class="px-4 py-3 text-right text-green-600 dark:text-green-400">{{ $row['inbound_answered'] ?? 0 }}</td>
-                        <td class="px-4 py-3 text-right text-red-600 dark:text-red-400">{{ $row['inbound_unanswered'] ?? 0 }}</td>
+                        <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300"><x-expert-statistics::call-analysis-link :href="$urls['all']">{{ $row['inbound_total'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
+                        <td class="px-4 py-3 text-right text-green-600 dark:text-green-400"><x-expert-statistics::call-analysis-link :href="$urls['answered']">{{ $row['inbound_answered'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
+                        <td class="px-4 py-3 text-right text-red-600 dark:text-red-400"><x-expert-statistics::call-analysis-link :href="$urls['unanswered']">{{ $row['inbound_unanswered'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
                         <td class="px-4 py-3 text-right">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
                                 {{ $rate >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400' : ($rate >= 60 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-400' : 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400') }}">
@@ -239,12 +256,13 @@
                         $rate = (float) ($row['response_rate'] ?? 0);
                         $callerNum = $row['caller_number'] ?? '';
                         $isTotal = $callerNum === 'TOTAL';
+                        $urls = $isTotal ? ['all' => null, 'answered' => null, 'unanswered' => null] : $cfaUrls(['callerNumber' => $callerNum]);
                     @endphp
                     <tr class="{{ $isTotal ? 'bg-gray-50 dark:bg-gray-900/30 font-semibold' : 'hover:bg-gray-50 dark:hover:bg-gray-700/30' }} transition-colors">
                         <td class="px-4 py-3 {{ $isTotal ? '' : 'font-mono text-xs' }} text-gray-800 dark:text-gray-200 whitespace-nowrap">{{ $callerNum ?: '—' }}</td>
-                        <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300">{{ $row['inbound_total'] ?? 0 }}</td>
-                        <td class="px-4 py-3 text-right text-green-600 dark:text-green-400">{{ $row['inbound_answered'] ?? 0 }}</td>
-                        <td class="px-4 py-3 text-right text-red-600 dark:text-red-400">{{ $row['inbound_unanswered'] ?? 0 }}</td>
+                        <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300"><x-expert-statistics::call-analysis-link :href="$urls['all']">{{ $row['inbound_total'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
+                        <td class="px-4 py-3 text-right text-green-600 dark:text-green-400"><x-expert-statistics::call-analysis-link :href="$urls['answered']">{{ $row['inbound_answered'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
+                        <td class="px-4 py-3 text-right text-red-600 dark:text-red-400"><x-expert-statistics::call-analysis-link :href="$urls['unanswered']">{{ $row['inbound_unanswered'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
                         <td class="px-4 py-3 text-right">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
                                 {{ $rate >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400' : ($rate >= 60 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-400' : 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400') }}">
@@ -282,12 +300,18 @@
                     @php
                         $isTotal = ($row['caller_number'] ?? '') === 'TOTAL';
                         $rate = (float) ($row['response_rate'] ?? 0);
+                        // Prefer the group's numbers from pbxElements, then the API's, then the bare group name
+                        $groupName = $row['caller_number'] ?? '';
+                        $groupNumbers = $groupNumbersMap[$groupName] ?? ($row['numbers'] ?? []);
+                        $urls = $isTotal
+                            ? ['all' => null, 'answered' => null, 'unanswered' => null]
+                            : $cfaUrls(['callerNumber' => $groupNumbers ? implode(',', $groupNumbers) : $groupName]);
                     @endphp
                     <tr class="{{ $isTotal ? 'bg-gray-50 dark:bg-gray-900/30 font-semibold' : 'hover:bg-gray-50 dark:hover:bg-gray-700/30' }} transition-colors">
                         <td class="px-4 py-3 text-gray-800 dark:text-gray-200 whitespace-nowrap">{{ $row['caller_number'] ?? '—' }}</td>
-                        <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300">{{ $row['inbound_total'] ?? 0 }}</td>
-                        <td class="px-4 py-3 text-right text-green-600 dark:text-green-400">{{ $row['inbound_answered'] ?? 0 }}</td>
-                        <td class="px-4 py-3 text-right text-red-600 dark:text-red-400">{{ $row['inbound_unanswered'] ?? 0 }}</td>
+                        <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300"><x-expert-statistics::call-analysis-link :href="$urls['all']">{{ $row['inbound_total'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
+                        <td class="px-4 py-3 text-right text-green-600 dark:text-green-400"><x-expert-statistics::call-analysis-link :href="$urls['answered']">{{ $row['inbound_answered'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
+                        <td class="px-4 py-3 text-right text-red-600 dark:text-red-400"><x-expert-statistics::call-analysis-link :href="$urls['unanswered']">{{ $row['inbound_unanswered'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
                         <td class="px-4 py-3 text-right">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
                                 {{ $rate >= 80 ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400' : ($rate >= 60 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-400' : 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400') }}">

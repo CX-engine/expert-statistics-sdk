@@ -60,7 +60,7 @@ At the top of the Dashboard:
 - **View reports** — jumps to **Scheduled Reports** to manage existing schedules.
 - **Create alert** — jumps you toward AI Alert configuration (see [AI Insights](09-ai-insights.md)).
 
-> Note: Send/Schedule report requires `expert-statistics.modify` — see
+> Note: Send/Schedule report requires Edit access — see
 > [Permissions & Access](02-permissions.md).
 
 ## Related pages

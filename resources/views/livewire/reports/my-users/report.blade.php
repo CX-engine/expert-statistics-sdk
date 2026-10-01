@@ -1,3 +1,4 @@
+@use('CXEngine\ExpertStatistics\Support\CallAnalysisLink')
 <x-expert-statistics::cluster-layout :title="__('expert-statistics::pbx.expert_statistics.my_users_title')">
 
 <div class="space-y-5">
@@ -180,16 +181,27 @@
                     @php
                         $pct = (float) ($row['inbound_answered_percentage'] ?? 0);
                         $hasInbound = ($row['inbound_answered'] ?? 0) > 0 || ($row['inbound_unanswered'] ?? 0) > 0;
+
+                        // The consolidated row has no single extension: drill into every selected one.
+                        $extDn = $showConsolidated ? implode(',', $selectedElements) : explode('-', $row['user'] ?? '')[0];
+                        $cfaParams = CallAnalysisLink::period($startDate, $endDate, $startTime, $endTime);
+                        $asOrigin = ['originDn' => $extDn, 'originDnType' => '0'];
+                        $asDestination = ['destinationDn' => $extDn, 'destinationDnType' => '0'];
+                        $urlOutbound          = CallAnalysisLink::url([...$cfaParams, ...$asOrigin, 'callWay' => 'outbound', 'callStatus' => 'answered']);
+                        $urlInboundAnswered   = CallAnalysisLink::url([...$cfaParams, ...$asDestination, 'callWay' => 'inbound', 'callStatus' => 'answered']);
+                        $urlInboundUnanswered = CallAnalysisLink::url([...$cfaParams, ...$asDestination, 'callWay' => 'inbound', 'callStatus' => 'unanswered']);
+                        $urlInternalReceived  = CallAnalysisLink::url([...$cfaParams, ...$asDestination, 'callWay' => 'internal', 'callStatus' => 'answered']);
+                        $urlInternalMade      = CallAnalysisLink::url([...$cfaParams, ...$asOrigin, 'callWay' => 'internal', 'callStatus' => 'answered']);
                     @endphp
                     <tr class="{{ $showConsolidated ? 'bg-gray-50 dark:bg-gray-900/30 font-semibold' : 'hover:bg-gray-50 dark:hover:bg-gray-700/30' }} transition-colors">
                         <td class="px-4 py-3 text-gray-800 dark:text-gray-200 whitespace-nowrap font-medium">{{ $row['user'] ?? '—' }}</td>
 
-                        <td class="px-3 py-3 text-right text-blue-600 dark:text-blue-400 border-l border-gray-100 dark:border-gray-700/50">{{ $row['outbound_answered'] ?? 0 }}</td>
+                        <td class="px-3 py-3 text-right text-blue-600 dark:text-blue-400 border-l border-gray-100 dark:border-gray-700/50"><x-expert-statistics::call-analysis-link :href="$urlOutbound">{{ $row['outbound_answered'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
                         <td class="px-3 py-3 text-right text-gray-600 dark:text-gray-400">{{ $this->formatDuration($row['outbound_talking_duration_total'] ?? 0) }}</td>
 
-                        <td class="px-3 py-3 text-right text-green-600 dark:text-green-400 border-l border-gray-100 dark:border-gray-700/50">{{ $row['inbound_answered'] ?? 0 }}</td>
+                        <td class="px-3 py-3 text-right text-green-600 dark:text-green-400 border-l border-gray-100 dark:border-gray-700/50"><x-expert-statistics::call-analysis-link :href="$urlInboundAnswered">{{ $row['inbound_answered'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
                         <td class="px-3 py-3 text-right text-gray-600 dark:text-gray-400">{{ $this->formatDuration($row['inbound_talking_duration_total'] ?? 0) }}</td>
-                        <td class="px-3 py-3 text-right text-red-600 dark:text-red-400">{{ $row['inbound_unanswered'] ?? 0 }}</td>
+                        <td class="px-3 py-3 text-right text-red-600 dark:text-red-400"><x-expert-statistics::call-analysis-link :href="$urlInboundUnanswered">{{ $row['inbound_unanswered'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
                         <td class="px-3 py-3 text-right">
                             @if ($hasInbound)
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
@@ -202,8 +214,8 @@
                         </td>
                         <td class="px-3 py-3 text-right text-gray-600 dark:text-gray-400">{{ $this->formatDuration($row['inbound_waiting_duration_avg'] ?? 0) }}</td>
 
-                        <td class="px-3 py-3 text-right text-purple-600 dark:text-purple-400 border-l border-gray-100 dark:border-gray-700/50">{{ $row['internal_received_answered'] ?? 0 }}</td>
-                        <td class="px-3 py-3 text-right text-purple-600 dark:text-purple-400">{{ $row['internal_made_answered'] ?? 0 }}</td>
+                        <td class="px-3 py-3 text-right text-purple-600 dark:text-purple-400 border-l border-gray-100 dark:border-gray-700/50"><x-expert-statistics::call-analysis-link :href="$urlInternalReceived">{{ $row['internal_received_answered'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
+                        <td class="px-3 py-3 text-right text-purple-600 dark:text-purple-400"><x-expert-statistics::call-analysis-link :href="$urlInternalMade">{{ $row['internal_made_answered'] ?? 0 }}</x-expert-statistics::call-analysis-link></td>
                         <td class="px-3 py-3 text-right text-gray-600 dark:text-gray-400">{{ $this->formatDuration($row['internal_talking_duration_total'] ?? 0) }}</td>
 
                         <td class="px-3 py-3 text-right text-gray-800 dark:text-gray-200 font-medium border-l border-gray-100 dark:border-gray-700/50">{{ $row['answered_calls'] ?? 0 }}</td>

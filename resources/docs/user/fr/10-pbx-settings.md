@@ -3,9 +3,9 @@
 **Paramètres PBX** est une page unique à onglets regroupant toute la configuration d'Expert
 Statistics qui ne concerne pas la gestion des hôtes PBX elle-même (les détails de connexion des
 hôtes relèvent exclusivement des administrateurs — voir le guide revendeur/administrateur). Toute
-personne disposant de `expert-statistics.view` peut ouvrir chaque onglet et lire sa configuration
+personne disposant de l'accès Lecture peut ouvrir chaque onglet et lire sa configuration
 actuelle ; une bannière en lecture seule apparaît et chaque contrôle Enregistrer/Créer/Supprimer est
-désactivé ou masqué à moins d'avoir également `expert-statistics.modify` (voir
+désactivé ou masqué à moins d'avoir également l'accès Modification (voir
 [Permissions & accès](02-permissions.md)).
 
 ## Onglet Hôte actif

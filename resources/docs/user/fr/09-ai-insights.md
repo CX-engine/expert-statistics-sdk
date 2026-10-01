@@ -62,7 +62,7 @@ Paramètres PBX** (voir [Paramètres PBX](10-pbx-settings.md#onglet-alertes-ia))
 les alertes sont activées, leur fréquence de vérification, la langue/e-mail de notification, et les
 seuils précis d'avertissement/critique pour le taux d'abandon, le taux de non-réponse, l'abandon en
 pré-décroché, le temps d'attente, et la sensibilité de changement de volume. Modifier les seuils
-nécessite `expert-statistics.modify` — voir [Permissions & accès](02-permissions.md).
+nécessite l'accès Modification — voir [Permissions & accès](02-permissions.md).
 
 ## Pages associées
 

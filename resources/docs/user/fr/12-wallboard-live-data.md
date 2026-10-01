@@ -5,8 +5,8 @@ centre d'appels — conçu pour rester ouvert sur un écran ou une télévision 
 dans la pièce puisse voir l'activité des files d'attente en un coup d'œil. Tout se passe depuis
 **Paramètres PBX → Onglet Wallboard**.
 
-> Nécessite `expert-statistics.modify` pour construire ou modifier un wallboard — toute personne
-> ayant `.view` peut tout de même prévisualiser un wallboard existant. Voir
+> Nécessite l'accès Modification pour construire ou modifier un wallboard — toute personne
+> ayant l'accès Lecture peut tout de même prévisualiser un wallboard existant. Voir
 > [Permissions & accès](02-permissions.md).
 
 ## Construire un wallboard

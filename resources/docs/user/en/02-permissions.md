@@ -9,31 +9,31 @@ Your administrator grants you one of these permissions:
 
 | Permission | What it lets you do |
 |---|---|
-| **`expert-statistics.view`** (read-only) | Browse **every** Expert Statistics page — Dashboard, My Queues, My Users, My Numbers, Caller Numbers, Agent Monitoring, Call Analyser, AI Insights, Scheduled Reports, and every tab of PBX Settings. You can filter, change date ranges, switch hosts, and read everything. |
-| **`expert-statistics.modify`** (read + write) | Everything `.view` gives you, **plus** the ability to actually save changes: PBX Settings tabs (agent labels, queue pre-answer times, report-table thresholds, AI alert thresholds), creating/editing/deleting resource **Groups**, building/editing **Wallboards**, and editing/deleting **Scheduled Reports**. |
+| **Read access** (view only) | Browse **every** Expert Statistics page — Dashboard, My Queues, My Users, My Numbers, Caller Numbers, Agent Monitoring, Call Analyser, AI Insights, Scheduled Reports, and every tab of PBX Settings. You can filter, change date ranges, switch hosts, and read everything. |
+| **Edit access** (view + change) | Everything Read access gives you, **plus** the ability to actually save changes: PBX Settings tabs (agent labels, queue pre-answer times, report-table thresholds, AI alert thresholds), creating/editing/deleting resource **Groups**, building/editing **Wallboards**, and editing/deleting **Scheduled Reports**. |
 
-A shorthand permission, `expert-statistics.*`, grants both at once.
+**Full access** grants both at once.
 
 **The important part: view-only is not "can't see configuration."** If you only have
-`expert-statistics.view`, you can still open PBX Settings and look at every tab — you'll see a
+Read access, you can still open PBX Settings and look at every tab — you'll see a
 "read-only" banner, and every Save/Create/Delete button is disabled or hidden. You need
-`.modify` to actually change something.
+Edit access to actually change something.
 
 This split applies to:
 
 - Every tab in **PBX Settings** (Active Host, Agent, Queue, Report Table, AI Alerts, Groups,
-  Wallboard) — viewable by anyone with `.view`, editable only with `.modify`.
-- **Scheduled Reports** — the list is viewable by anyone with `.view`; editing or deleting an
-  existing schedule requires `.modify`.
+  Wallboard) — viewable by anyone with Read access, editable only with Edit access.
+- **Scheduled Reports** — the list is viewable by anyone with Read access; editing or deleting an
+  existing schedule requires Edit access.
 - **Sending or scheduling a new report** from the Dashboard/report pages (the Share/Schedule
-  modal) also requires `.modify`.
+  modal) also requires Edit access.
 
 If a button looks greyed out or missing and you believe you should be able to use it, ask your
-administrator to grant you `expert-statistics.modify`.
+administrator to grant you Edit access.
 
 ## Layer 2 — Activation (a separate switch)
 
-Even with full `expert-statistics.modify` permission, none of the report pages will work until an
+Even with Edit or Full access, none of the report pages will work until an
 **administrator activates Expert Statistics for your PBX host** — either as a free trial or a paid
 subscription. This is a completely separate mechanism from the view/modify permissions above; it's
 managed on the **PBX Activation** page, which only administrators can access.
@@ -51,14 +51,14 @@ If you see this, there's nothing to configure on your end — contact your admin
 ## Layer 3 — PBX Host management (administrators only)
 
 Creating, editing or deleting the PBX hosts themselves (connection details, credentials, licence
-info) is a third, entirely separate admin-only capability, unrelated to `expert-statistics.*`. It's
+info) is a third, entirely separate admin-only capability, unrelated to Expert Statistics permissions. It's
 covered in the Reseller/Admin guide, not here — as a regular user you'll never need it.
 
 ## Quick reference
 
 | Question | Answer |
 |---|---|
-| "I can see a page but every Save button is disabled." | You have `.view` but not `.modify`. Ask an admin. |
+| "I can see a page but every Save button is disabled." | You have Read access but not Edit access. Ask an admin. |
 | "I get a 402 / 'not activated yet' message." | The host isn't activated. Ask an admin to activate it. |
-| "I don't see Expert Stats in the sidebar at all." | You don't have `expert-statistics.view` (or `.modify`/`.*`). Ask an admin. |
+| "I don't see Expert Stats in the sidebar at all." | You don't have Read access (nor Edit or Full access). Ask an admin. |
 | "I can't create or edit PBX hosts." | That's intentional — host management is an administrator-only capability, separate from Expert Statistics permissions. |

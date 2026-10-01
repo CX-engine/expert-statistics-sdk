@@ -5,7 +5,7 @@ se répéter** — les deux démarrent depuis la même fenêtre **Partager/Progr
 boutons « Envoyer le rapport » / « Programmer le rapport » présents sur le tableau de bord et les
 pages de rapport.
 
-> Nécessite `expert-statistics.modify` — un utilisateur en lecture seule ne peut ni envoyer ni
+> Nécessite l'accès Modification — un utilisateur en lecture seule ne peut ni envoyer ni
 > programmer de rapports. Voir [Permissions & accès](02-permissions.md).
 
 ## Ce qui se passe réellement lorsque vous « partagez » un rapport

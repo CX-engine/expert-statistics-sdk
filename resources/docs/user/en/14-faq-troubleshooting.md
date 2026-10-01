@@ -6,13 +6,13 @@ subscription) that only an administrator can turn on. Ask your administrator to 
 the PBX Activation page. See [Permissions & Access](02-permissions.md#layer-2--activation-a-separate-switch).
 
 **"A Save/Create/Delete button is greyed out or missing."**
-You have `expert-statistics.view` (read-only) but not `expert-statistics.modify`. Everything is
+You have Read access but not Edit access. Everything is
 still visible to you, but changing it requires the edit permission. Ask your administrator to grant
 it if you need it. See [Permissions & Access](02-permissions.md).
 
 **"I don't see Expert Stats in the sidebar at all."**
 You don't currently have any Expert Statistics permission. Ask your administrator to grant
-`expert-statistics.view` at minimum.
+Read access at minimum.
 
 **"A number in the Report table doesn't match what I counted manually."**
 Check the exact formula in the [KPI & Report Glossary](13-kpi-and-report-glossary.md) — the most

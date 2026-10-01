@@ -4,7 +4,7 @@ Any report or Dashboard view can be **sent once by email** or **scheduled to rep
 from the same **Share/Schedule** modal, opened via the "Send report" / "Schedule report" buttons
 you'll find on the Dashboard and the report pages.
 
-> Requires `expert-statistics.modify` — a view-only user cannot send or schedule reports. See
+> Requires Edit access — a view-only user cannot send or schedule reports. See
 > [Permissions & Access](02-permissions.md).
 
 ## What actually happens when you "share" a report

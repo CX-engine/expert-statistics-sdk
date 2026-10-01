@@ -72,7 +72,7 @@ En haut du tableau de bord :
 - **Créer une alerte** — vous dirige vers la configuration des alertes IA (voir
   [Analyses IA](09-ai-insights.md)).
 
-> Remarque : Envoyer/Programmer un rapport nécessite `expert-statistics.modify` — voir
+> Remarque : Envoyer/Programmer un rapport nécessite l'accès Modification — voir
 > [Permissions & accès](02-permissions.md).
 
 ## Pages associées

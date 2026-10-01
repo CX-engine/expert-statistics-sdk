@@ -1044,7 +1044,7 @@ return [
         'pending_group_label' => 'Groupe de ressources proposé',
         'pending_missing_fields' => 'Encore nécessaire : :fields',
         'action_cancelled' => 'D\'accord, annulé — rien n\'a été créé.',
-        'action_permission_denied' => 'Vous n\'avez pas la permission de créer ou programmer des rapports/groupes. Demandez à un administrateur de vous accorder la permission « modify » pour Expert Statistics.',
+        'action_permission_denied' => 'Vous n\'avez pas la permission de créer ou programmer des rapports/groupes. Demandez à un administrateur de vous accorder l\'accès Modification à Expert Statistics.',
         'action_not_activated' => 'Les fonctionnalités IA ne sont pas encore activées pour cet hôte. Demandez à un administrateur de les activer.',
         'action_validation_failed' => 'Je n\'ai pas pu créer cela : :errors',
         'action_error' => 'Une erreur est survenue. Veuillez réessayer dans un instant.',

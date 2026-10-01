@@ -4,7 +4,7 @@ A **Wallboard** is a live, auto-refreshing display of your call centre's current
 be left open on an office screen or TV so anyone in the room can see queue activity at a glance.
 Everything happens from **PBX Settings → Wallboard tab**.
 
-> Requires `expert-statistics.modify` to build or edit a wallboard — anyone with `.view` can still
+> Requires Edit access to build or edit a wallboard — anyone with Read access can still
 > preview an existing one. See [Permissions & Access](02-permissions.md).
 
 ## Building a wallboard

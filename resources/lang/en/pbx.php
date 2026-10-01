@@ -1046,7 +1046,7 @@ return [
         'pending_group_label' => 'Proposed resource group',
         'pending_missing_fields' => 'Still needed: :fields',
         'action_cancelled' => 'Okay, cancelled — nothing was created.',
-        'action_permission_denied' => 'You don\'t have permission to create or schedule reports/groups. Ask an administrator to grant you the "modify" permission for Expert Statistics.',
+        'action_permission_denied' => 'You don\'t have permission to create or schedule reports/groups. Ask an administrator to grant you Edit access to Expert Statistics.',
         'action_not_activated' => 'AI features aren\'t activated for this host yet. Ask an administrator to activate them.',
         'action_validation_failed' => 'I couldn\'t create that: :errors',
         'action_error' => 'Something went wrong while doing that. Please try again in a moment.',
