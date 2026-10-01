@@ -606,6 +606,10 @@ class PbxDataProcessor
      * "ping" segments to the same destination into a single entry with an
      * accumulated count/duration.
      *
+     * A step counts as answered when it has an answered_at timestamp: the PBX
+     * sets answered=true only on the "pong" segment, while the matching
+     * "ping" keeps answered=false but carries answered_at.
+     *
      * @param  array<int, array<string, mixed>>  $flow
      * @return array<int, array<string, mixed>>
      */
@@ -621,12 +625,13 @@ class PbxDataProcessor
             $key = ($step['to_dn'] ?? '').':'.($step['to_type'] ?? '');
             $last = count($preview) - 1;
             $stepSecs = (int) ($step['duration'] ?? 0);
+            $stepAnswered = ! empty($step['answered_at']) || (bool) ($step['answered'] ?? false);
 
             if ($last >= 0 && $preview[$last]['key'] === $key) {
                 $preview[$last]['count']++;
                 $preview[$last]['total_secs'] += $stepSecs;
 
-                if ($step['answered'] ?? false) {
+                if ($stepAnswered) {
                     $preview[$last]['answered'] = true;
                 }
             } else {
@@ -637,7 +642,7 @@ class PbxDataProcessor
                     'to_name' => $step['to_name'] ?? null,
                     'count' => 1,
                     'total_secs' => $stepSecs,
-                    'answered' => $step['answered'] ?? false,
+                    'answered' => $stepAnswered,
                 ];
             }
         }

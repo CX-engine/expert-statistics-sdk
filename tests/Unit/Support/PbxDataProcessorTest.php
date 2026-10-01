@@ -147,6 +147,21 @@ it('builds a deduplicated flow preview from consecutive ping segments', function
         ->and($preview[1]['count'])->toBe(1);
 });
 
+it('marks a ping preview step as answered from answered_at even when its answered flag is false', function () {
+    $flow = [
+        ['segment_type' => 'ping', 'to_dn' => '821', 'to_type' => 'call_flow', 'duration' => 3, 'answered_at' => null, 'answered' => false],
+        ['segment_type' => 'pong', 'to_dn' => '004', 'to_type' => 'extension', 'duration' => 5, 'answered_at' => '2026-08-31 14:03:26', 'answered' => true],
+        ['segment_type' => 'ping', 'to_dn' => '004', 'to_type' => 'extension', 'duration' => 8, 'answered_at' => '2026-08-31 14:03:26', 'answered' => false],
+    ];
+
+    $preview = PbxDataProcessor::buildFlowPreview($flow);
+
+    expect($preview)->toHaveCount(2)
+        ->and($preview[0]['answered'])->toBeFalse()
+        ->and($preview[1]['to_dn'])->toBe('004')
+        ->and($preview[1]['answered'])->toBeTrue();
+});
+
 it('resolves call-flow segment labels to translation keys', function () {
     expect(PbxDataProcessor::getSegmentLabel('ring', true))->toBe('expert-statistics::pbx.expert_statistics.cfa_segment_talk')
         ->and(PbxDataProcessor::getSegmentLabel('ring', false))->toBe('expert-statistics::pbx.expert_statistics.cfa_segment_ring')
