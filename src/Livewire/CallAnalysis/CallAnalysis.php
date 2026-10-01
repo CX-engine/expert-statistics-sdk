@@ -232,7 +232,7 @@ class CallAnalysis extends Component
         $value = $this->normalizeValue($label);
         $this->selectedOriginDns = array_values(array_filter(
             $this->selectedOriginDns,
-            fn (string $v): bool => $v !== $value,
+            fn(string $v): bool => $v !== $value,
         ));
         $this->originDn = implode(',', $this->selectedOriginDns);
     }
@@ -242,7 +242,7 @@ class CallAnalysis extends Component
         $value = $this->normalizeValue($label);
         $this->selectedDestinationDns = array_values(array_filter(
             $this->selectedDestinationDns,
-            fn (string $v): bool => $v !== $value,
+            fn(string $v): bool => $v !== $value,
         ));
         $this->destinationDn = implode(',', $this->selectedDestinationDns);
     }
@@ -252,7 +252,7 @@ class CallAnalysis extends Component
         $value = $this->normalizeValue($label);
         $this->selectedDidNumbers = array_values(array_filter(
             $this->selectedDidNumbers,
-            fn (string $v): bool => $v !== $value,
+            fn(string $v): bool => $v !== $value,
         ));
         $this->didNumber = implode(',', $this->selectedDidNumbers);
     }
@@ -262,7 +262,7 @@ class CallAnalysis extends Component
         $value = $this->normalizeValue($label);
         $this->selectedCallerNumbers = array_values(array_filter(
             $this->selectedCallerNumbers,
-            fn (string $v): bool => $v !== $value,
+            fn(string $v): bool => $v !== $value,
         ));
         $this->callerNumber = implode(',', $this->selectedCallerNumbers);
     }
@@ -320,7 +320,7 @@ class CallAnalysis extends Component
      */
     public function getExportUrl(): string
     {
-        if (! $this->startDate || ! $this->endDate || ! Route::has('expert-stats.call-details.export')) {
+        if (!$this->startDate || !$this->endDate || !Route::has('expert-stats.call-details.export')) {
             return '#';
         }
 
@@ -380,7 +380,7 @@ class CallAnalysis extends Component
 
     public function loadData(): void
     {
-        if (! $this->startDate || ! $this->endDate) {
+        if (!$this->startDate || !$this->endDate) {
             return;
         }
 
@@ -432,7 +432,7 @@ class CallAnalysis extends Component
         try {
             $raw = app(ExpertStatisticsService::class)->searchCallerNumbers($this->callerSearch);
             $items = $raw['data'] ?? (array) $raw;
-            $this->callerSearchResults = array_map(fn (mixed $item): array => [
+            $this->callerSearchResults = array_map(fn(mixed $item): array => [
                 'value' => \is_array($item) ? ($item['caller_number'] ?? $item['value'] ?? '') : (string) $item,
                 'label' => \is_array($item) ? ($item['caller_number'] ?? $item['label'] ?? '') : (string) $item,
                 'isConstructor' => false,
@@ -454,7 +454,7 @@ class CallAnalysis extends Component
 
             $this->pbxMap = $map;
 
-            foreach (collect($resourceGroups)->filter(fn (array $g): bool => ($g['type'] ?? null) == 99)->values() as $group) {
+            foreach (collect($resourceGroups)->filter(fn(array $g): bool => ($g['type'] ?? null) == 99)->values() as $group) {
                 foreach (json_decode($group['resources'] ?? '[]', true) ?? [] as $number) {
                     $this->callerGroupMap[(string) $number] ??= $group['name'];
                 }
@@ -464,25 +464,25 @@ class CallAnalysis extends Component
                 0 => [
                     'key' => 'extensionsReduced',
                     'elements' => collect($map['extensions'] ?? [])
-                        ->map(fn (string $name, string $dn): array => [
+                        ->map(fn(string $name, string $dn): array => [
                             'value' => $dn,
-                            'label' => $dn.' — '.$name,
+                            'label' => $dn . ' — ' . $name,
                             'group' => false,
                         ])->values()->all(),
                 ],
                 4 => [
                     'key' => 'queuesReduced',
                     'elements' => collect($map['call_queues'] ?? [])
-                        ->map(fn (mixed $q, string $dn): array => [
+                        ->map(fn(mixed $q, string $dn): array => [
                             'value' => $dn,
-                            'label' => $dn.' — '.(is_array($q) ? ($q['name'] ?? $dn) : $dn),
+                            'label' => $dn . ' — ' . (is_array($q) ? ($q['name'] ?? $dn) : $dn),
                             'group' => false,
                         ])->values()->all(),
                 ],
                 1 => [
                     'key' => 'didsReduced',
                     'elements' => collect($map['dids'] ?? [])
-                        ->map(fn (mixed $v): array => [
+                        ->map(fn(mixed $v): array => [
                             'value' => (string) (is_array($v) ? ($v['number'] ?? $v) : $v),
                             'label' => (string) (is_array($v) ? ($v['number'] ?? $v) : $v),
                             'group' => false,
@@ -491,26 +491,28 @@ class CallAnalysis extends Component
             ];
 
             $this->callersReduced = collect($resourceGroups)
-                ->filter(fn (array $g): bool => ($g['type'] ?? null) == 99)
-                ->map(fn (array $group): array => [
+                ->filter(fn(array $g): bool => ($g['type'] ?? null) == 99)
+                ->map(fn(array $group): array => [
                     'value' => array_map('strval', json_decode($group['resources'] ?? '[]', true) ?? []),
                     'label' => $group['name'],
                     'isConstructor' => true,
                     'group' => false,
                 ])
-                ->filter(fn (array $item): bool => ! empty($item['value']))
+                ->filter(fn(array $item): bool => !empty($item['value']))
                 ->values()
                 ->all();
 
             foreach ($typeConfig as $type => $config) {
                 $sections = [];
 
-                foreach (collect($resourceGroups)->filter(fn (array $g): bool => ($g['type'] ?? null) == $type)->values() as $group) {
-                    $members = array_map(fn (string $r): array => [
-                        'value' => $r, 'label' => $r, 'group' => true,
+                foreach (collect($resourceGroups)->filter(fn(array $g): bool => ($g['type'] ?? null) == $type)->values() as $group) {
+                    $members = array_map(fn(string $r): array => [
+                        'value' => $r,
+                        'label' => $r,
+                        'group' => true,
                     ], json_decode($group['resources'] ?? '[]', true) ?? []);
 
-                    if (! empty($members)) {
+                    if (!empty($members)) {
                         $sections[] = ['name' => $group['name'], 'methods' => $members];
                     }
                 }
@@ -527,7 +529,7 @@ class CallAnalysis extends Component
 
                 $this->{$config['key']} = array_values(array_filter(
                     $flat,
-                    fn (array $el): bool => $el['label'] !== 'Elements' && (! ($el['group'] ?? false) || ($el['isConstructor'] ?? false)),
+                    fn(array $el): bool => $el['label'] !== 'Elements' && (!($el['group'] ?? false) || ($el['isConstructor'] ?? false)),
                 ));
             }
         } catch (\Throwable $e) {

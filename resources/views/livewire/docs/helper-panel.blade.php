@@ -32,13 +32,22 @@
     }"
     @keydown.escape.window="open = false"
 >
-    {{-- Floating trigger --}}
+    {{-- Floating trigger. Positioned with a scoped style rather than Tailwind
+         utilities: the host app compiles this package's views into its own
+         CSS, so an arbitrary class like lg:left-74 silently falls back to
+         left-6 (on top of the host's w-68 sidenav) until it rebuilds. --}}
+    <style>
+        .es-docs-trigger { left: 1.5rem; }
+        @media (min-width: 1024px) {
+            .es-docs-trigger { left: calc(17rem + 1.5rem); }
+        }
+    </style>
     <button
         type="button"
         @click="open = true"
         x-show="! open"
         x-transition
-        class="fixed bottom-6 left-6 lg:left-74 z-40 inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-black/10 transition hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+        class="es-docs-trigger fixed bottom-6 z-40 inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-black/10 transition hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
     >
         <x-heroicon-o-book-open class="h-5 w-5" />
         <span>{{ __('expert-statistics::pbx.docs.button_label') }}</span>
