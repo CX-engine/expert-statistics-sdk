@@ -217,6 +217,9 @@
                 }
             }"
         >
+            <p class="px-1 pt-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                {{ __('expert-statistics::pbx.expert_statistics.kpi_avg_wait') }}
+            </p>
             <div x-ref="waitChart"></div>
         </div>
     @endif

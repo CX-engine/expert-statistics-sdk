@@ -334,6 +334,20 @@ trait HasPbxElementSelector
         }
     }
 
+    /**
+     * Display label for an element DN (e.g. "100 — Support"), falling back to the DN itself.
+     */
+    public function pbxElementLabel(string $dn): string
+    {
+        foreach ($this->pbxElements as $element) {
+            if (! ($element['isConstructor'] ?? false) && (string) $element['value'] === $dn) {
+                return $element['label'];
+            }
+        }
+
+        return $dn;
+    }
+
     private function normalizeValue(string $raw): string
     {
         $part = explode(' ', $raw)[0];

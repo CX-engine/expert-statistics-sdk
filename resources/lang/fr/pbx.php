@@ -887,7 +887,7 @@ return [
         'cfa_ring_wait' => 'Sonnerie :duration',
 
         // Navigation IA
-        'nav_ai_insights' => 'Insights IA',
+        'nav_ai_insights' => 'Analyses IA',
         'nav_ai_dashboard' => 'Tableau de bord',
         'nav_ai_chat' => 'Chat IA',
         'nav_ai_analytics' => 'Analytiques',

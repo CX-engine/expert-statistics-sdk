@@ -130,7 +130,7 @@
             @foreach ($dnData as $dnItem)
                 @if (! empty($dnItem['rows']))
                     <x-expert-statistics::charts.kpi-chart
-                        :title="$dnItem['dn']"
+                        :title="$this->pbxElementLabel($dnItem['dn'])"
                         :rows="$dnItem['rows']"
                         :chartKey="'dn-' . $granularity . '-' . crc32($dnItem['dn']) . '-' . array_sum(array_column($dnItem['rows'], 'total'))"
                     />

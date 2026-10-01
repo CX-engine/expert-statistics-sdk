@@ -40,7 +40,7 @@
                         {{ $granularity === $key
                             ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                             : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200' }}">
-                    {{ $label }}
+                    {{ __($label) }}
                 </button>
             @endforeach
         </div>
@@ -137,7 +137,7 @@
             @foreach ($dnData as $dnItem)
                 @if (! empty($dnItem['rows']))
                     <x-expert-statistics::charts.kpi-chart
-                        :title="$dnItem['dn']"
+                        :title="$this->pbxElementLabel($dnItem['dn'])"
                         :rows="$dnItem['rows']"
                         :chartKey="'dn-' . $granularity . '-' . crc32($dnItem['dn']) . '-' . array_sum(array_column($dnItem['rows'], 'total'))"
                     />

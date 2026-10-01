@@ -887,8 +887,8 @@ return [
         'cfa_ended_by' => 'Ended by :who',
         'cfa_ring_wait' => ':duration ring',
 
-        // AI Insights navigation
-        'nav_ai_insights' => 'AI Insights',
+        // AI Analysis navigation
+        'nav_ai_insights' => 'AI Analysis',
         'nav_ai_dashboard' => 'Dashboard',
         'nav_ai_chat' => 'AI Chat',
         'nav_ai_analytics' => 'Analytics',
