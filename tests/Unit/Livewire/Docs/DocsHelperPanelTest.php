@@ -25,3 +25,8 @@ it('jumps to a suggested section and opens, when asked by the docs assistant cha
         ->assertSet('activeSectionId', 'permissions')
         ->assertSet('open', true);
 });
+
+it('places the floating trigger in the page area, clear of the host app sidebar', function () {
+    Livewire::test(DocsHelperPanel::class)
+        ->assertSeeHtml('fixed bottom-6 left-6 lg:left-74');
+});

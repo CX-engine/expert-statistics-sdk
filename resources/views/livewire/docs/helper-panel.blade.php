@@ -38,7 +38,7 @@
         @click="open = true"
         x-show="! open"
         x-transition
-        class="fixed bottom-6 left-6 z-40 inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-black/10 transition hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+        class="fixed bottom-6 left-6 lg:left-74 z-40 inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-black/10 transition hover:bg-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-900 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
     >
         <x-heroicon-o-book-open class="h-5 w-5" />
         <span>{{ __('expert-statistics::pbx.docs.button_label') }}</span>
