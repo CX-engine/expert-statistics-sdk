@@ -211,7 +211,7 @@
                                                 class="inline-flex items-center rounded-md border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-2 py-1 text-gray-600 dark:text-gray-400 shadow-sm hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-950/30 dark:hover:text-primary-400 transition-colors">
                                                 <x-heroicon-m-pencil-square class="w-4 h-4" />
                                             </button>
-                                            <button wire:click="deleteGroup({{ $group['id'] }})" wire:confirm="{{ __('expert-statistics::pbx.config.groups.confirmDelete') }}" type="button"
+                                            <button @click="$wire.askConfirm({{ \Illuminate\Support\Js::from(__('expert-statistics::pbx.config.groups.deleteTitle')) }}, {{ \Illuminate\Support\Js::from(__('expert-statistics::pbx.config.groups.confirmDelete')) }}, 'deleteGroup', [{{ (int) $group['id'] }}])" type="button"
                                                 class="inline-flex items-center rounded-md border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 px-2 py-1 text-gray-600 dark:text-gray-400 shadow-sm hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400 transition-colors">
                                                 <x-heroicon-m-trash class="w-4 h-4" />
                                             </button>

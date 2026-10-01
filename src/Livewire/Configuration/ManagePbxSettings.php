@@ -4,6 +4,7 @@ namespace CXEngine\ExpertStatistics\Livewire\Configuration;
 
 use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
 use CXEngine\ExpertStatistics\Concerns\ChecksExpertStatisticsModifyPermission;
+use CXEngine\ExpertStatistics\Concerns\HasConfirmation;
 use CXEngine\ExpertStatistics\Contracts\ResolvesActivePbxHost;
 use CXEngine\ExpertStatistics\Exceptions\NoActivePbxHostException;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
@@ -37,6 +38,7 @@ class ManagePbxSettings extends Component
 {
     use AuthorizesExpertStatisticsAccess;
     use ChecksExpertStatisticsModifyPermission;
+    use HasConfirmation;
 
     #[Url]
     public string $tab = 'agent';

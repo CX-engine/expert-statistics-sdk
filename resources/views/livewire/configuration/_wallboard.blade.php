@@ -391,10 +391,10 @@
                                                 {{ __('expert-statistics::pbx.config.wallboard.edit') }}
                                             </button>
                                             @if ($wb['is_default'] ?? false)
-                                                <button wire:click="revertWallboard('{{ $wb['uuid'] }}')" wire:confirm="{{ __('expert-statistics::pbx.config.wallboard.confirmRevert') }}" type="button"
+                                                <button @click="$wire.askConfirm({{ \Illuminate\Support\Js::from(__('expert-statistics::pbx.config.wallboard.revertTitle')) }}, {{ \Illuminate\Support\Js::from(__('expert-statistics::pbx.config.wallboard.confirmRevert')) }}, 'revertWallboard', [{{ \Illuminate\Support\Js::from($wb['uuid']) }}], false, {{ \Illuminate\Support\Js::from(__('expert-statistics::pbx.config.wallboard.revert')) }})" type="button"
                                                     class="text-xs font-semibold text-amber-600 hover:text-amber-700">{{ __('expert-statistics::pbx.config.wallboard.revert') }}</button>
                                             @else
-                                                <button wire:click="deleteWallboard('{{ $wb['uuid'] }}')" wire:confirm="{{ __('expert-statistics::pbx.config.wallboard.confirmDelete') }}" type="button"
+                                                <button @click="$wire.askConfirm({{ \Illuminate\Support\Js::from(__('expert-statistics::pbx.config.wallboard.deleteTitle')) }}, {{ \Illuminate\Support\Js::from(__('expert-statistics::pbx.config.wallboard.confirmDelete')) }}, 'deleteWallboard', [{{ \Illuminate\Support\Js::from($wb['uuid']) }}])" type="button"
                                                     class="text-xs font-semibold text-red-600 hover:text-red-700">{{ __('expert-statistics::pbx.config.delete') }}</button>
                                             @endif
                                         @endif

@@ -73,4 +73,5 @@
     @if (config('expert-statistics-api.docs_assistant.enabled', false))
         <livewire:expert-statistics.docs.assistant-chat />
     @endif
+    <x-expert-statistics::confirm-modal />
 </x-pages.index>
