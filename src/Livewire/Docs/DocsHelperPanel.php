@@ -83,7 +83,14 @@ class DocsHelperPanel extends Component
     #[Computed]
     public function catalog(): array
     {
-        return DocsCatalog::catalog();
+        if (config('expert-statistics-api.dashboard_enabled', true)) {
+            return DocsCatalog::catalog();
+        }
+
+        return array_map(fn (array $group): array => [
+            ...$group,
+            'sections' => array_values(array_filter($group['sections'], fn (array $section): bool => $section['id'] !== 'dashboard')),
+        ], DocsCatalog::catalog());
     }
 
     #[Computed]

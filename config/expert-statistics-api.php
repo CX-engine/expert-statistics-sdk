@@ -54,6 +54,15 @@ return [
         'expert-statistics.*',
     ],
 
+    /*
+    | Optional, per page: who may open the PBX settings page and the scheduled
+    | reports page. Null (the default) means the `permissions` list above; a
+    | host app whose access rules differ for those pages sets its own.
+    */
+    'configuration_permissions' => null,
+
+    'scheduled_reports_permissions' => null,
+
     'dashboard_permissions' => [
         'dashboard.view',
         'dashboard.*',
@@ -65,6 +74,34 @@ return [
         'expert-statistics.modify',
         'expert-statistics.*',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard page
+    |--------------------------------------------------------------------------
+    |
+    | Whether the general Dashboard page (Livewire\Dashboard) is part of the
+    | module. A host app that keeps its own dashboard outside Expert
+    | Statistics sets this to false: the page then answers 404, and the Home
+    | card, the cluster navigation item and the documentation section that
+    | lead to it are hidden.
+    */
+    'dashboard_enabled' => (bool) env('EXPERT_STATISTICS_DASHBOARD_ENABLED', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Host page shell
+    |--------------------------------------------------------------------------
+    |
+    | When true, every full-page component renders inside the host's
+    | <x-pages.index> component, and the cluster pages add their own
+    | secondary navigation built from the host's <x-menus.item> /
+    | <x-menus.item-dropdown> components. Set it to false in a host that
+    | embeds these components in its own pages and navigation (e.g. a
+    | Filament panel): the components then render their content only, and
+    | the host needs none of those Blade components.
+    */
+    'page_shell' => (bool) env('EXPERT_STATISTICS_PAGE_SHELL', true),
 
     /*
     |--------------------------------------------------------------------------

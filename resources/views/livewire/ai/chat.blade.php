@@ -105,7 +105,12 @@
         @endif
 
         {{-- Messages area --}}
-        <div class="relative flex-1 overflow-y-auto px-5 py-4 space-y-4" id="ai-chat-messages">
+        <div
+            class="relative flex-1 overflow-y-auto px-5 py-4 space-y-4"
+            id="ai-chat-messages"
+            x-data
+            x-init="const toBottom = () => $el.scrollTop = $el.scrollHeight; toBottom(); new MutationObserver(toBottom).observe($el, { childList: true, subtree: true })"
+        >
 
             {{-- Overlay while fetching a conversation from history --}}
             <div wire:loading.flex wire:target="selectConversation" class="absolute inset-0 z-10 items-center justify-center bg-white/75 dark:bg-gray-800/75 rounded-b-2xl">
@@ -309,15 +314,5 @@
 
     </div>
 </div>
-
-{{-- Auto-scroll to bottom --}}
-<script>
-    document.addEventListener('livewire:updated', function () {
-        const container = document.getElementById('ai-chat-messages');
-        if (container) {
-            container.scrollTop = container.scrollHeight;
-        }
-    });
-</script>
 
 </x-expert-statistics::cluster-layout>

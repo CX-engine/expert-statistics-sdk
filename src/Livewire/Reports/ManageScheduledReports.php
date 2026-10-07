@@ -85,6 +85,17 @@ class ManageScheduledReports extends Component
     /** @var array<string, mixed> */
     public array $pbxMap = [];
 
+    /**
+     * `scheduled_reports_permissions` when the host app sets it (e.g. a portal where only
+     * some users may open this page), the module-wide list otherwise.
+     *
+     * @return array<int, string>
+     */
+    protected function expertStatisticsAccessPermissions(): array
+    {
+        return (array) (config('expert-statistics-api.scheduled_reports_permissions') ?? config('expert-statistics-api.permissions', []));
+    }
+
     public function mount(): void
     {
         $this->loadReports();

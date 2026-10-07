@@ -9,6 +9,7 @@ use BladeUI\Icons\BladeIconsServiceProvider;
 use CXEngine\ExpertStatistics\Contracts\ResolvesActivePbxHost;
 use CXEngine\ExpertStatistics\ExpertStatisticsServiceProvider;
 use CXEngine\ExpertStatistics\Tests\Doubles\FakeActivePbxHostResolver;
+use Illuminate\Support\Facades\Blade;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Prism\Prism\PrismServiceProvider;
@@ -41,5 +42,17 @@ abstract class TestCase extends Orchestra
         // so anything resolving ExpertStatisticsService (directly or via a
         // dependency) needs this stand-in. Rebind per-test for different behavior.
         $app->bind(ResolvesActivePbxHost::class, FakeActivePbxHostResolver::class);
+    }
+
+    /**
+     * Registers the stand-ins for the host app's <x-pages.index> and
+     * <x-menus.*> components. Always through this one resolved path: Blade
+     * keys anonymous component paths by a hash of the path string and bakes
+     * that hash into compiled views, which are shared across tests - two
+     * spellings of the same directory would make each other's views fail.
+     */
+    protected function useHostComponentDoubles(): void
+    {
+        Blade::anonymousComponentPath((string) realpath(__DIR__.'/Doubles/views/components'));
     }
 }

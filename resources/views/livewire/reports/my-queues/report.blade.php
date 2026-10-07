@@ -333,7 +333,7 @@
         </div>
     @endif
 
-    <livewire:expert-statistics.reports.share-report-modal />
+    <livewire:expert-statistics.reports.share-report-modal :key="'expert-statistics.reports.share-report-modal'" />
 
 </div>
 

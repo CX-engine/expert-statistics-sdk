@@ -260,7 +260,7 @@
     <div class="flex-1">
         <input
             type="text"
-            wire:model.defer="dn"
+            wire:model="dn"
             placeholder="{{ __('expert-statistics::pbx.expert_statistics.filter_dn_default') }}"
             class="w-full text-sm rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 focus:ring-primary-500 focus:border-primary-500"
         />

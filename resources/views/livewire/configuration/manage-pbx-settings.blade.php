@@ -1,4 +1,4 @@
-<x-pages.index :title="__('expert-statistics::pbx.navigation.configuration')">
+<x-expert-statistics::page :title="__('expert-statistics::pbx.navigation.configuration')">
 
 <div class="space-y-6">
 
@@ -68,10 +68,10 @@
 </div>
 
     @if (config('expert-statistics-api.docs_panel_enabled', true))
-        <livewire:expert-statistics.docs.helper-panel />
+        <livewire:expert-statistics.docs.helper-panel :key="'expert-statistics.docs.helper-panel'" />
     @endif
     @if (config('expert-statistics-api.docs_assistant.enabled', false))
-        <livewire:expert-statistics.docs.assistant-chat />
+        <livewire:expert-statistics.docs.assistant-chat :key="'expert-statistics.docs.assistant-chat'" />
     @endif
     <x-expert-statistics::confirm-modal />
-</x-pages.index>
+</x-expert-statistics::page>

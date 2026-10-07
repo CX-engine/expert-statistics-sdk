@@ -43,7 +43,16 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/expert-statistics-api.php', 'expert-statistics-api');
 
-        $this->app->singleton(ExpertStatisticsConnector::class, function (): ExpertStatisticsConnector {
+        // The transport seam. By default the connector authenticates as the
+        // shared XP-Stats service account; a host app that must not hold
+        // those credentials (e.g. a customer portal going through a relay)
+        // rebinds this class from its own provider with a subclass that
+        // points at its relay and authenticates as the current user.
+        //
+        // Scoped rather than singleton so a per-user connector (and the
+        // service holding it) never outlives the request or queued job it
+        // was built for under Octane or a long-running worker.
+        $this->app->scoped(ExpertStatisticsConnector::class, function (): ExpertStatisticsConnector {
             return new ExpertStatisticsConnector(
                 apiUrl: (string) config('expert-statistics-api.api_url'),
                 email: (string) config('expert-statistics-api.email'),
@@ -51,7 +60,7 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->singleton(ExpertStatisticsService::class, function ($app): ExpertStatisticsService {
+        $this->app->scoped(ExpertStatisticsService::class, function ($app): ExpertStatisticsService {
             return new ExpertStatisticsService(
                 connector: $app->make(ExpertStatisticsConnector::class),
                 hostResolver: $app->make(Contracts\ResolvesActivePbxHost::class),

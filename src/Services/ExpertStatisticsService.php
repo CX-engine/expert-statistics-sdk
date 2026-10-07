@@ -21,9 +21,9 @@ use Saloon\Http\Response;
 class ExpertStatisticsService
 {
     public function __construct(
-        private readonly ExpertStatisticsConnector $connector,
-        private readonly ResolvesActivePbxHost $hostResolver,
-        private readonly int $defaultTtl = 300,
+        protected readonly ExpertStatisticsConnector $connector,
+        protected readonly ResolvesActivePbxHost $hostResolver,
+        protected readonly int $defaultTtl = 300,
     ) {}
 
     public function hostName(): string
@@ -1656,7 +1656,7 @@ class ExpertStatisticsService
     /**
      * @param  array<string, mixed>  $query
      */
-    private function remember(string $keySuffix, array $query, \Closure $resolve, ?int $ttl = null): array
+    protected function remember(string $keySuffix, array $query, \Closure $resolve, ?int $ttl = null): array
     {
         $host = $this->hostName();
         $cacheKey = "expert-statistics.{$keySuffix}.{$host}.".md5(serialize($query));
@@ -1672,7 +1672,7 @@ class ExpertStatisticsService
      *
      * @param  array<string, mixed>  $query
      */
-    private function forget(string $host, string $keySuffix, array $query = []): void
+    protected function forget(string $host, string $keySuffix, array $query = []): void
     {
         Cache::forget("expert-statistics.{$keySuffix}.{$host}.".md5(serialize($query)));
     }

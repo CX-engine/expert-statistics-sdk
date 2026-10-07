@@ -79,6 +79,13 @@ class Home extends Component
             ],
         ];
 
+        if (! config('expert-statistics-api.dashboard_enabled', true)) {
+            $features = array_values(array_filter(
+                $features,
+                fn (array $feature): bool => $feature['route'] !== 'expert-stats.dashboard',
+            ));
+        }
+
         if (Route::has('expert-stats.training') && app(ProvidesTrainingParticipants::class)->isTrainingAvailable()) {
             $features[] = [
                 'name' => __('expert-statistics::pbx.training.nav_label'),

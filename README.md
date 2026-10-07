@@ -2,7 +2,7 @@
 
 Dashboard and Expert Statistics (PBX call analytics) for BlueRockTEL CX Engine apps, ported from
 `bluerocktelclients`'s Filament implementation into framework-agnostic services plus plain
-Livewire v3 full-page components.
+Livewire full-page components.
 
 ## What's included
 
@@ -36,6 +36,30 @@ already talks to this API.
 
 Bind `CXEngine\ExpertStatistics\Contracts\ResolvesActivePbxHost` in the host app's service
 provider to say how to resolve the active PBX host for the current request/tenant.
+
+Supported framework lines: Laravel 11–13, Livewire 3–4, Filament 4–5.
+
+### Reaching XP-Stats through a relay instead of the service account
+
+By default the SDK connector logs in as the shared `XPSTAT_USERNAME` service account. A host app
+that must not hold those credentials (e.g. a customer portal whose backend already proxies
+XP-Stats per customer) rebinds the connector from its own service provider with a subclass that
+points at its relay and authenticates as the current user:
+
+```php
+$this->app->scoped(ExpertStatisticsConnector::class, fn () => new RelayExpertStatisticsConnector(...));
+```
+
+The connector and `ExpertStatisticsService` are registered as `scoped`, so a per-user connector is
+rebuilt for every request and queued job and never shared between users.
+
+### Embedding the pages in the host's own pages
+
+By default every page renders inside the host's `<x-pages.index>` component and the cluster pages
+add a secondary navigation built from `<x-menus.item>` / `<x-menus.item-dropdown>`. A host that
+wraps the components in its own pages and navigation (e.g. a Filament panel) sets
+`EXPERT_STATISTICS_PAGE_SHELL=false` (config key `page_shell`): the components then render their
+content only and the host needs none of those Blade components.
 
 ## Development
 

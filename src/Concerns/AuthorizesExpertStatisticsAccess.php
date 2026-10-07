@@ -14,7 +14,7 @@ trait AuthorizesExpertStatisticsAccess
 {
     public function bootAuthorizesExpertStatisticsAccess(): void
     {
-        $permissions = (array) config('expert-statistics-api.permissions', []);
+        $permissions = $this->expertStatisticsAccessPermissions();
         $user = auth()->user();
 
         $allowed = $user !== null && collect($permissions)->contains(
@@ -22,5 +22,16 @@ trait AuthorizesExpertStatisticsAccess
         );
 
         abort_unless($allowed, 403);
+    }
+
+    /**
+     * The permissions that open this page - the module-wide list unless a
+     * component narrows it (see ManagePbxSettings, ManageScheduledReports).
+     *
+     * @return array<int, string>
+     */
+    protected function expertStatisticsAccessPermissions(): array
+    {
+        return (array) config('expert-statistics-api.permissions', []);
     }
 }

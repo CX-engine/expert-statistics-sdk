@@ -7,7 +7,6 @@ use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use CXEngine\ExpertStatistics\Tests\Doubles\FakeTrainingParticipants;
 use CXEngine\ExpertStatistics\Tests\TestCase;
 use Illuminate\Foundation\Auth\User as GenericUser;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
@@ -65,7 +64,7 @@ function trainingSummaryPayload(): array
 }
 
 beforeEach(function () {
-    Blade::anonymousComponentPath(__DIR__.'/../../../Doubles/views/components');
+    $this->useHostComponentDoubles();
     Route::get('/expert-stats/training', Training::class)->name('expert-stats.training');
     RateLimiter::clear('expert-statistics-training:'.sha1('jane@example.com'));
 

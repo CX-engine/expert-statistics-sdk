@@ -242,6 +242,17 @@ class ManagePbxSettings extends Component
     /** @var array<string, mixed>|null generated, not-yet-saved AI result */
     public ?array $wallboardAiResult = null;
 
+    /**
+     * `configuration_permissions` when the host app sets it (e.g. a portal where only
+     * some users may open this page), the module-wide list otherwise.
+     *
+     * @return array<int, string>
+     */
+    protected function expertStatisticsAccessPermissions(): array
+    {
+        return (array) (config('expert-statistics-api.configuration_permissions') ?? config('expert-statistics-api.permissions', []));
+    }
+
     public function mount(): void
     {
         $this->loadTabData();

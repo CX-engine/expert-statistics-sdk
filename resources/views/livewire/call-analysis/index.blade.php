@@ -425,10 +425,13 @@
 
                 $flowPreview = $this->buildFlowPreview($flow);
 
+                // Inbound/internal calls are answered when an extension picks up;
+                // outbound calls are answered when the external party (world) does.
+                $answeringType = in_array($direction, ['outbound', 'unknown']) ? 'world' : 'extension';
                 $isAnswered = false;
                 $destDn = ''; $destType = ''; $destName = null;
                 foreach ($flow as $_fs) {
-                    if (! empty($_fs['answered_at']) && ($_fs['to_type'] ?? '') === 'extension') {
+                    if (! empty($_fs['answered_at']) && ($_fs['to_type'] ?? '') === $answeringType) {
                         $isAnswered = true;
                     }
                     if (($_fs['segment_type'] ?? '') === 'ping' && ! empty($_fs['to_dn'])) {

@@ -70,7 +70,12 @@
                 <div class="flex flex-col flex-1 overflow-hidden min-h-0">
 
                     {{-- Messages --}}
-                    <div class="relative flex-1 overflow-y-auto px-3 py-3 space-y-3" id="ai-widget-messages">
+                    <div
+                        class="relative flex-1 overflow-y-auto px-3 py-3 space-y-3"
+                        id="ai-widget-messages"
+                        x-data
+                        x-init="const toBottom = () => $el.scrollTop = $el.scrollHeight; toBottom(); new MutationObserver(toBottom).observe($el, { childList: true, subtree: true })"
+                    >
                         <div wire:loading.flex wire:target="selectConversation" class="absolute inset-0 z-10 items-center justify-center bg-white/75 dark:bg-gray-900/75">
                             <div class="flex items-center gap-1.5">
                                 <span class="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce [animation-delay:0ms]"></span>
@@ -290,11 +295,3 @@
     </button>
 
 </div>
-
-{{-- Auto-scroll chat to bottom --}}
-<script>
-    document.addEventListener('livewire:updated', function () {
-        const el = document.getElementById('ai-widget-messages');
-        if (el) el.scrollTop = el.scrollHeight;
-    });
-</script>

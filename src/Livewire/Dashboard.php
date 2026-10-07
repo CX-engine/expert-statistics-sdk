@@ -101,6 +101,11 @@ class Dashboard extends Component
     /** @var array<string, mixed> */
     public array $trends = [];
 
+    public function boot(): void
+    {
+        abort_unless((bool) config('expert-statistics-api.dashboard_enabled', true), 404);
+    }
+
     public function mount(): void
     {
         $this->applyPeriod($this->selectedPeriod);
