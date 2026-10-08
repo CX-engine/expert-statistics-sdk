@@ -98,7 +98,7 @@
         </div>
 
         <div class="p-4">
-            <div x-ref="donut"></div>
+            <div x-ref="donut" wire:ignore></div>
         </div>
     </div>
 @endif

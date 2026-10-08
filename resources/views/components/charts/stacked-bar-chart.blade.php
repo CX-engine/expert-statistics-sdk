@@ -111,7 +111,7 @@
                 }
             }"
         >
-            <div x-ref="chart"></div>
+            <div x-ref="chart" wire:ignore></div>
         </div>
     </div>
 @endif

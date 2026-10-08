@@ -67,7 +67,7 @@
                 }
             }"
         >
-            <div x-ref="heatmap"></div>
+            <div x-ref="heatmap" wire:ignore></div>
         </div>
     </div>
 @endif

@@ -149,7 +149,7 @@
             }
         }"
     >
-        <div x-ref="chart"></div>
+        <div x-ref="chart" wire:ignore></div>
     </div>
 
     {{-- Line chart: avg wait time (only when data exists) --}}
@@ -220,7 +220,7 @@
             <p class="px-1 pt-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {{ __('expert-statistics::pbx.expert_statistics.kpi_avg_wait') }}
             </p>
-            <div x-ref="waitChart"></div>
+            <div x-ref="waitChart" wire:ignore></div>
         </div>
     @endif
 
