@@ -26,7 +26,9 @@ use Throwable;
  * own view is already a complete <html> document - that layout is where
  * the host app's authenticated nav/sidebar lives, which has no business
  * wrapping a chromeless public display. #[Layout] points at a pass-through
- * view so the wallboard's own markup is the only <html> in the response.
+ * layout that holds the wallboard's own <html> document shell; the
+ * component view itself is a single root <div>, since that root is what
+ * Livewire morphs on every poll.
  */
 #[Layout('expert-statistics::livewire.wallboard.layout')]
 class PublicWallboard extends Component
@@ -59,7 +61,12 @@ class PublicWallboard extends Component
      */
     public int $pollSeconds = 10;
 
-    public ?string $lastUpdatedAt = null;
+    /**
+     * Epoch milliseconds of the last successful refresh. Kept timezone-free
+     * and formatted in the browser, so the board shows the viewer's local
+     * time like the source did (new Date().toLocaleTimeString()).
+     */
+    public ?int $lastUpdatedAt = null;
 
     public function mount(string $key): void
     {
@@ -82,7 +89,7 @@ class PublicWallboard extends Component
             $this->trend = $payload['trend'] ?? null;
             $this->error = null;
             $this->pollSeconds = $this->clampRefreshSeconds($this->wallboard['layout']['refresh_seconds'] ?? null);
-            $this->lastUpdatedAt = now()->toTimeString();
+            $this->lastUpdatedAt = (int) now()->getPreciseTimestamp(3);
         } catch (ForbiddenException) {
             $this->error = 'inactive';
         } catch (Throwable) {
@@ -102,6 +109,7 @@ class PublicWallboard extends Component
 
     public function render(): View
     {
-        return view('expert-statistics::livewire.wallboard.public');
+        return view('expert-statistics::livewire.wallboard.public')
+            ->title($this->wallboard['name'] ?? 'Wallboard');
     }
 }
