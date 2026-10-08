@@ -88,20 +88,24 @@ it('sends and schedules the report as a users outbound report', function (string
     'schedule' => ['scheduleReport', 'open-schedule-report'],
 ]);
 
-it('stores a scheduled users outbound report with its users', function () {
+it('stores a scheduled users report with its users and element type', function (?string $reportType, string $expectedType) {
     Livewire::test(ShareReportModal::class)
-        ->call('openSchedule', urlType: 'extension', startDate: '2026-09-01', endDate: '2026-09-30', elements: '101,102', reportType: 'userOutboundReport')
+        ->call('openSchedule', urlType: 'extension', startDate: '2026-09-01', endDate: '2026-09-30', elements: '101,102', reportType: $reportType)
         ->call('submit');
 
-    $this->mockClient->assertSent(function ($request, $response): bool {
+    // element_type '*' would make the API drop the users (dns) when it builds the report.
+    $this->mockClient->assertSent(function ($request, $response) use ($expectedType): bool {
         $body = $response->getPendingRequest()->body()?->all() ?? [];
 
-        return ($body['report_type'] ?? null) === 'userOutboundReport'
-            && ($body['element_type'] ?? null) === '0'
+        return ($body['report_type'] ?? null) === $expectedType
+            && ($body['element_type'] ?? null) === 0
             && ($body['dns'] ?? null) === '101,102'
             && ($body['repeat'] ?? null) === true;
     });
-});
+})->with([
+    'users report' => [null, 'userReport'],
+    'users outbound report' => ['userOutboundReport', 'userOutboundReport'],
+]);
 
 it('charts the selected users\' outbound calls by hour, by day and per user', function () {
     $component = Livewire::test(MyUsersDashboard::class)

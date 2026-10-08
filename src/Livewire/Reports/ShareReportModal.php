@@ -315,15 +315,10 @@ class ShareReportModal extends Component
             'host_name' => $host,
             'name' => $this->buildReportName($dataset),
             'report_type' => $dataset,
-            // Ported as-is from ExpertStatistics/ShareReportModal::getElementTypeInt(): any
-            // urlType not explicitly mapped (i.e. 'extension') resolves to 0, which this
-            // `?: '*'` then rewrites to '*' because 0 is falsy in PHP — kept for payload
-            // parity with the source app rather than "fixed" here.
-            //
-            // A page-specific report type (see $reportType) is new on the API side, so it
-            // gets the real element type: the API's generate() drops `dns` whenever
-            // element_type is '*', and that report requires them.
-            'element_type' => $this->reportType !== null ? (string) $elementTypeInt : ($elementTypeInt ?: '*'),
+            // The real element type, never '*': the API's generate() drops `dns` whenever
+            // element_type is '*', and the users report requires them (it then fails
+            // validation and the report is never sent).
+            'element_type' => $elementTypeInt,
             'start' => trim($startBase.' '.$this->startTime),
             'end' => trim(($this->endDate ?? '').' '.$this->endTime),
             'start_at' => trim($startBase.' '.$this->startTime),
