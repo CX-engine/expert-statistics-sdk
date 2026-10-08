@@ -10,6 +10,8 @@
             :selectedElements="$selectedElements"
             :groupSelectedName="$groupSelectedName"
         />
+
+        <x-expert-statistics::report-action-buttons />
     </div>
 
     {{-- Filter bar --}}
@@ -135,6 +137,8 @@
 
         </div>
     @endif
+
+    <livewire:expert-statistics.reports.share-report-modal :key="'expert-statistics.reports.share-report-modal'" />
 
 </div>
 

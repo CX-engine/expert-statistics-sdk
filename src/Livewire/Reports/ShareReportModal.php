@@ -87,6 +87,9 @@ class ShareReportModal extends Component
      */
     public ?string $reportType = null;
 
+    /** @var array<string, mixed> Call Analysis filters, stored on a 'cdrReport' (see CallAnalysis::openReportModal()). */
+    public array $filters = [];
+
     /** @var array<int, array<string, mixed>> */
     public array $resourceGroups = [];
 
@@ -100,9 +103,10 @@ class ShareReportModal extends Component
         string $elements = '',
         array $callerFilters = [],
         ?string $reportType = null,
+        array $filters = [],
     ): void {
         $this->isSchedule = false;
-        $this->openModal($urlType, $startDate, $endDate, $startTime, $endTime, $elements, $callerFilters, $reportType);
+        $this->openModal($urlType, $startDate, $endDate, $startTime, $endTime, $elements, $callerFilters, $reportType, $filters);
     }
 
     #[On('open-schedule-report')]
@@ -115,9 +119,10 @@ class ShareReportModal extends Component
         string $elements = '',
         array $callerFilters = [],
         ?string $reportType = null,
+        array $filters = [],
     ): void {
         $this->isSchedule = true;
-        $this->openModal($urlType, $startDate, $endDate, $startTime, $endTime, $elements, $callerFilters, $reportType);
+        $this->openModal($urlType, $startDate, $endDate, $startTime, $endTime, $elements, $callerFilters, $reportType, $filters);
     }
 
     public function addEmail(): void
@@ -204,9 +209,11 @@ class ShareReportModal extends Component
         string $elements,
         array $callerFilters,
         ?string $reportType = null,
+        array $filters = [],
     ): void {
         $this->urlType = $urlType;
         $this->reportType = $reportType;
+        $this->filters = $filters;
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->startTime = $startTime;
@@ -249,8 +256,8 @@ class ShareReportModal extends Component
 
     private function loadResourceGroups(): void
     {
-        // Caller numbers has no resource-group concept.
-        if ($this->urlType === 'caller') {
+        // Caller numbers and call analysis have no resource-group concept.
+        if (in_array($this->urlType, ['caller', 'cdr'], true)) {
             $this->resourceGroups = [];
 
             return;
@@ -311,7 +318,7 @@ class ShareReportModal extends Component
         $dns = $this->pbx3cx_host_resource_group_id !== '' ? null : ($this->elements !== '' ? $this->elements : null);
         $startBase = $this->isSchedule ? $this->startAt : ($this->startDate ?? '');
 
-        return [
+        $payload = [
             'host_name' => $host,
             'name' => $this->buildReportName($dataset),
             'report_type' => $dataset,
@@ -330,6 +337,13 @@ class ShareReportModal extends Component
             'email_sender' => $user?->email,
             'pbx3cx_host_resource_group_id' => $this->pbx3cx_host_resource_group_id !== '' ? (int) $this->pbx3cx_host_resource_group_id : null,
         ];
+
+        // Call analysis: every call of the period, narrowed by its filters.
+        if ($dataset === 'cdrReport') {
+            $payload = [...$payload, 'element_type' => '*', 'dns' => '*', 'filters' => $this->filters, 'pbx3cx_host_resource_group_id' => null];
+        }
+
+        return $payload;
     }
 
     private function getDataset(): string
@@ -368,6 +382,10 @@ class ShareReportModal extends Component
             'callerNumbersReport' => __('expert-statistics::pbx.expert_statistics.caller_numbers_title'),
             'userReport' => __('expert-statistics::pbx.expert_statistics.my_users_title'),
             'userOutboundReport' => __('expert-statistics::pbx.expert_statistics.my_users_outbound_title'),
+            'dashboard' => __('expert-statistics::pbx.expert_statistics.'.$this->pageGroup().'_dashboard_title'),
+            'answered' => __('expert-statistics::pbx.expert_statistics.'.$this->pageGroup().'_kpi_title'),
+            'origins' => __('expert-statistics::pbx.expert_statistics.'.$this->pageGroup().'_origins_title'),
+            'cdrReport' => __('expert-statistics::pbx.expert_statistics.nav_call_analysis'),
             default => 'Report',
         };
 
@@ -376,6 +394,12 @@ class ShareReportModal extends Component
         }
 
         return $label.' - '.($this->startDate ?? '').' / '.($this->endDate ?? '');
+    }
+
+    /** The cluster a report page belongs to, for its dashboard/KPI/origins title keys. */
+    private function pageGroup(): string
+    {
+        return $this->urlType === 'extension' ? 'my_users' : 'my_queues';
     }
 
     private function cronLabel(): string

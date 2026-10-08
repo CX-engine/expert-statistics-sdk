@@ -3,9 +3,11 @@
 <div class="space-y-5">
 
     {{-- Top bar: element selector --}}
-    <div>
+    <div class="flex flex-wrap items-start justify-between gap-3">
         <x-expert-statistics::element-selector :urlType="$urlType" :pbxElements="$pbxElements"
             :selectedElements="$selectedElements" />
+
+        <x-expert-statistics::report-action-buttons />
     </div>
 
     {{-- Filter bar --}}
@@ -139,6 +141,8 @@
 
         </div>
     @endif
+
+    <livewire:expert-statistics.reports.share-report-modal :key="'expert-statistics.reports.share-report-modal'" />
 
 </div>
 

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
 use CXEngine\ExpertStatistics\Concerns\HasPbxElementSelector;
 use CXEngine\ExpertStatistics\Concerns\RequiresExpertStatisticsActivation;
+use CXEngine\ExpertStatistics\Concerns\SharesReport;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Url;
@@ -16,6 +17,7 @@ class MyUsersKpi extends Component
     use AuthorizesExpertStatisticsAccess;
     use RequiresExpertStatisticsActivation;
     use HasPbxElementSelector;
+    use SharesReport;
 
     public string $urlType = 'extension';
 
@@ -143,6 +145,11 @@ class MyUsersKpi extends Component
         }
 
         return $mins > 0 ? "{$mins}m {$remaining}s" : "{$remaining}s";
+    }
+
+    protected function sharedReportType(): string
+    {
+        return 'answered';
     }
 
     public function render(): View

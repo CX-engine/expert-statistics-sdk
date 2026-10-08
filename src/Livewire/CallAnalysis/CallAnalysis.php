@@ -343,6 +343,45 @@ class CallAnalysis extends Component
         return route('expert-stats.call-details.export', $params);
     }
 
+    /** Opens ShareReportModal in "send" mode for the calls currently filtered. */
+    public function shareReport(): void
+    {
+        $this->openReportModal('open-share-report');
+    }
+
+    /** Opens ShareReportModal in "schedule" mode for the calls currently filtered. */
+    public function scheduleReport(): void
+    {
+        $this->openReportModal('open-schedule-report');
+    }
+
+    /**
+     * A 'cdrReport' keeps these filters in the report's `filters`: the API's
+     * generate() applies them to the report's own period on every send.
+     */
+    private function openReportModal(string $event): void
+    {
+        $this->dispatch($event,
+            urlType: 'cdr',
+            startDate: $this->startDate,
+            endDate: $this->endDate,
+            startTime: $this->startTime,
+            endTime: $this->endTime,
+            reportType: 'cdrReport',
+            filters: array_filter([
+                'origin_dn' => $this->originDn,
+                'origin_dn_type' => $this->originDnType,
+                'destination_dn' => $this->destinationDn,
+                'destination_dn_type' => $this->destinationDnType,
+                'did_number' => $this->didNumber,
+                'caller_number' => $this->callerNumber,
+                'call_way' => $this->callWay,
+                'call_status' => $this->callStatus !== 'all' ? $this->callStatus : '',
+                'exclude_closed_hours' => $this->excludeClosedHours ? 1 : 0,
+            ]),
+        );
+    }
+
     public function formatDuration(string $startedAt, string $endedAt): string
     {
         return PbxDataProcessor::formatDuration($startedAt, $endedAt);

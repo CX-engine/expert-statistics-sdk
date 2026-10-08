@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
 use CXEngine\ExpertStatistics\Concerns\HasPbxElementSelector;
 use CXEngine\ExpertStatistics\Concerns\RequiresExpertStatisticsActivation;
+use CXEngine\ExpertStatistics\Concerns\SharesReport;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use CXEngine\ExpertStatistics\Support\PbxDataProcessor;
 use Illuminate\Contracts\View\View;
@@ -24,6 +25,7 @@ class MyUsersDashboard extends Component
     use AuthorizesExpertStatisticsAccess;
     use RequiresExpertStatisticsActivation;
     use HasPbxElementSelector;
+    use SharesReport;
 
     public string $urlType = 'extension';
 
@@ -190,6 +192,11 @@ class MyUsersDashboard extends Component
         }
 
         return $rows;
+    }
+
+    protected function sharedReportType(): string
+    {
+        return 'dashboard';
     }
 
     public function render(): View

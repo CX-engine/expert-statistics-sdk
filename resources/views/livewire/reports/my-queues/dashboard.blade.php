@@ -7,6 +7,8 @@
     <div class="flex flex-wrap items-center justify-between gap-3">
         <x-expert-statistics::element-selector :urlType="$urlType" :pbxElements="$pbxElements"
             :selectedElements="$selectedElements" />
+
+        <x-expert-statistics::report-action-buttons />
     </div>
 
     {{-- Filter bar --}}
@@ -230,6 +232,8 @@
         @endif
 
     </div>
+
+    <livewire:expert-statistics.reports.share-report-modal :key="'expert-statistics.reports.share-report-modal'" />
 
 </div>
 

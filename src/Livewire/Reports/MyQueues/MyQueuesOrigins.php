@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
 use CXEngine\ExpertStatistics\Concerns\HasPbxElementSelector;
 use CXEngine\ExpertStatistics\Concerns\RequiresExpertStatisticsActivation;
+use CXEngine\ExpertStatistics\Concerns\SharesReport;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Url;
@@ -20,6 +21,7 @@ class MyQueuesOrigins extends Component
     use AuthorizesExpertStatisticsAccess;
     use RequiresExpertStatisticsActivation;
     use HasPbxElementSelector;
+    use SharesReport;
 
     public string $urlType = 'queue';
 
@@ -148,6 +150,11 @@ class MyQueuesOrigins extends Component
     public function getOriginLabel(int $type): string
     {
         return $this->originTypeLabels[$type] ?? "Type {$type}";
+    }
+
+    protected function sharedReportType(): string
+    {
+        return 'origins';
     }
 
     public function render(): View

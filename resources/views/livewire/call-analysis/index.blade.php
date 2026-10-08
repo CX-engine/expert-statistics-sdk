@@ -5,6 +5,10 @@
 
 <div class="space-y-5">
 
+    <div class="flex justify-end">
+        <x-expert-statistics::report-action-buttons />
+    </div>
+
     {{-- Date / Time filter bar --}}
     <x-expert-statistics::filter-bar
         :selectedPeriod="$selectedPeriod"
@@ -841,6 +845,8 @@
 
     @endif
     </div>{{-- end results relative wrapper --}}
+
+    <livewire:expert-statistics.reports.share-report-modal :key="'expert-statistics.reports.share-report-modal'" />
 
 </div>
 
