@@ -81,6 +81,12 @@ class ShareReportModal extends Component
     /** @var array<string, mixed> Caller-numbers filter context (all_groups / group_names / queues / groupless) — display only. */
     public array $callerFilters = [];
 
+    /**
+     * Report-page mode only: the report_type to store, when the page isn't the default
+     * report of its $urlType (e.g. My Users' outbound calls page sends 'userOutboundReport').
+     */
+    public ?string $reportType = null;
+
     /** @var array<int, array<string, mixed>> */
     public array $resourceGroups = [];
 
@@ -93,9 +99,10 @@ class ShareReportModal extends Component
         string $endTime = '19:00',
         string $elements = '',
         array $callerFilters = [],
+        ?string $reportType = null,
     ): void {
         $this->isSchedule = false;
-        $this->openModal($urlType, $startDate, $endDate, $startTime, $endTime, $elements, $callerFilters);
+        $this->openModal($urlType, $startDate, $endDate, $startTime, $endTime, $elements, $callerFilters, $reportType);
     }
 
     #[On('open-schedule-report')]
@@ -107,9 +114,10 @@ class ShareReportModal extends Component
         string $endTime = '19:00',
         string $elements = '',
         array $callerFilters = [],
+        ?string $reportType = null,
     ): void {
         $this->isSchedule = true;
-        $this->openModal($urlType, $startDate, $endDate, $startTime, $endTime, $elements, $callerFilters);
+        $this->openModal($urlType, $startDate, $endDate, $startTime, $endTime, $elements, $callerFilters, $reportType);
     }
 
     public function addEmail(): void
@@ -195,8 +203,10 @@ class ShareReportModal extends Component
         string $endTime,
         string $elements,
         array $callerFilters,
+        ?string $reportType = null,
     ): void {
         $this->urlType = $urlType;
+        $this->reportType = $reportType;
         $this->startDate = $startDate;
         $this->endDate = $endDate;
         $this->startTime = $startTime;
@@ -309,7 +319,11 @@ class ShareReportModal extends Component
             // urlType not explicitly mapped (i.e. 'extension') resolves to 0, which this
             // `?: '*'` then rewrites to '*' because 0 is falsy in PHP — kept for payload
             // parity with the source app rather than "fixed" here.
-            'element_type' => $elementTypeInt ?: '*',
+            //
+            // A page-specific report type (see $reportType) is new on the API side, so it
+            // gets the real element type: the API's generate() drops `dns` whenever
+            // element_type is '*', and that report requires them.
+            'element_type' => $this->reportType !== null ? (string) $elementTypeInt : ($elementTypeInt ?: '*'),
             'start' => trim($startBase.' '.$this->startTime),
             'end' => trim(($this->endDate ?? '').' '.$this->endTime),
             'start_at' => trim($startBase.' '.$this->startTime),
@@ -325,6 +339,10 @@ class ShareReportModal extends Component
 
     private function getDataset(): string
     {
+        if ($this->reportType !== null) {
+            return $this->reportType;
+        }
+
         return match ($this->urlType) {
             'did' => 'didReport',
             'queue' => 'report',
@@ -354,6 +372,7 @@ class ShareReportModal extends Component
             'report' => __('expert-statistics::pbx.expert_statistics.my_queues_title'),
             'callerNumbersReport' => __('expert-statistics::pbx.expert_statistics.caller_numbers_title'),
             'userReport' => __('expert-statistics::pbx.expert_statistics.my_users_title'),
+            'userOutboundReport' => __('expert-statistics::pbx.expert_statistics.my_users_outbound_title'),
             default => 'Report',
         };
 

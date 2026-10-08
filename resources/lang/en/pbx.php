@@ -305,6 +305,7 @@ return [
         'typeCallerNumber' => 'Caller number',
         'typeNumber' => 'Number',
         'typeAll' => 'All',
+        'typeExtensionOutbound' => 'Extension (outbound calls)',
         'prev' => 'Previous',
         'next' => 'Next',
         'showing' => 'Showing',
@@ -385,6 +386,8 @@ return [
 
         // Outbound calls widget
         'externalOutboundCalls' => 'External outbound calls',
+        'outboundCallsByUsers' => 'External Outbound Calls by Users',
+        'outboundCallsPerUser' => 'External outbound calls per user',
 
         // Top users widget
         'top10Users' => 'Top 10 users',
@@ -740,6 +743,20 @@ return [
         'my_users_dashboard_title' => 'Dashboard — My Users',
         'my_users_kpi_title' => 'KPI — My Users',
         'my_users_origins_title' => 'Origins — My Users',
+
+        // My Users - outbound calls
+        'nav_outbound' => 'Outbound calls',
+        'my_users_outbound_title' => 'Outbound Calls — My Users',
+        'my_users_outbound_external_only' => 'Only calls placed by your users to external numbers are counted. Internal calls (between extensions, to queues, IVRs, voicemail…) are excluded.',
+        'my_users_outbound_answered_note' => 'A call counts as answered once the called party (or their voicemail) picks up.',
+        'my_users_outbound_col_calls' => 'Calls placed',
+        'my_users_outbound_col_ringing_avg' => 'Avg ringing',
+        'my_users_outbound_col_unique_numbers' => 'Distinct numbers',
+        'my_users_outbound_total' => 'Total',
+        'my_users_outbound_tooltip_calls' => 'External calls placed by the user, answered or not',
+        'my_users_outbound_tooltip_ringing_avg' => 'Average ringing time before the called party answered',
+        'my_users_outbound_tooltip_unique_numbers' => 'Number of distinct external numbers called',
+        'my_users_outbound_tooltip_total' => 'A call placed by several of the selected users counts once',
 
         // Origins columns
         'origins_destination' => 'Destination',

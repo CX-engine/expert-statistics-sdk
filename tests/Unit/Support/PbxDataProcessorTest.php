@@ -78,6 +78,20 @@ it('builds the top-10 users chart sorted by total calls', function () {
         ->and($chart['series'][2]['data'])->toBe([2, 1]);
 });
 
+it('builds the outbound calls per user chart, busiest users first', function () {
+    $chart = PbxDataProcessor::buildOutboundByUserChart([
+        ['user' => '101-Alice', 'outbound_calls' => 2, 'outbound_answered' => 1, 'outbound_unanswered' => 1],
+        ['user' => '102-Bob', 'outbound_calls' => 5, 'outbound_answered' => 4, 'outbound_unanswered' => 1],
+        ['user' => '103-Carol', 'outbound_calls' => 0, 'outbound_answered' => 0, 'outbound_unanswered' => 0],
+    ]);
+
+    expect($chart['categories'])->toBe(['102-Bob', '101-Alice', '103-Carol'])
+        ->and($chart['series'])->toBe([
+            ['name' => 'Answered', 'data' => [4, 1, 0]],
+            ['name' => 'Unanswered', 'data' => [1, 1, 0]],
+        ]);
+});
+
 it('parses unique-calls-period totals per call direction', function () {
     $data = [
         ['call_way' => 'inbound', 'unique_calls' => 3, 'total_duration_seconds' => 90],

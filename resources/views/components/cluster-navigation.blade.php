@@ -52,6 +52,9 @@
             <x-menus.item :title="__('expert-statistics::pbx.expert_statistics.nav_report')" route="expert-stats.my-users.report" class="pl-10" />
             <x-menus.item :title="__('expert-statistics::pbx.expert_statistics.nav_kpi')" route="expert-stats.my-users.kpi" class="pl-10" />
             <x-menus.item :title="__('expert-statistics::pbx.expert_statistics.nav_origins')" route="expert-stats.my-users.origins" class="pl-10" />
+            @if (\Illuminate\Support\Facades\Route::has('expert-stats.my-users.outbound'))
+                <x-menus.item :title="__('expert-statistics::pbx.expert_statistics.nav_outbound')" route="expert-stats.my-users.outbound" class="pl-10" />
+            @endif
         </x-menus.item-dropdown>
 
         <x-menus.item-dropdown

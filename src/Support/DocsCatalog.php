@@ -53,6 +53,7 @@ final class DocsCatalog
                     ['id' => 'my-users', 'file' => '05-my-users.md', 'routes' => [
                         'expert-stats.my-users.report', 'expert-stats.my-users.dashboard',
                         'expert-stats.my-users.kpi', 'expert-stats.my-users.origins',
+                        'expert-stats.my-users.outbound',
                     ]],
                     ['id' => 'numbers', 'file' => '06-my-numbers-caller-numbers.md', 'routes' => [
                         'expert-stats.my-numbers.report', 'expert-stats.caller-numbers.report',

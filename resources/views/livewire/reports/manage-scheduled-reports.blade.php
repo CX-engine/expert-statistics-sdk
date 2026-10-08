@@ -5,6 +5,7 @@
     $last = $pagination['last_page'];
     $typeLabel = fn ($type, $rtype): string => match (true) {
         $rtype === 'cdrReport' => __('expert-statistics::pbx.reports.typeAll'),
+        $rtype === 'userOutboundReport' => __('expert-statistics::pbx.reports.typeExtensionOutbound'),
         (string) $type === '0' => __('expert-statistics::pbx.reports.typeExtension'),
         (string) $type === '4' => __('expert-statistics::pbx.reports.typeQueue'),
         (string) $type === '99' => __('expert-statistics::pbx.reports.typeCallerNumber'),

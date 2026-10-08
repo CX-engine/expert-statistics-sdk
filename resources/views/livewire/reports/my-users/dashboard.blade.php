@@ -239,6 +239,112 @@
 
             </div>
         @endif
+
+        {{-- External outbound calls of the selected users (internal calls excluded) --}}
+        <div class="mt-5">
+            @if (empty($selectedElements) || empty($outboundKpis) || (int) ($outboundKpis['totalCalls'] ?? 0) === 0)
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-10 text-center">
+                    <x-heroicon-o-phone-arrow-up-right class="w-12 h-12 mx-auto text-gray-200 dark:text-gray-700 mb-3" />
+                    <h3 class="font-semibold text-gray-600 dark:text-gray-400 uppercase text-sm tracking-wide mb-2">{{ __('expert-statistics::pbx.dashboards.outboundCallsByUsers') }}</h3>
+                    <p class="text-gray-400 dark:text-gray-500 text-sm">{{ empty($selectedElements) ? __('expert-statistics::pbx.dashboards.selectUserAndPeriod') : __('expert-statistics::pbx.dashboards.noDataForPeriod') }}</p>
+                    <p class="text-gray-400 dark:text-gray-500 text-xs mt-2">{{ __('expert-statistics::pbx.expert_statistics.my_users_outbound_external_only') }}</p>
+                </div>
+            @else
+                @php
+                    $outTotalCalls = (int) ($outboundKpis['totalCalls'] ?? 0);
+                    $outAnswered = (int) ($outboundKpis['totalAnswered'] ?? 0);
+                    $outUnanswered = max(0, $outTotalCalls - $outAnswered);
+                    $outAnswerRate = $outTotalCalls > 0 ? round($outAnswered / $outTotalCalls * 100, 1) : 0;
+
+                    // Drill-down: external legs placed by the selected extensions
+                    $cfaOutbound = [...CallAnalysisLink::period($startDate, $endDate, $startTime, $endTime), 'callWay' => 'outbound', 'originDn' => implode(',', $selectedElements), 'originDnType' => '0', 'destinationDnType' => '1'];
+                    $cfaOutAll = CallAnalysisLink::url([...$cfaOutbound, 'callStatus' => 'all']);
+                    $cfaOutAnswered = CallAnalysisLink::url([...$cfaOutbound, 'callStatus' => 'answered']);
+                    $cfaOutUnanswered = CallAnalysisLink::url([...$cfaOutbound, 'callStatus' => 'unanswered']);
+
+                    $outboundRows = $this->getOutboundRows();
+                    $byUserSeries = collect($outboundByUser['series'] ?? [])->map(fn (array $serie): array => [
+                        'name' => $serie['name'] === 'Answered' ? __('expert-statistics::pbx.dashboards.answered') : __('expert-statistics::pbx.dashboards.unanswered'),
+                        'data' => $serie['data'],
+                    ])->all();
+                @endphp
+
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4 space-y-5">
+
+                    <div class="pb-4 border-b border-gray-100 dark:border-gray-800">
+                        <div class="flex items-center gap-2">
+                            <div class="w-1 h-5 bg-emerald-500 rounded-full"></div>
+                            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">{{ __('expert-statistics::pbx.dashboards.outboundCallsByUsers') }}</h2>
+                        </div>
+                        <p class="flex items-center gap-1.5 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            <x-heroicon-o-information-circle class="w-4 h-4 shrink-0" />
+                            {{ __('expert-statistics::pbx.expert_statistics.my_users_outbound_external_only') }}
+                        </p>
+                    </div>
+
+                    {{-- KPI summary row --}}
+                    <div class="grid grid-cols-3 gap-3 text-center">
+                        <x-expert-statistics::call-analysis-link tile :href="$cfaOutAnswered" class="rounded-xl bg-green-50 dark:bg-green-950/30 px-3 py-3 hover:ring-green-300 dark:hover:ring-green-700">
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">{{ __('expert-statistics::pbx.dashboards.answered') }}</div>
+                            <div class="flex justify-center items-center gap-1">
+                                <div class="text-lg font-semibold text-green-600 dark:text-green-400">{{ $outAnswered }}</div>
+                                <div class="text-lg font-bold text-green-600 dark:text-green-400">({{ $outAnswerRate }}%)</div>
+                            </div>
+                        </x-expert-statistics::call-analysis-link>
+                        <x-expert-statistics::call-analysis-link tile :href="$cfaOutUnanswered" class="rounded-xl bg-red-50 dark:bg-red-950/30 px-3 py-3 hover:ring-red-300 dark:hover:ring-red-700">
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">{{ __('expert-statistics::pbx.dashboards.unanswered') }}</div>
+                            <div class="flex justify-center items-center gap-1">
+                                <div class="text-lg font-semibold text-red-500 dark:text-red-400">{{ $outUnanswered }}</div>
+                                <div class="text-lg font-bold text-red-500 dark:text-red-400">({{ round(100 - $outAnswerRate, 1) }}%)</div>
+                            </div>
+                        </x-expert-statistics::call-analysis-link>
+                        <x-expert-statistics::call-analysis-link tile :href="$cfaOutAll" class="rounded-xl bg-gray-50 dark:bg-gray-700/50 px-3 py-3 hover:ring-gray-300 dark:hover:ring-gray-500">
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">{{ __('expert-statistics::pbx.dashboards.totalAppeals') }}</div>
+                            <div class="text-lg font-semibold text-gray-700 dark:text-gray-200">{{ $outTotalCalls }}</div>
+                        </x-expert-statistics::call-analysis-link>
+                    </div>
+
+                    {{-- Answered / not answered by hour or day --}}
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                {{ $outboundChartView === 'hour' ? __('expert-statistics::pbx.dashboards.viewByHour') : __('expert-statistics::pbx.dashboards.viewByDay') }}
+                            </h3>
+                            <div class="flex gap-1">
+                                <button wire:click="setOutboundChartView('hour')" type="button"
+                                    class="px-3 py-1 text-xs rounded-lg font-medium transition
+                                        {{ $outboundChartView === 'hour' ? 'bg-sky-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">
+                                    {{ __('expert-statistics::pbx.dashboards.viewByHour') }}
+                                </button>
+                                <button wire:click="setOutboundChartView('day')" type="button"
+                                    class="px-3 py-1 text-xs rounded-lg font-medium transition
+                                        {{ $outboundChartView === 'day' ? 'bg-sky-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600' }}">
+                                    {{ __('expert-statistics::pbx.dashboards.viewByDay') }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <x-expert-statistics::charts.kpi-chart
+                            :title="__('expert-statistics::pbx.dashboards.outboundCallsByUsers')"
+                            :rows="$outboundRows"
+                            :chartKey="'outbound-' . $outboundChartView . '-' . crc32(json_encode($outboundRows))"
+                        />
+                    </div>
+
+                    {{-- Answered / not answered per selected user --}}
+                    <x-expert-statistics::charts.stacked-bar-chart
+                        :title="__('expert-statistics::pbx.dashboards.outboundCallsPerUser')"
+                        :categories="$outboundByUser['categories'] ?? []"
+                        :series="$byUserSeries"
+                        :chartKey="'outbound-by-user-' . crc32(json_encode($outboundByUser))"
+                        :horizontal="false"
+                        :colors="['#22c55e', '#ef4444']"
+                        valueFormat="number"
+                    />
+
+                </div>
+            @endif
+        </div>
     </div>
 
 </div>

@@ -305,6 +305,7 @@ return [
         'typeCallerNumber' => 'Numéro appelant',
         'typeNumber' => 'Numéro',
         'typeAll' => 'Tous',
+        'typeExtensionOutbound' => 'Poste (appels sortants)',
         'prev' => 'Précédent',
         'next' => 'Suivant',
         'showing' => 'Affichage de',
@@ -385,6 +386,8 @@ return [
 
         // Widget appels sortants
         'externalOutboundCalls' => 'Appels émis externe',
+        'outboundCallsByUsers' => 'Appels émis externes par mes utilisateurs',
+        'outboundCallsPerUser' => 'Appels émis externes par utilisateur',
 
         // Widget top 10 utilisateurs
         'top10Users' => 'Top 10 utilisateurs',
@@ -739,6 +742,20 @@ return [
         'my_users_dashboard_title' => 'Tableau de Bord — Mes Utilisateurs',
         'my_users_kpi_title' => 'KPI — Mes Utilisateurs',
         'my_users_origins_title' => 'Origines — Mes Utilisateurs',
+
+        // Mes Utilisateurs - appels sortants
+        'nav_outbound' => 'Appels sortants',
+        'my_users_outbound_title' => 'Appels sortants — Mes Utilisateurs',
+        'my_users_outbound_external_only' => 'Seuls les appels émis par vos utilisateurs vers des numéros externes sont comptés. Les appels internes (entre postes, vers des files, SVI, messagerie…) sont exclus.',
+        'my_users_outbound_answered_note' => 'Un appel est considéré comme répondu dès que le correspondant (ou sa messagerie) décroche.',
+        'my_users_outbound_col_calls' => 'Appels émis',
+        'my_users_outbound_col_ringing_avg' => 'Sonnerie moy.',
+        'my_users_outbound_col_unique_numbers' => 'Numéros distincts',
+        'my_users_outbound_total' => 'Total',
+        'my_users_outbound_tooltip_calls' => 'Appels externes émis par l\'utilisateur, répondus ou non',
+        'my_users_outbound_tooltip_ringing_avg' => 'Temps de sonnerie moyen avant que le correspondant ne décroche',
+        'my_users_outbound_tooltip_unique_numbers' => 'Nombre de numéros externes distincts appelés',
+        'my_users_outbound_tooltip_total' => 'Un appel émis par plusieurs des utilisateurs sélectionnés n\'est compté qu\'une fois',
 
         // Colonnes Origines
         'origins_destination' => 'Destination',

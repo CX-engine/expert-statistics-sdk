@@ -1,8 +1,8 @@
 # Mes utilisateurs
 
 Le même niveau de détail que [Mes files d'attente](04-my-queues.md), mais centré sur les
-utilisateurs individuels (postes/agents) plutôt que sur les files d'attente. Quatre sous-pages :
-**Tableau de bord**, **Rapport**, **KPI**, et **Origines**, suivant toutes le même principe — choisir
+utilisateurs individuels (postes/agents) plutôt que sur les files d'attente. Cinq sous-pages :
+**Tableau de bord**, **Rapport**, **KPI**, **Origines** et **Appels sortants**, suivant toutes le même principe — choisir
 d'abord vos utilisateurs et une période.
 
 ## Rapport
@@ -40,6 +40,32 @@ Deux groupes :
 ### Onglet Files d'attente
 
 De quelles files d'attente cet utilisateur a pris des appels pendant la période.
+
+## Appels sortants
+
+La page **Appels sortants** présente les appels émis par vos utilisateurs **vers des numéros
+externes**. Les appels internes — vers un autre poste, une file, un SVI, une messagerie — ne sont
+jamais comptés, même lorsqu'ils font partie du même appel. Un appel renvoyé vers l'extérieur par un
+SVI n'est pas compté non plus : seuls les appels émis depuis le poste d'un utilisateur le sont.
+
+Pour chaque utilisateur sélectionné :
+
+- **Appels émis** — appels externes composés par l'utilisateur, répondus ou non.
+- **Répondus / Non répondus / Taux %** — un appel est répondu dès que le correspondant (ou sa
+  messagerie) décroche.
+- **Durée (totale / moyenne)** — temps de conversation des appels répondus.
+- **Sonnerie moy.** — temps de sonnerie avant que le correspondant ne décroche.
+- **Numéros distincts** — nombre de numéros externes différents appelés.
+
+La ligne **Total** ne compte qu'une fois un appel auquel plusieurs utilisateurs sélectionnés ont
+participé. Cliquez sur un nombre pour ouvrir les appels correspondants dans
+[Analyse des appels](07-call-analysis.md). La page peut être envoyée, planifiée (voir
+[Rapports planifiés et partage](11-scheduled-reports-and-sharing.md)) et exportée vers Excel comme
+les autres rapports.
+
+Le **Tableau de bord** comporte aussi un panneau *Appels émis externes par mes utilisateurs*, avec
+la même règle (externes uniquement) : appels répondus et non répondus par heure ou par jour, et un
+histogramme des appels répondus et non répondus par utilisateur sélectionné.
 
 ## Tableau de bord, KPI, Origines
 

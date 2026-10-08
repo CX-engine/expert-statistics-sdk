@@ -1,8 +1,8 @@
 # My Users
 
 The same reporting depth as [My Queues](04-my-queues.md), but scoped to individual users
-(extensions/agents) instead of queues. Four sub-pages: **Dashboard**, **Report**, **KPI**, and
-**Origins**, all following the same pattern — pick your users and a date range first.
+(extensions/agents) instead of queues. Five sub-pages: **Dashboard**, **Report**, **KPI**, **Origins**, and
+**Outbound calls**, all following the same pattern — pick your users and a date range first.
 
 ## Report
 
@@ -36,6 +36,31 @@ Two groups:
 ### Queues tab
 
 Which queues this user took calls from/for, during the period.
+
+## Outbound calls
+
+The **Outbound calls** page reports the calls your users placed **to external numbers**. Internal
+calls — to another extension, a queue, an IVR, a voicemail — are never counted, even when they
+are part of the same call. A call forwarded outside by an IVR isn't counted either: only calls
+placed from a user's extension are.
+
+For each selected user:
+
+- **Calls placed** — external calls the user dialled, answered or not.
+- **Answered / Unanswered / Rate %** — a call counts as answered once the called party (or their
+  voicemail) picks up.
+- **Duration (total / average)** — conversation time of the answered calls.
+- **Avg ringing** — how long the line rang before the called party answered.
+- **Distinct numbers** — how many different external numbers the user called.
+
+The **Total** row counts a call once even if several of the selected users took part in it. Click
+any count to open the matching calls in [Call Analysis](07-call-analysis.md). The page can be
+sent, scheduled (see [Scheduled Reports & Sharing](11-scheduled-reports-and-sharing.md)) and
+exported to Excel like the other reports.
+
+The **Dashboard** also has an *External outbound calls by users* panel, with the same external-only
+rule: answered vs. not answered calls by hour or by day, and a column chart of answered vs. not
+answered calls per selected user.
 
 ## Dashboard, KPI, Origins
 

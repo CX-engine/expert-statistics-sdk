@@ -22,6 +22,7 @@ use CXEngine\ExpertStatistics\Livewire\Reports\MyQueues\MyQueuesReport;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersDashboard;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersKpi;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersOrigins;
+use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersOutbound;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersReport;
 use CXEngine\ExpertStatistics\Livewire\Reports\ShareReportModal;
 use CXEngine\ExpertStatistics\Tests\TestCase;
@@ -78,6 +79,7 @@ $components = [
     'my users dashboard' => MyUsersDashboard::class,
     'my users kpi' => MyUsersKpi::class,
     'my users origins' => MyUsersOrigins::class,
+    'my users outbound' => MyUsersOutbound::class,
     'my numbers' => MyNumbersReport::class,
     'caller numbers' => CallerNumbersReport::class,
     'call analysis' => CallAnalysis::class,

@@ -7,7 +7,11 @@
     'stacked' => true,
     'distributed' => false,
     'colors' => [],
+    // 'minutes' (values are minutes, shown as "1h 5m") or 'number' (plain counts)
+    'valueFormat' => 'minutes',
 ])
+
+@php($isMinutes = $valueFormat === 'minutes')
 
 @if (! empty($categories))
     <div wire:key="{{ $chartKey }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
@@ -35,7 +39,7 @@
                             background: 'transparent',
                             foreColor: textColor,
                         },
-@if ($distributed)
+@if ($distributed || ! empty($colors))
                         colors: {{ Js::from($colors) }},
 @endif
                         series: {{ Js::from($series) }},
@@ -43,7 +47,7 @@
                             categories: {{ Js::from($categories) }},
                             labels: {
                                 style: { colors: textColor, fontSize: '11px' },
-@if ($horizontal)
+@if ($horizontal && $isMinutes)
                                 formatter: (val) => {
                                     const v = Number(val);
                                     const h = Math.floor(v / 60);
@@ -58,14 +62,16 @@
                         yaxis: {
                             labels: {
                                 style: { colors: textColor, fontSize: '11px' },
-@unless ($horizontal)
+@if (! $horizontal && $isMinutes)
                                 formatter: (val) => {
                                     const v = Number(val);
                                     const h = Math.floor(v / 60);
                                     const m = v % 60;
                                     return (h > 0 ? h + 'h ' : '') + m + 'm';
                                 },
-@endunless
+@elseif (! $isMinutes)
+                                formatter: (val) => Math.round(Number(val)),
+@endif
                             },
                         },
                         grid: {
@@ -82,11 +88,15 @@
                         tooltip: {
                             theme: isDark ? 'dark' : 'light',
                             y: {
+@if ($isMinutes)
                                 formatter: (val) => {
                                     const h = Math.floor(val / 60);
                                     const m = val % 60;
                                     return (h > 0 ? h + 'h ' : '') + m + 'm';
                                 },
+@else
+                                formatter: (val) => val,
+@endif
                             },
                         },
                         plotOptions: {

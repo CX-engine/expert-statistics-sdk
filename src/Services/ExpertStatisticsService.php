@@ -136,6 +136,37 @@ class ExpertStatisticsService
     }
 
     /**
+     * External outbound calls per user - internal calls are never counted.
+     *
+     * @param  array<string, mixed>  $query
+     * @return array{report: array<int, array<string, mixed>>, aggregated: array<string, mixed>}
+     */
+    public function getUsersOutboundReport(array $query = []): array
+    {
+        return $this->remember('users_outbound_report', $query, fn (string $host): array => $this->connector
+            ->stats()
+            ->usersOutboundReport($host, $query)
+            ->throw()
+            ->json());
+    }
+
+    /**
+     * Hourly external outbound calls placed by users, in getOutboundCalls()'s
+     * row shape.
+     *
+     * @param  array<string, mixed>  $query
+     * @return array<int, array<string, mixed>>
+     */
+    public function getUsersOutboundCalls(array $query = []): array
+    {
+        return $this->remember('users_outbound_calls', $query, fn (string $host): array => $this->connector
+            ->stats()
+            ->usersOutboundCalls($host, $query)
+            ->throw()
+            ->json());
+    }
+
+    /**
      * @param  array<string, mixed>  $query
      * @return array<string, mixed>
      */
@@ -1471,6 +1502,16 @@ class ExpertStatisticsService
         $host = $this->hostName();
 
         return $this->connector->stats()->getUserReportFile($host, $data)->throw();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function streamUserOutboundReportFile(array $data): Response
+    {
+        $host = $this->hostName();
+
+        return $this->connector->stats()->getUserOutboundReportFile($host, $data)->throw();
     }
 
     /**

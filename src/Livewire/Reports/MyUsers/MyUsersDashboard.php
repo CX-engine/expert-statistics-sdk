@@ -60,6 +60,20 @@ class MyUsersDashboard extends Component
     /** @var array<string, mixed> */
     public array $chartByDay = [];
 
+    public string $outboundChartView = 'hour';
+
+    /** @var array<string, mixed> External outbound calls of the selected users - see loadOutbound(). */
+    public array $outboundKpis = [];
+
+    /** @var array<string, mixed> */
+    public array $outboundChartByHour = [];
+
+    /** @var array<string, mixed> */
+    public array $outboundChartByDay = [];
+
+    /** @var array{categories: array<int, string>, series: array<int, array<string, mixed>>}|array{} */
+    public array $outboundByUser = [];
+
     public function mount(): void
     {
         $this->restoreExpertStatsFilters();
@@ -82,6 +96,11 @@ class MyUsersDashboard extends Component
         $this->chartView = $view;
     }
 
+    public function setOutboundChartView(string $view): void
+    {
+        $this->outboundChartView = $view;
+    }
+
     public function toggleUniqueCalls(): void
     {
         $this->uniqueCalls = ! $this->uniqueCalls;
@@ -102,6 +121,7 @@ class MyUsersDashboard extends Component
     public function loadData(): void
     {
         $this->loadInbound();
+        $this->loadOutbound();
     }
 
     /**
@@ -122,6 +142,39 @@ class MyUsersDashboard extends Component
         $rows = [];
 
         foreach ($categories as $i => $category) {
+            $ans = (int) ($answered[$i] ?? 0);
+            $unans = (int) ($unanswered[$i] ?? 0);
+            $total = $ans + $unans;
+
+            $rows[] = [
+                'period' => (string) $category,
+                'answered' => $ans,
+                'unanswered' => $unans,
+                'total' => $total,
+                'rate' => $total > 0 ? round($ans / $total * 100, 1) : 0,
+                'avg_wait' => 0,
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Same reshaping as getInboundRows(), for the outbound answered /
+     * not answered chart.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getOutboundRows(): array
+    {
+        $chart = $this->outboundChartView === 'hour' ? $this->outboundChartByHour : $this->outboundChartByDay;
+        $series = collect($chart['series'] ?? []);
+        $answered = $series->firstWhere('name', 'Answered')['data'] ?? [];
+        $unanswered = $series->firstWhere('name', 'Unanswered')['data'] ?? [];
+
+        $rows = [];
+
+        foreach ($chart['categories'] ?? [] as $i => $category) {
             $ans = (int) ($answered[$i] ?? 0);
             $unans = (int) ($unanswered[$i] ?? 0);
             $total = $ans + $unans;
@@ -181,6 +234,49 @@ class MyUsersDashboard extends Component
             $this->kpis = [];
             $this->chartByDay = [];
             $this->chartByHour = [];
+        }
+    }
+
+    /**
+     * External outbound calls placed by the selected users - internal calls
+     * are never counted (see the API's UsersOutboundCallsController).
+     */
+    private function loadOutbound(): void
+    {
+        $this->outboundKpis = [];
+        $this->outboundChartByHour = [];
+        $this->outboundChartByDay = [];
+        $this->outboundByUser = [];
+
+        if (! $this->startDate || ! $this->endDate || empty($this->selectedElements)) {
+            return;
+        }
+
+        $query = [
+            'start_date' => $this->startDate,
+            'end_date' => $this->endDate,
+            'start_time' => $this->startTime,
+            'end_time' => $this->endTime,
+            'dn' => implode(',', $this->selectedElements),
+            'exclude_closed_hours' => $this->excludeClosedHours ? 1 : 0,
+        ];
+
+        $service = app(ExpertStatisticsService::class);
+
+        try {
+            $grouped = PbxDataProcessor::groupOutboundByDayAndHour($service->getUsersOutboundCalls($query));
+
+            $this->outboundKpis = PbxDataProcessor::calcOutboundKpis($grouped);
+            $this->outboundChartByDay = PbxDataProcessor::buildOutboundChartByDay($grouped['byDay'], $this->startDate, $this->endDate);
+            $this->outboundChartByHour = PbxDataProcessor::buildOutboundChartByHour($grouped['byHour'], $this->startTime, $this->endTime);
+        } catch (\Throwable) {
+            $this->outboundKpis = [];
+        }
+
+        try {
+            $this->outboundByUser = PbxDataProcessor::buildOutboundByUserChart($service->getUsersOutboundReport($query)['report'] ?? []);
+        } catch (\Throwable) {
+            $this->outboundByUser = [];
         }
     }
 

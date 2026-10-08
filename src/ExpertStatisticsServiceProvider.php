@@ -25,6 +25,7 @@ use CXEngine\ExpertStatistics\Livewire\Reports\MyQueues\MyQueuesReport;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersDashboard;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersKpi;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersOrigins;
+use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersOutbound;
 use CXEngine\ExpertStatistics\Livewire\Reports\MyUsers\MyUsersReport;
 use CXEngine\ExpertStatistics\Livewire\Reports\ShareReportModal;
 use CXEngine\ExpertStatistics\Livewire\Training\Training;
@@ -114,6 +115,7 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
             Livewire::component('expert-statistics.my-users.dashboard', MyUsersDashboard::class);
             Livewire::component('expert-statistics.my-users.kpi', MyUsersKpi::class);
             Livewire::component('expert-statistics.my-users.origins', MyUsersOrigins::class);
+            Livewire::component('expert-statistics.my-users.outbound', MyUsersOutbound::class);
 
             Livewire::component('expert-statistics.my-numbers.report', MyNumbersReport::class);
             Livewire::component('expert-statistics.caller-numbers.report', CallerNumbersReport::class);

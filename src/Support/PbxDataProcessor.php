@@ -402,6 +402,26 @@ class PbxDataProcessor
     }
 
     /**
+     * Build the answered / unanswered external outbound calls per user column
+     * chart from the users-outbound-report rows, busiest users first.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array{categories: array<int, string>, series: array<int, array<string, mixed>>}
+     */
+    public static function buildOutboundByUserChart(array $rows): array
+    {
+        usort($rows, fn (array $a, array $b): int => (int) ($b['outbound_calls'] ?? 0) <=> (int) ($a['outbound_calls'] ?? 0));
+
+        return [
+            'categories' => array_map(fn (array $row): string => (string) ($row['user'] ?? ''), $rows),
+            'series' => [
+                ['name' => 'Answered', 'data' => array_map(fn (array $row): int => (int) ($row['outbound_answered'] ?? 0), $rows)],
+                ['name' => 'Unanswered', 'data' => array_map(fn (array $row): int => (int) ($row['outbound_unanswered'] ?? 0), $rows)],
+            ],
+        ];
+    }
+
+    /**
      * Build top-10 users horizontal bar chart data.
      *
      * @param  array<int, array<string, mixed>>  $usersData
