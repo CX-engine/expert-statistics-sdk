@@ -14,6 +14,11 @@ use Prism\Prism\Testing\TextResponseFake;
 
 uses(TestCase::class);
 
+beforeEach(function () {
+    Gate::define('expert-statistics.view', fn () => true);
+    $this->actingAs(tap(new GenericUser, fn (GenericUser $user) => $user->id = 1));
+});
+
 function userWithModifyPermission(bool $canModify): GenericUser
 {
     Gate::define('expert-statistics.modify', fn () => $canModify);

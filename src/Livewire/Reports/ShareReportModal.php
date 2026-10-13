@@ -2,6 +2,8 @@
 
 namespace CXEngine\ExpertStatistics\Livewire\Reports;
 
+use CXEngine\ExpertStatistics\Concerns\AuthorizesEmbeddedComponentAccess;
+use CXEngine\ExpertStatistics\Contracts\ChecksExpertStatisticsActivation;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
@@ -31,9 +33,16 @@ use Throwable;
  *   resource-group concept and shows the caller filter summary passed in via $callerFilters
  *   instead — that summary is for display only, it is not sent in the submit payload, matching
  *   the source component).
+ *
+ * Access: AuthorizesEmbeddedComponentAccess lets in anyone who may open a page hosting the
+ * modal, then each mode is narrowed to its own page's rule (authorizeMode()) - dashboard mode
+ * to the dashboard permissions, report-page mode to the module permissions and an active
+ * subscription, which the free Dashboard does not require.
  */
 class ShareReportModal extends Component
 {
+    use AuthorizesEmbeddedComponentAccess;
+
     public bool $isOpen = false;
 
     public bool $isSchedule = false;
@@ -155,6 +164,8 @@ class ShareReportModal extends Component
 
     public function submit(): void
     {
+        $this->authorizeMode();
+
         $this->statusType = null;
         $this->statusMessage = null;
 
@@ -221,6 +232,8 @@ class ShareReportModal extends Component
         $this->elements = $elements;
         $this->callerFilters = $callerFilters;
 
+        $this->authorizeMode();
+
         $this->resetForm();
 
         if (! $this->isDashboardMode()) {
@@ -228,6 +241,30 @@ class ShareReportModal extends Component
         }
 
         $this->isOpen = true;
+    }
+
+    /**
+     * Holds the current mode to the rule of the page it belongs to: the mode is picked by the
+     * caller's event parameters, so a dashboard-only user must not reach report-page mode.
+     */
+    private function authorizeMode(): void
+    {
+        $permissions = (array) config($this->isDashboardMode()
+            ? 'expert-statistics-api.dashboard_permissions'
+            : 'expert-statistics-api.permissions', []);
+        $user = auth()->user();
+
+        abort_unless($user !== null && collect($permissions)->contains(
+            fn (string $permission): bool => $user->can($permission)
+        ), 403);
+
+        if (! $this->isDashboardMode()) {
+            abort_unless(
+                app(ChecksExpertStatisticsActivation::class)->isActive(),
+                402,
+                __('expert-statistics::pbx.activation.required')
+            );
+        }
     }
 
     private function isDashboardMode(): bool

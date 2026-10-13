@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CXEngine\ExpertStatistics\Livewire\Docs;
 
+use CXEngine\ExpertStatistics\Concerns\AuthorizesEmbeddedComponentAccess;
 use CXEngine\ExpertStatistics\Concerns\ChecksExpertStatisticsModifyPermission;
 use CXEngine\ExpertStatistics\Contracts\AnswersDocsQuestions;
 use CXEngine\ExpertStatistics\Contracts\PerformsExpertStatisticsActions;
@@ -46,6 +47,7 @@ use Throwable;
  */
 class DocsAssistantChat extends Component
 {
+    use AuthorizesEmbeddedComponentAccess;
     use ChecksExpertStatisticsModifyPermission;
 
     public bool $open = false;

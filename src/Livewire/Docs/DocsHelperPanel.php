@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CXEngine\ExpertStatistics\Livewire\Docs;
 
+use CXEngine\ExpertStatistics\Concerns\AuthorizesEmbeddedComponentAccess;
 use CXEngine\ExpertStatistics\Support\DocsCatalog;
 use CXEngine\ExpertStatistics\Support\DocsContent;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,8 @@ use Livewire\Component;
  */
 class DocsHelperPanel extends Component
 {
+    use AuthorizesEmbeddedComponentAccess;
+
     public bool $open = false;
 
     public ?string $activeSectionId = null;

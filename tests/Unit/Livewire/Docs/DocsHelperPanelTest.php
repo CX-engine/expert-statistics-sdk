@@ -2,9 +2,16 @@
 
 use CXEngine\ExpertStatistics\Livewire\Docs\DocsHelperPanel;
 use CXEngine\ExpertStatistics\Tests\TestCase;
+use Illuminate\Foundation\Auth\User as GenericUser;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
 
 uses(TestCase::class);
+
+beforeEach(function () {
+    Gate::define('expert-statistics.view', fn () => true);
+    $this->actingAs(tap(new GenericUser, fn (GenericUser $user) => $user->id = 1));
+});
 
 it('starts closed', function () {
     Livewire::test(DocsHelperPanel::class)
