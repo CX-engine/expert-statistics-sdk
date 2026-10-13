@@ -214,7 +214,68 @@
             .wb-heading { font-size: 1.5rem; }
             .wb-tile-value { font-size: 2.25rem; }
         }
+
+        .wb-offline .wb-dot {
+            background: #f43f5e;
+            animation: none;
+        }
     </style>
+    {{--
+        Unattended-screen error handling. By default Livewire renders any
+        failed request's response (e.g. nginx's "502 Bad Gateway" while
+        PHP-FPM restarts during a deploy) in a modal that stays up until
+        someone closes it - on a TV, that is forever, even though the next
+        poll would succeed. Instead: suppress the modal, keep the last
+        figures on screen with a red status dot, and let wire:poll retry.
+        A 419 (session wiped by the deploy) or repeated errors (e.g. a
+        component snapshot the new release no longer accepts) cannot heal
+        through polling, so the page reloads itself - but only once a probe
+        confirms the server answers again, so a reload never lands on the
+        proxy's own error page, which has no Livewire left to recover.
+    --}}
+    <script>
+        document.addEventListener('livewire:init', () => {
+            let consecutiveFailures = 0
+            let isProbing = false
+
+            let reloadWhenServerAnswers = () => {
+                if (isProbing) return
+
+                isProbing = true
+
+                fetch(window.location.href, { method: 'HEAD', cache: 'no-store' })
+                    .then((response) => response.ok && window.location.reload())
+                    .catch(() => {})
+                    .finally(() => isProbing = false)
+            }
+
+            let markFailed = (status) => {
+                consecutiveFailures++
+                document.documentElement.classList.add('wb-offline')
+
+                if (status === 419 || consecutiveFailures >= 3) {
+                    reloadWhenServerAnswers()
+                }
+            }
+
+            Livewire.interceptRequest(({ onError, onFailure, onSuccess }) => {
+                onError(({ response, preventDefault }) => {
+                    preventDefault()
+
+                    if (response.aborted) return
+
+                    markFailed(response.status)
+                })
+
+                onFailure(() => markFailed(null))
+
+                onSuccess(() => {
+                    consecutiveFailures = 0
+                    document.documentElement.classList.remove('wb-offline')
+                })
+            })
+        })
+    </script>
 </head>
 
 <body>
