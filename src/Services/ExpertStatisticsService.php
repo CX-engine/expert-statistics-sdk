@@ -4,6 +4,7 @@ namespace CXEngine\ExpertStatistics\Services;
 
 use CXEngine\ExpertStatistics\Contracts\ResolvesActivePbxHost;
 use CXEngine\ExpertStatistics\Exceptions\AiFeaturesNotActivatedException;
+use CXEngine\ExpertStatistics\Exceptions\ConfigAuditNotAvailableException;
 use CXEngine\ExpertStatistics\Exceptions\InvalidTrainingKeyException;
 use CXEngine\ExpertStatistics\Exceptions\NoActivePbxHostException;
 use CXEngine\ExpertStats\ExpertStatisticsConnector;
@@ -1692,6 +1693,128 @@ class ExpertStatisticsService
         }
 
         return $response->throw()->json();
+    }
+
+    // --- 3CX configuration audit ---
+
+    /**
+     * Score, area scores, coverage, counts, top recommendations and trend.
+     *
+     * @param  array<string, mixed>  $query  start_date, end_date
+     * @return array<string, mixed>
+     *
+     * @throws ConfigAuditNotAvailableException when no backup has been analysed yet
+     * @throws AiFeaturesNotActivatedException when the host's AI features are off
+     */
+    public function getConfigAudit(array $query = []): array
+    {
+        return $this->configAuditRead('summary', $query, fn (string $host) => $this->connector->configAudit()->summary($host, $query));
+    }
+
+    /**
+     * @param  array<string, mixed>  $query  category[], code[], area[], object, did, search, page, per_page, start_date, end_date
+     * @return array<string, mixed>
+     */
+    public function getConfigAuditFindings(array $query = []): array
+    {
+        return $this->configAuditRead('findings', $query, fn (string $host) => $this->connector->configAudit()->findings($host, $query));
+    }
+
+    /**
+     * @param  array<string, mixed>  $query  search, page, per_page, start_date, end_date
+     * @return array<string, mixed>
+     */
+    public function getConfigAuditRoutes(array $query = []): array
+    {
+        return $this->configAuditRead('routes', $query, fn (string $host) => $this->connector->configAudit()->routes($host, $query));
+    }
+
+    /**
+     * @param  array<string, mixed>  $query  start_date, end_date
+     * @return array<string, mixed>
+     */
+    public function getConfigAuditRoute(string $did, array $query = []): array
+    {
+        return $this->configAuditRead('route.'.$did, $query, fn (string $host) => $this->connector->configAudit()->route($host, $did, $query));
+    }
+
+    /**
+     * @param  array<string, mixed>  $query  start_date, end_date
+     * @return array<string, mixed>
+     */
+    public function getConfigAuditQueues(array $query = []): array
+    {
+        return $this->configAuditRead('queues', $query, fn (string $host) => $this->connector->configAudit()->queues($host, $query));
+    }
+
+    /**
+     * @param  array<string, mixed>  $query  search, page, per_page, start_date, end_date
+     * @return array<string, mixed>
+     */
+    public function getConfigAuditAgents(array $query = []): array
+    {
+        return $this->configAuditRead('agents', $query, fn (string $host) => $this->connector->configAudit()->agents($host, $query));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getConfigAuditHistory(int $limit = 30): array
+    {
+        return $this->configAuditRead('history', ['limit' => $limit], fn (string $host) => $this->connector->configAudit()->history($host, ['limit' => $limit]));
+    }
+
+    /**
+     * Markdown report of the latest audit (not cached).
+     */
+    public function getConfigAuditReport(): string
+    {
+        return $this->configAuditResponse($this->connector->configAudit()->report($this->hostName()))->body();
+    }
+
+    /**
+     * Re-run the audit on the latest backup and re-evaluate the score. Every
+     * cached read of the host's audit is invalidated (cache version bump).
+     *
+     * @return array<string, mixed>
+     */
+    public function refreshConfigAudit(): array
+    {
+        $host = $this->hostName();
+        $result = $this->configAuditResponse($this->connector->configAudit()->refresh($host))->json();
+
+        Cache::forever($this->configAuditVersionKey($host), (int) Cache::get($this->configAuditVersionKey($host), 0) + 1);
+
+        return $result;
+    }
+
+    /**
+     * Cached read of a config-audit endpoint. The cache key carries a
+     * per-host version so that refreshConfigAudit() invalidates every
+     * filter / period combination at once.
+     *
+     * @param  array<string, mixed>  $query
+     * @param  \Closure(string): Response  $send
+     */
+    private function configAuditRead(string $endpoint, array $query, \Closure $send): array
+    {
+        $version = (int) Cache::get($this->configAuditVersionKey($this->hostName()), 0);
+
+        return $this->remember("config_audit.v{$version}.{$endpoint}", $query, fn (string $host): array => $this->configAuditResponse($send($host))->json() ?? []);
+    }
+
+    private function configAuditResponse(Response $response): Response
+    {
+        return match ($response->status()) {
+            403 => throw AiFeaturesNotActivatedException::make(),
+            404 => throw ConfigAuditNotAvailableException::make(),
+            default => $response->throw(),
+        };
+    }
+
+    private function configAuditVersionKey(string $host): string
+    {
+        return "expert-statistics.config_audit.version.{$host}";
     }
 
     /**

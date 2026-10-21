@@ -66,6 +66,7 @@ final class DocsCatalog
                     ['id' => 'ai-insights', 'file' => '09-ai-insights.md', 'routes' => [
                         'expert-stats.ai.chat', 'expert-stats.ai.dashboard', 'expert-stats.ai.alerts',
                     ]],
+                    ['id' => 'config-audit', 'file' => '15-config-audit.md', 'routes' => ['expert-stats.ai.config-audit']],
                 ],
             ],
             [

@@ -81,6 +81,9 @@
             <x-menus.item :title="__('expert-statistics::pbx.expert_statistics.nav_ai_chat')" route="expert-stats.ai.chat" class="pl-10" />
             <x-menus.item :title="__('expert-statistics::pbx.expert_statistics.nav_ai_dashboard')" route="expert-stats.ai.dashboard" class="pl-10" />
             <x-menus.item :title="__('expert-statistics::pbx.expert_statistics.nav_ai_alerts')" route="expert-stats.ai.alerts" class="pl-10" />
+            @if (\Illuminate\Support\Facades\Route::has('expert-stats.ai.config-audit'))
+                <x-menus.item :title="__('expert-statistics::pbx.expert_statistics.nav_config_audit')" route="expert-stats.ai.config-audit" class="pl-10" />
+            @endif
         </x-menus.item-dropdown>
 
         @if (\Illuminate\Support\Facades\Route::has('expert-stats.training') && app(\CXEngine\ExpertStatistics\Contracts\ProvidesTrainingParticipants::class)->isTrainingAvailable())
