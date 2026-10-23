@@ -2,6 +2,8 @@
 
 namespace CXEngine\ExpertStatistics\Concerns;
 
+use CXEngine\ExpertStatistics\Support\AccessDenial;
+
 /**
  * Gates the Dashboard Livewire component behind the permission strings listed
  * in config('expert-statistics-api.dashboard_permissions'). A user passes if
@@ -27,6 +29,8 @@ trait AuthorizesDashboardAccess
             fn (string $permission): bool => $user->can($permission)
         );
 
-        abort_unless($allowed, 403);
+        if (! $allowed) {
+            AccessDenial::forbidden();
+        }
     }
 }

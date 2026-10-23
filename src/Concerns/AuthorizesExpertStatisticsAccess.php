@@ -2,11 +2,14 @@
 
 namespace CXEngine\ExpertStatistics\Concerns;
 
+use CXEngine\ExpertStatistics\Support\AccessDenial;
+
 /**
  * Gates a Livewire full-page component behind the permission strings listed
  * in config('expert-statistics-api.permissions'). A user passes if they hold
  * any one of them (checked via the framework's own Gate — works transparently
- * with Spatie laravel-permission without a hard package dependency).
+ * with Spatie laravel-permission without a hard package dependency). A user
+ * who fails it is refused through AccessDenial.
  *
  * Livewire calls `boot{TraitName}()` automatically on every request.
  */
@@ -21,7 +24,9 @@ trait AuthorizesExpertStatisticsAccess
             fn (string $permission): bool => $user->can($permission)
         );
 
-        abort_unless($allowed, 403);
+        if (! $allowed) {
+            AccessDenial::forbidden();
+        }
     }
 
     /**

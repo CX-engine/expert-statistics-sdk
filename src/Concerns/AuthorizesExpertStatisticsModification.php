@@ -2,6 +2,8 @@
 
 namespace CXEngine\ExpertStatistics\Concerns;
 
+use CXEngine\ExpertStatistics\Support\AccessDenial;
+
 /**
  * Gates a Configuration Livewire component behind the permission strings
  * listed in config('expert-statistics-api.modification_permissions'). A user
@@ -26,6 +28,8 @@ trait AuthorizesExpertStatisticsModification
             fn (string $permission): bool => $user->can($permission)
         );
 
-        abort_unless($allowed, 403);
+        if (! $allowed) {
+            AccessDenial::forbidden();
+        }
     }
 }

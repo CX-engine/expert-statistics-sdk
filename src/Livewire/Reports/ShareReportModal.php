@@ -5,6 +5,7 @@ namespace CXEngine\ExpertStatistics\Livewire\Reports;
 use CXEngine\ExpertStatistics\Concerns\AuthorizesEmbeddedComponentAccess;
 use CXEngine\ExpertStatistics\Contracts\ChecksExpertStatisticsActivation;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
+use CXEngine\ExpertStatistics\Support\AccessDenial;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -254,16 +255,12 @@ class ShareReportModal extends Component
             : 'expert-statistics-api.permissions', []);
         $user = auth()->user();
 
-        abort_unless($user !== null && collect($permissions)->contains(
-            fn (string $permission): bool => $user->can($permission)
-        ), 403);
+        if ($user === null || ! collect($permissions)->contains(fn (string $permission): bool => $user->can($permission))) {
+            AccessDenial::forbidden();
+        }
 
-        if (! $this->isDashboardMode()) {
-            abort_unless(
-                app(ChecksExpertStatisticsActivation::class)->isActive(),
-                402,
-                __('expert-statistics::pbx.activation.required')
-            );
+        if (! $this->isDashboardMode() && ! app(ChecksExpertStatisticsActivation::class)->isActive()) {
+            AccessDenial::notActivated();
         }
     }
 

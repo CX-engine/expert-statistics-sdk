@@ -105,6 +105,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Access refused page
+    |--------------------------------------------------------------------------
+    |
+    | Name of a host route that takes over when a user may not open a page
+    | (permissions) or the PBX host has no Expert Statistics subscription.
+    | The user is redirected to it with a `reason` parameter, `forbidden` or
+    | `not-activated` (Support\AccessDenial); a route without a {reason}
+    | segment gets it as a query string. Null (the default) aborts with 403 /
+    | 402 instead, rendered by the host's error views.
+    */
+    'unavailable_route' => env('EXPERT_STATISTICS_UNAVAILABLE_ROUTE'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Documentation help panel
     |--------------------------------------------------------------------------
     |
