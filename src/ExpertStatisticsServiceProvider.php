@@ -8,6 +8,7 @@ use CXEngine\ExpertStatistics\Livewire\AgentMonitoring\StatusBreakdown;
 use CXEngine\ExpertStatistics\Livewire\Ai\AiAlerts;
 use CXEngine\ExpertStatistics\Livewire\Ai\AiChat;
 use CXEngine\ExpertStatistics\Livewire\Ai\AiDashboard;
+use CXEngine\ExpertStatistics\Livewire\ConfigAudit\ConfigAudit;
 use CXEngine\ExpertStatistics\Livewire\Ai\AiFloatingChat;
 use CXEngine\ExpertStatistics\Livewire\CallAnalysis\CallAnalysis;
 use CXEngine\ExpertStatistics\Livewire\Configuration\ManagePbxSettings;
@@ -135,6 +136,7 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
 
             Livewire::component('expert-statistics.ai.chat', AiChat::class);
             Livewire::component('expert-statistics.ai.dashboard', AiDashboard::class);
+            Livewire::component('expert-statistics.ai.config-audit', ConfigAudit::class);
             Livewire::component('expert-statistics.ai.alerts', AiAlerts::class);
             Livewire::component('expert-statistics.ai.floating-chat', AiFloatingChat::class);
 

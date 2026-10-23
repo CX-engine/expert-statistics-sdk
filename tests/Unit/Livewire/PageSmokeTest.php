@@ -7,6 +7,7 @@ use CXEngine\ExpertStatistics\Livewire\AgentMonitoring\StatusBreakdown;
 use CXEngine\ExpertStatistics\Livewire\Ai\AiAlerts;
 use CXEngine\ExpertStatistics\Livewire\Ai\AiChat;
 use CXEngine\ExpertStatistics\Livewire\Ai\AiDashboard;
+use CXEngine\ExpertStatistics\Livewire\ConfigAudit\ConfigAudit;
 use CXEngine\ExpertStatistics\Livewire\Ai\AiFloatingChat;
 use CXEngine\ExpertStatistics\Livewire\CallAnalysis\CallAnalysis;
 use CXEngine\ExpertStatistics\Livewire\Configuration\ManagePbxSettings;
@@ -88,6 +89,7 @@ $components = [
     'status breakdown' => StatusBreakdown::class,
     'ai chat' => AiChat::class,
     'ai dashboard' => AiDashboard::class,
+    'config audit' => ConfigAudit::class,
     'ai alerts' => AiAlerts::class,
     'ai floating chat' => AiFloatingChat::class,
     'pbx settings' => ManagePbxSettings::class,
