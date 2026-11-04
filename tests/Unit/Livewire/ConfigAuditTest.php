@@ -342,3 +342,111 @@ it('downloads the Markdown report', function () {
         ->call('downloadReport')
         ->assertFileDownloaded('config-audit-2026-10-13.md');
 });
+
+it('goes back to the queue a recommendation was opened from', function () {
+    mockAudit();
+
+    Livewire::test(ConfigAudit::class)
+        ->call('selectTab', 'queues')
+        ->call('showFindingsFor', 'queue:8000', '8000 – Standard')
+        ->assertSet('tab', 'recommendations')
+        ->assertSee('Back to 8000 – Standard')
+        ->call('showAgent', '202')
+        ->assertSet('tab', 'agents')
+        ->assertSee('Back to Recommendations')
+        ->call('goBack')
+        ->assertSet('tab', 'recommendations')
+        ->assertSet('findingSearch', 'queue:8000')
+        ->call('goBack')
+        ->assertSet('tab', 'queues')
+        ->assertSet('findingSearch', '')
+        ->assertDontSee('Back to')
+        // The tab bar starts a new path: nothing to go back to.
+        ->call('showQueue', '8000', 'Overview')
+        ->call('selectTab', 'overview')
+        ->assertSet('backStack', []);
+});
+
+it('opens the queue and the agent of a recommendation', function () {
+    mockAudit();
+
+    Livewire::test(ConfigAudit::class)
+        ->call('selectTab', 'recommendations')
+        ->call('showQueue', '8000')
+        ->assertSet('tab', 'queues')
+        ->assertSet('focus', '8000')
+        ->call('goBack')
+        ->call('showAgent', '202')
+        ->assertSet('agentSearch', '202')
+        ->assertSee('Status at backup time: Available')
+        ->assertSee('logged in at backup time')
+        ->assertSee('60 answered of 300 presented');
+});
+
+it('marks a finding as expected and reports it again', function () {
+    $mock = mockAudit([
+        '*config-audit/acceptances/5' => MockResponse::make(['score' => 78.9], 200),
+        '*config-audit/acceptances' => MockResponse::make(['acceptance' => ['id' => 5], 'score' => 85.5], 201),
+    ]);
+
+    Livewire::test(ConfigAudit::class)
+        ->call('selectTab', 'recommendations')
+        ->assertSee('This is expected')
+        ->call('acceptFinding', 'none_after_long_wait:queue:8000', ' Closing message on purpose ')
+        ->call('revokeAcceptance', 5);
+
+    $mock->assertSent(function ($request, $response) {
+        $pending = $response->getPendingRequest();
+
+        return $pending->getMethod()->value === 'POST'
+            && str_ends_with(parse_url((string) $pending->getUri(), PHP_URL_PATH), '/config-audit/acceptances')
+            && $pending->body()->all() === ['finding' => 'none_after_long_wait:queue:8000', 'note' => 'Closing message on purpose', 'accepted_by' => 'jane@example.com'];
+    });
+    $mock->assertSent(fn ($request, $response) => $response->getPendingRequest()->getMethod()->value === 'DELETE'
+        && str_ends_with((string) $response->getPendingRequest()->getUri(), '/config-audit/acceptances/5'));
+});
+
+it('lists the findings marked as expected', function () {
+    $mock = mockAudit([
+        '*config-audit/findings*' => MockResponse::make([
+            'data' => [auditFinding('none_after_long_wait', 'to_check', 'queue:8000', 0.0, [
+                'object_label' => 'File 8000 – Standard',
+                'accepted' => ['id' => 5, 'note' => 'Closing message on purpose', 'accepted_by' => 'Cyrille', 'accepted_at' => '2026-11-04 10:00:00'],
+            ])],
+            'meta' => ['total' => 1, 'page' => 1, 'per_page' => 20, 'last_page' => 1],
+        ], 200),
+    ]);
+
+    Livewire::test(ConfigAudit::class)
+        ->call('showFindings', '', '', 'accepted')
+        ->assertSet('findingStatus', 'accepted')
+        ->assertSee('Marked as expected by Cyrille')
+        ->assertSee('Closing message on purpose')
+        ->assertSee('Report again')
+        ->assertSee('File 8000 – Standard')
+        ->assertDontSee('What to change:');
+
+    $mock->assertSent(fn ($request, $response) => str_contains((string) $response->getPendingRequest()->getUri(), 'status=accepted'));
+});
+
+it('only lets users allowed to modify mark a finding as expected', function () {
+    mockAudit();
+    app()->forgetInstance(\Illuminate\Contracts\Auth\Access\Gate::class);
+    Gate::clearResolvedInstances();
+    Gate::define('expert-statistics.view', fn () => true);
+
+    Livewire::test(ConfigAudit::class)
+        ->call('selectTab', 'recommendations')
+        ->assertDontSee('This is expected')
+        ->call('acceptFinding', 'none_after_long_wait:queue:8000')
+        ->assertForbidden();
+});
+
+it('asks for the recommendations in the user language', function () {
+    $mock = mockAudit();
+    app()->setLocale('fr');
+
+    Livewire::test(ConfigAudit::class)->call('selectTab', 'recommendations');
+
+    $mock->assertSent(fn ($request, $response) => str_contains((string) $response->getPendingRequest()->getUri(), 'locale=fr'));
+});

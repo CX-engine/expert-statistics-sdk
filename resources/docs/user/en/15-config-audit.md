@@ -34,23 +34,41 @@ Sorted by the points each one costs on the score. Each recommendation shows:
 - what was found, and **what to change** with the 3CX admin screen and setting;
 - the measured statistics and the evidence (the configuration element or figure that proves it).
 
-Filter by category, area, or search a queue, an agent or a DID.
+Filter by category, area, or search a queue, an agent or a DID. The queue, agent or DID of a
+recommendation is a link: open it, then use **Back to …** above the tab to return where you were.
+
+### This is expected
+
+Some behaviour is intended for your PBX: a closing message after the wait, a menu that hangs up
+when nobody chooses, agents shared between campaign queues. Click **This is expected** on the
+recommendation (with a note if you want): it no longer counts in the score and is no longer
+reported, in this audit and the next ones. **Marked as expected** lists them, and **Report again**
+brings one back. Changing them requires the right to modify the Expert Statistics settings.
 
 ## Routing
 
 Every DID with its first destination, its calls and its number of recommendations. Open a DID to
 see its full routing: office hours, out of office and holiday branches, menus and their keys,
-queues with their agents, overflows, forwarding, voicemail and end of call. Transfers to one of
-your own DIDs and department changes are highlighted.
+queues with their agents, overflows, forwarding, voicemail and end of call, drawn as a diagram:
+
+- objects with recommendations are coloured by the most severe one (red probable error, amber to
+  check, blue optimisation) with **⚠** and their number; hover one to read them, click it to go to
+  them below the diagram;
+- amber arrows are office hours conditions, indigo arrows the branches of a Call Flow App (API
+  answers, menu choices), dashed arrows go back to an object already drawn or through one of your
+  own DIDs.
+
+The details of each step are folded under the recommendations.
 
 ## Queues and agents
 
 - **Queues**: strategy, agents (logged in at the time of the backup), ring time, maximum wait,
   wrap-up, destination if no answer, hours, with the calls, answered and abandoned rates and the
   average wait of the period.
-- **Agents**: every queue agent with their queues, the queue calls offered and answered, and the
-  recommendations that concern them (agents answering few calls, in too many queues, never logged
-  in, disabled…).
+- **Agents**: every queue agent with their queues, the queue calls presented and answered, the
+  hours logged in to each queue over the period, and the recommendations that concern them (agents
+  answering few calls, never logged in, disabled, shared with a queue that loses calls…). The
+  status (profile, logged in or out) is the one **at the time of the backup**, not over the period.
 
 ## History, report and refresh
 
@@ -58,6 +76,20 @@ your own DIDs and department changes are highlighted.
 - **Report** downloads the full audit (routing of every DID and all recommendations) as a
   Markdown file.
 - **Re-run the audit** analyses the latest backup again and recomputes the score.
+
+## Files of the audit
+
+**Configuration → PBX Settings → AI Audit files** ([PBX Settings](10-pbx-settings.md)) shows what the audit is computed from, and lets an administrator
+provide:
+
+- the **backup configuration** (.xml file of the 3CX backup), when the backups of the PBX are not
+  collected: it is checked, then the audit is run again on it;
+- the **Call Flow sources** of each Call Flow App (Call Flow Designer project, .zip), to replace
+  whenever the Call Flow changes;
+- the **audio messages** (.zip of the .wav files of the backup): they are transcribed, so the
+  audit knows what callers hear (a closing message, a menu, an invitation to call back).
+
+Every file is checked before it is kept; a refused file shows why.
 
 ## Related pages
 

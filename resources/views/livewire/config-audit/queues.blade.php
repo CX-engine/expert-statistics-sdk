@@ -6,8 +6,13 @@
             $stats = $queue['stats'] ?? null;
             $categories = collect($queue['findings'] ?? [])->countBy('category');
         @endphp
-        <div wire:key="queue-{{ $queue['number'] }}" x-data="{ open: false }"
-             class="bg-white dark:bg-gray-800 rounded-lg shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10">
+        @php
+            $focused = $focus === (string) $queue['number'];
+            $queueLabel = $queue['number'].' – '.($queue['name'] ?? '');
+        @endphp
+        <div wire:key="queue-{{ $queue['number'] }}" x-data="{ open: @js($focused) }"
+             @if ($focused) x-init="$el.scrollIntoView({ block: 'center' })" @endif
+             @class(['bg-white dark:bg-gray-800 rounded-lg shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10', 'ring-2 ring-teal-400 dark:ring-teal-600' => $focused])>
             <button type="button" x-on:click="open = ! open" class="w-full text-left px-4 py-3 flex flex-wrap items-center gap-x-6 gap-y-2">
                 <div class="min-w-48">
                     <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ $queue['number'] }} – {{ $queue['name'] ?? '' }}</p>
@@ -54,14 +59,14 @@
                                 'rounded px-1.5 py-0.5',
                                 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400' => ($member['status'] ?? null) === 'LoggedIn',
                                 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400' => ($member['status'] ?? null) !== 'LoggedIn',
-                            ])>{{ $member['dn'] }} {{ $member['name'] ?? '' }}</span>
+                            ])><button type="button" wire:click="showAgent(@js((string) $member['dn']), @js($queueLabel))" class="hover:underline">{{ $member['dn'] }} {{ $member['name'] ?? '' }}</button></span>
                         @empty
                             <span class="text-red-600">{{ $t('no_agents') }}</span>
                         @endforelse
                     </div>
                 </div>
                 @if (! empty($queue['findings']))
-                    <button wire:click="showFindingsFor('queue:{{ $queue['number'] }}')" class="text-teal-600 hover:underline">
+                    <button wire:click="showFindingsFor(@js('queue:'.$queue['number']), @js($queueLabel))" class="text-teal-600 hover:underline">
                         {{ $t('see_queue_findings', ['count' => count($queue['findings'])]) }}
                     </button>
                 @endif

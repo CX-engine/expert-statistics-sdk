@@ -107,6 +107,11 @@
                 </div>
             @endforelse
         </div>
+        @if (($summary['accepted_count'] ?? 0) > 0)
+            <button wire:click="showFindings('', '', 'accepted')" class="mt-2 text-xs text-gray-500 dark:text-gray-400 hover:text-teal-600 hover:underline">
+                {{ $t('accepted_count', ['count' => $summary['accepted_count']]) }}
+            </button>
+        @endif
     </div>
 
     {{-- Trend --}}

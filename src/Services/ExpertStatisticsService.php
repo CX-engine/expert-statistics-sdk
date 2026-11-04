@@ -5,6 +5,7 @@ namespace CXEngine\ExpertStatistics\Services;
 use CXEngine\ExpertStatistics\Contracts\ResolvesActivePbxHost;
 use CXEngine\ExpertStatistics\Exceptions\AiFeaturesNotActivatedException;
 use CXEngine\ExpertStatistics\Exceptions\ConfigAuditNotAvailableException;
+use CXEngine\ExpertStatistics\Exceptions\ConfigAuditFileRefusedException;
 use CXEngine\ExpertStatistics\Exceptions\InvalidTrainingKeyException;
 use CXEngine\ExpertStatistics\Exceptions\NoActivePbxHostException;
 use CXEngine\ExpertStats\ExpertStatisticsConnector;
@@ -1783,9 +1784,88 @@ class ExpertStatisticsService
         $host = $this->hostName();
         $result = $this->configAuditResponse($this->connector->configAudit()->refresh($host))->json();
 
-        Cache::forever($this->configAuditVersionKey($host), (int) Cache::get($this->configAuditVersionKey($host), 0) + 1);
+        $this->bumpConfigAuditVersion($host);
 
         return $result;
+    }
+
+    /**
+     * Mark a finding of the latest audit as expected for the host, in the
+     * name of the signed-in user. Every cached read of the audit is invalidated.
+     *
+     * @return array<string, mixed>
+     */
+    public function acceptConfigAuditFinding(string $findingId, ?string $note = null): array
+    {
+        $host = $this->hostName();
+        $user = auth()->user();
+        $result = $this->configAuditResponse($this->connector->configAudit()->accept($host, [
+            'finding' => $findingId,
+            'note' => $note,
+            'accepted_by' => $user?->name ?? $user?->email,
+        ]))->json();
+
+        $this->bumpConfigAuditVersion($host);
+
+        return $result ?? [];
+    }
+
+    /**
+     * Report a finding marked as expected again.
+     *
+     * @return array<string, mixed>
+     */
+    public function revokeConfigAuditAcceptance(int $acceptanceId): array
+    {
+        $host = $this->hostName();
+        $result = $this->configAuditResponse($this->connector->configAudit()->revokeAcceptance($host, $acceptanceId))->json();
+
+        $this->bumpConfigAuditVersion($host);
+
+        return $result ?? [];
+    }
+
+    /**
+     * Files provided for the audit and the Call Flow Apps sources can be given for.
+     *
+     * @return array<string, mixed>
+     */
+    public function getConfigAuditFiles(): array
+    {
+        return $this->configAuditResponse($this->connector->configAudit()->files($this->hostName()))->json() ?? [];
+    }
+
+    /**
+     * Upload a file for the audit (kind backup, call_flow or prompts). A file
+     * the server refuses throws ConfigAuditFileRefusedException with its reason.
+     *
+     * @param  array<string, string|null>  $fields
+     * @return array<string, mixed>
+     */
+    public function uploadConfigAuditFile(string $kind, string $path, string $fileName, array $fields = []): array
+    {
+        $host = $this->hostName();
+        $response = $this->connector->configAudit()->uploadFile($host, $kind, $path, $fileName, $fields);
+        if ($response->status() === 422) {
+            throw new ConfigAuditFileRefusedException((string) ($response->json('error') ?? $response->json('message') ?? 'File refused.'));
+        }
+
+        $result = $this->configAuditResponse($response)->json() ?? [];
+        $this->bumpConfigAuditVersion($host);
+
+        return $result;
+    }
+
+    public function deleteConfigAuditCallFlow(string $app): void
+    {
+        $host = $this->hostName();
+        $this->configAuditResponse($this->connector->configAudit()->deleteCallFlow($host, $app));
+        $this->bumpConfigAuditVersion($host);
+    }
+
+    private function bumpConfigAuditVersion(string $host): void
+    {
+        Cache::forever($this->configAuditVersionKey($host), (int) Cache::get($this->configAuditVersionKey($host), 0) + 1);
     }
 
     /**

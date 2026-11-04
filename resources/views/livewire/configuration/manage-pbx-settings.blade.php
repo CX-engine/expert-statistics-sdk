@@ -13,6 +13,7 @@
                 'ai-alerts' => ['label' => __('expert-statistics::pbx.config.tab.aiAlerts'), 'icon' => 'heroicon-m-bell-alert'],
                 'groups' => ['label' => __('expert-statistics::pbx.config.tab.groups'), 'icon' => 'heroicon-m-squares-2x2'],
                 'wallboard' => ['label' => __('expert-statistics::pbx.config.tab.wallboard'), 'icon' => 'heroicon-m-tv'],
+                'audit-files' => ['label' => __('expert-statistics::pbx.config.tab.auditFiles'), 'icon' => 'heroicon-m-document-arrow-up'],
             ];
         @endphp
 
@@ -62,6 +63,8 @@
             @include('expert-statistics::livewire.configuration._groups')
         @elseif ($tab === 'wallboard')
             @include('expert-statistics::livewire.configuration._wallboard')
+        @elseif ($tab === 'audit-files')
+            <livewire:expert-statistics.configuration.config-audit-files :key="'config-audit-files'" />
         @endif
     </div>
 
