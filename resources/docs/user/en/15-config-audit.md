@@ -1,7 +1,7 @@
 # AI Audit
 
 Shows how your 3CX configuration affects your calls, and exactly what to change in 3CX to improve
-your statistics. The audit is computed every day from the 3CX backup of your PBX and crossed with
+your statistics. The audit is computed every day from the 3CX configuration of your PBX and crossed with
 the calls of the last 30 days (or the period you choose).
 
 > The AI Audit is part of the AI features: it needs them to be activated for your PBX.
@@ -20,7 +20,7 @@ when the audit has nothing to recommend. Each recommendation lowers it according
 The score is also given **per area**: routing, queues & agents, office hours, Call Flow Apps.
 
 **Analysis coverage** is the share of your calls whose routing could be fully analysed. IVR menu
-keys are not included in 3CX backups, and part of a Call Flow App's logic can be computed while
+keys are not included in the 3CX configuration, and part of a Call Flow App's logic can be computed while
 the call runs: those parts are listed under **Not analysed** and do not lower the score.
 
 Without call statistics, the score is based on the configuration only (labelled as such).
@@ -48,34 +48,37 @@ brings one back. Changing them requires the right to modify the Expert Statistic
 ## Routing
 
 Every DID with its first destination, its calls and its number of recommendations. Open a DID to
-see its full routing: office hours, out of office and holiday branches, menus and their keys,
-queues with their agents, overflows, forwarding, voicemail and end of call, drawn as a diagram:
+see its call flow sheet, read left to right then top to bottom:
 
-- objects with recommendations are coloured by the most severe one (red probable error, amber to
-  check, blue optimisation) with **⚠** and their number; hover one to read them, click it to go to
-  them below the diagram;
-- amber arrows are office hours conditions, indigo arrows the branches of a Call Flow App (API
-  answers, menu choices), dashed arrows go back to an object already drawn or through one of your
-  own DIDs.
+- top row, the only arrows: the inbound rule, the first object (menu, queue or Call Flow App with
+  its special cases and the web services it calls) and the decision it makes (office hours, or the
+  states a Call Flow App routes on, with the hours written in its script);
+- one column per state or menu key, with the steps written as text and the sub-decisions indented;
+- the 3CX destinations reached (queues with strategy, agents, maximum wait and overflow; menus;
+  voicemail; external numbers) grouped in their own row, with no line to the columns so lines never
+  cross, and in red the fallback used when the Call Flow App's web services fail;
+- the points to watch on this DID. **⚠** marks an object with recommendations: hover it, or a point
+  to watch, to read them, click it to go to the recommendation below.
 
-The details of each step are folded under the recommendations.
+When a Call Flow App chooses destinations during the call, the calls actually observed (where
+they went, how many) are shown under the recommendations.
 
 ## Queues and agents
 
-- **Queues**: strategy, agents (logged in at the time of the backup), ring time, maximum wait,
+- **Queues**: strategy, agents (logged in when the configuration was read), ring time, maximum wait,
   wrap-up, destination if no answer, hours, with the calls, answered and abandoned rates and the
   average wait of the period.
 - **Agents**: every queue agent with their queues, the queue calls presented and answered, the
   hours logged in to each queue over the period, and the recommendations that concern them (agents
   answering few calls, never logged in, disabled, shared with a queue that loses calls…). The
-  status (profile, logged in or out) is the one **at the time of the backup**, not over the period.
+  status (profile, logged in or out) is the one **when the configuration was read**, not over the period.
 
 ## History, report and refresh
 
 - **History** lists the previous audits and their score.
 - **Report** downloads the full audit (routing of every DID and all recommendations) as a
   Markdown file.
-- **Re-run the audit** analyses the latest backup again and recomputes the score.
+- **Re-run the audit** analyses the latest 3CX configuration again and recomputes the score.
 
 ## Files of the audit
 

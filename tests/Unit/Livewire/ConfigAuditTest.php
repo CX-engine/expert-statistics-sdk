@@ -150,7 +150,7 @@ it('shows the score, the area scores, what was not analysed and the main recomme
         ->assertSee('−6.6 pts', false);
 });
 
-it('draws the score per backup with the change since the first backup', function () {
+it('draws the score per audit with the change since the first audit', function () {
     mockAudit(['*config-audit*' => MockResponse::make(auditSummary(['trend' => [
         ['id' => 5, 'backup_date' => '2026-10-11', 'score' => 70.2],
         ['id' => 6, 'backup_date' => '2026-10-12', 'score' => 75.0],
@@ -158,20 +158,20 @@ it('draws the score per backup with the change since the first backup', function
     ]]), 200)]);
 
     Livewire::test(ConfigAudit::class)
-        ->assertSee('Score per backup')
+        ->assertSee('Score per audit')
         ->assertSee('+8.7 pts')
-        ->assertSee('since the backup of')
-        ->assertSee('(3 backups)')
+        ->assertSee('since the audit of')
+        ->assertSee('(3 audits)')
         ->assertSeeHtml('<polyline')
         ->assertSee('78.9 %')
-        ->assertSee('+3.9 pts vs previous backup');
+        ->assertSee('+3.9 pts vs previous audit');
 });
 
-it('explains that the trend needs a second backup', function () {
+it('explains that the trend needs a second audit', function () {
     mockAudit(['*config-audit*' => MockResponse::make(auditSummary(['trend' => [['id' => 7, 'backup_date' => '2026-10-13', 'score' => 78.9]]]), 200)]);
 
     Livewire::test(ConfigAudit::class)
-        ->assertSee('The trend appears after the next backup is analysed.')
+        ->assertSee('The trend appears after the next audit.')
         ->assertDontSeeHtml('<polyline');
 });
 
@@ -242,11 +242,41 @@ it('lists the DIDs and opens the routing of one', function () {
         ->assertSee('9 100')
         ->call('showRoute', '0155878000')
         ->assertSet('selectedDid', '0155878000')
-        ->assertSee('after max wait 600 s')
-        ->assertSee("Fin d'appel")
-        ->assertSee('100 Alice (LoggedIn)')
+        // No sheet from the API: a short message, never the raw steps.
+        ->assertSee('The call flow sheet of this number is not available yet')
+        ->assertDontSee('after max wait 600 s')
         ->call('closeRoute')
         ->assertSet('selectedDid', null);
+});
+
+it('draws the call flow sheet of a DID', function () {
+    mockAudit(['*config-audit/routes/*' => MockResponse::make([
+        'route' => ['did' => '0155878000', 'is_default' => false, 'nodes' => [['id' => 'queue:8000', 'type' => 'queue', 'label' => 'File 8000 – Standard']]],
+        'findings' => [auditFinding('none_after_long_wait', 'to_check', 'queue:8000', 6.6)],
+        'sheet' => [
+            'title' => 'Call flow | DID 0155878000',
+            'entry' => ['title' => 'Inbound rule / DID', 'lines' => ['0155878000 → File 8000 – Standard']],
+            'first' => ['title' => 'File 8000 – Standard', 'type' => 'queue', 'lines' => ['Strategy: Ring all']],
+            'decision' => null,
+            'columns' => [['title' => 'In office hours', 'tone' => 'green', 'lines' => [['text' => '→ File 8000 – Standard', 'indent' => 0, 'object' => 'queue:8000'], ['text' => 'after max wait 600 s :', 'indent' => 0], ['text' => "→ Fin d'appel", 'indent' => 1]]]],
+            'destinations' => [],
+            'fallbacks' => [],
+            'vigilance' => [['id' => 'f1', 'category' => 'to_check', 'object' => 'queue:8000', 'text' => 'Only one agent logged in']],
+            'footer' => 'Static analysis of the 3CX configuration',
+            'ai' => true,
+        ],
+    ], 200)]);
+
+    Livewire::test(ConfigAudit::class)
+        ->call('selectTab', 'routing')
+        ->call('showRoute', '0155878000')
+        ->assertSee('Call flow | DID 0155878000')
+        ->assertSee('In office hours')
+        ->assertSee("→ Fin d'appel")
+        ->assertSee('Only one agent logged in')
+        // The recommendation of the queue shows on hover of its ⚠.
+        ->assertSeeHtml('x-on:mouseenter="show(&quot;queue:8000&quot;, $event)"')
+        ->assertDontSee('The call flow sheet of this number is not available yet');
 });
 
 it('shows where the calls went after a Call Flow App choosing destinations during the call', function () {
@@ -311,7 +341,7 @@ it('shows the audit history', function () {
 
     Livewire::test(ConfigAudit::class)
         ->call('selectTab', 'history')
-        ->assertSee('kuoni.xml')
+        ->assertDontSee('kuoni.xml')
         ->assertSee('78.9 %');
 });
 
@@ -378,8 +408,8 @@ it('opens the queue and the agent of a recommendation', function () {
         ->call('goBack')
         ->call('showAgent', '202')
         ->assertSet('agentSearch', '202')
-        ->assertSee('Status at backup time: Available')
-        ->assertSee('logged in at backup time')
+        ->assertSee('Status when the configuration was read: Available')
+        ->assertSee('logged in when the configuration was read')
         ->assertSee('60 answered of 300 presented');
 });
 
@@ -449,4 +479,45 @@ it('asks for the recommendations in the user language', function () {
     Livewire::test(ConfigAudit::class)->call('selectTab', 'recommendations');
 
     $mock->assertSent(fn ($request, $response) => str_contains((string) $response->getPendingRequest()->getUri(), 'locale=fr'));
+});
+
+it('shows the sheet as built while the API summarises it, then the summary', function () {
+    $sheet = fn (string $line, bool $pending) => [
+        'title' => 'Call flow | DID 0155878000', 'entry' => ['title' => 'Inbound rule / DID', 'lines' => ['0155878000 → File 8000']],
+        'first' => null, 'decision' => null, 'columns' => [['title' => 'Always', 'tone' => 'green', 'lines' => [['text' => $line, 'indent' => 0]]]],
+        'destinations' => [], 'fallbacks' => [], 'vigilance' => [], 'footer' => 'Static analysis', 'ai' => ! $pending,
+    ] + ($pending ? ['pending' => true] : []);
+    $route = ['did' => '0155878000', 'is_default' => false, 'nodes' => []];
+
+    // First the sheet as built (pending), then the summary.
+    $answers = [
+        MockResponse::make(['route' => $route, 'findings' => [], 'sheet' => $sheet('Requête Test Horaire', true)], 200),
+        MockResponse::make(['route' => $route, 'findings' => [], 'sheet' => $sheet('Checks the opening hours', false)], 200),
+    ];
+    mockAudit(['*config-audit/routes/*' => function () use (&$answers) {
+        return count($answers) > 1 ? array_shift($answers) : $answers[0];
+    }]);
+    $page = Livewire::test(ConfigAudit::class)
+        ->call('selectTab', 'routing')
+        ->call('showRoute', '0155878000')
+        ->assertSee('Requête Test Horaire')
+        ->assertSee('The AI is summarising this sheet')
+        ->assertSeeHtml('wire:poll.4s="refreshRoute"');
+
+    // Not cached while pending: the next request gets the summary.
+    $page->call('refreshRoute')
+        ->assertSee('Checks the opening hours')
+        ->assertDontSee('The AI is summarising this sheet')
+        ->assertSet('routePolls', 1);
+});
+
+it('keeps a failed route in the routing tab with a retry', function () {
+    mockAudit(['*config-audit/routes/*' => MockResponse::make(['message' => 'Server Error'], 500)]);
+
+    Livewire::test(ConfigAudit::class)
+        ->call('selectTab', 'routing')
+        ->call('showRoute', '0155878000')
+        ->assertSee('The routing of this number could not be loaded')
+        ->assertSee('Retry')
+        ->assertSet('state', 'ok');
 });

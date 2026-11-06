@@ -91,6 +91,11 @@ class ConfigAudit extends Component
     /** @var array<string, mixed> */
     public array $routeDetail = [];
 
+    /** Times the route was asked again while its sheet was being summarised. */
+    public int $routePolls = 0;
+
+    private const MAX_ROUTE_POLLS = 15;
+
     // Queues, agents, history
     /** @var array<int, array<string, mixed>> */
     public array $queues = [];
@@ -278,9 +283,34 @@ class ConfigAudit extends Component
         }
         $this->selectedDid = $did;
         $this->routeDetail = [];
-        $this->attempt(function (ExpertStatisticsService $service) use ($did) {
-            $this->routeDetail = $service->getConfigAuditRoute($did, $this->periodQuery());
-        });
+        $this->routePolls = 0;
+        $this->loadRoute();
+    }
+
+    /**
+     * Asks again while the API is still summarising the call flow sheet
+     * (wire:poll in the routing tab, a minute at most).
+     */
+    public function refreshRoute(): void
+    {
+        if ($this->selectedDid === null || empty($this->routeDetail['sheet']['pending']) || $this->routePolls >= self::MAX_ROUTE_POLLS) {
+            return;
+        }
+        $this->routePolls++;
+        $this->loadRoute();
+    }
+
+    /**
+     * Route of the selected DID. A failure (slow API, network) stays in the
+     * routing tab with a retry, the rest of the page keeps working.
+     */
+    private function loadRoute(): void
+    {
+        try {
+            $this->routeDetail = app(ExpertStatisticsService::class)->getConfigAuditRoute($this->selectedDid, $this->periodQuery());
+        } catch (\Throwable) {
+            $this->routeDetail = ['load_error' => true];
+        }
     }
 
     public function closeRoute(): void

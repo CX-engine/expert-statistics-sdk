@@ -1736,7 +1736,16 @@ class ExpertStatisticsService
      */
     public function getConfigAuditRoute(string $did, array $query = []): array
     {
-        return $this->configAuditRead('route.'.$did, $query, fn (string $host) => $this->connector->configAudit()->route($host, $did, $query));
+        $route = $this->configAuditRead('route.'.$did, $query, fn (string $host) => $this->connector->configAudit()->route($host, $did, $query));
+
+        // The call flow sheet is still being summarised by the API: not kept,
+        // the page asks again until it is ready.
+        if (! empty($route['sheet']['pending'])) {
+            $version = (int) Cache::get($this->configAuditVersionKey($this->hostName()), 0);
+            $this->forget($this->hostName(), "config_audit.v{$version}.route.{$did}", $query);
+        }
+
+        return $route;
     }
 
     /**

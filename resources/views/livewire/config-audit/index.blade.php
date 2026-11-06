@@ -117,6 +117,18 @@
             @include('expert-statistics::livewire.config-audit.'.$tab)
         </div>
     @endif
+
+    {{-- Opening the routing of a DID (from the list or a recommendation): visible
+         while the API answers, and no second click meanwhile. --}}
+    <div wire:loading.flex wire:target="showRoute" class="fixed inset-0 z-40 items-center justify-center" style="background: rgba(15, 23, 42, .25)" role="status" aria-live="polite">
+        <div class="flex items-center gap-3 rounded-lg bg-white dark:bg-gray-800 px-5 py-3 shadow-lg ring-1 ring-gray-950/10 dark:ring-white/10 text-sm text-gray-700 dark:text-gray-200">
+            <svg class="w-5 h-5 text-primary-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            {{ $t('loading_route') }}
+        </div>
+    </div>
 </div>
 
 </x-expert-statistics::cluster-layout>

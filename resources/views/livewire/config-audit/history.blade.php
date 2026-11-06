@@ -14,7 +14,7 @@
                 <tr wire:key="audit-{{ $audit['id'] ?? $loop->index }}">
                     <td class="px-4 py-2 text-gray-700 dark:text-gray-300">
                         {{ ! empty($audit['backup_date']) ? \Carbon\Carbon::parse($audit['backup_date'])->isoFormat('LL LT') : '—' }}
-                        <span class="block text-xs text-gray-400">{{ $audit['backup_file'] ?? '' }}@if (! empty($audit['pbx_version'])) · 3CX {{ $audit['pbx_version'] }} @endif</span>
+                        <span class="block text-xs text-gray-400">@if (! empty($audit['pbx_version']))3CX {{ $audit['pbx_version'] }}@endif</span>
                     </td>
                     <td @class(['px-4 py-2 text-right font-semibold', $this->scoreColor($score)])>{{ $score !== null ? number_format($score, 1).' %' : '—' }}</td>
                     <td class="px-4 py-2 text-xs text-gray-500 dark:text-gray-400">

@@ -2,7 +2,7 @@
 
 Montre l'impact de votre configuration 3CX sur vos appels, et précisément ce qu'il faut modifier
 dans 3CX pour améliorer vos statistiques. L'audit est calculé chaque jour à partir de la
-sauvegarde 3CX de votre PBX et croisé avec les appels des 30 derniers jours (ou de la période
+configuration 3CX de votre PBX et croisé avec les appels des 30 derniers jours (ou de la période
 choisie).
 
 > L'Audit IA fait partie des fonctionnalités IA : elles doivent être activées pour
@@ -22,7 +22,7 @@ l'audit n'a rien à recommander. Chaque recommandation le diminue selon :
 Le score est aussi donné **par domaine** : routage, files & agents, horaires, Call Flow Apps.
 
 La **couverture de l'analyse** est la part de vos appels dont le routage a pu être entièrement
-analysé. Les touches des SVI ne figurent pas dans les sauvegardes 3CX, et une partie de la logique
+analysé. Les touches des SVI ne figurent pas dans la configuration 3CX, et une partie de la logique
 d'une Call Flow App peut être calculée pendant l'appel : ces parties sont listées sous
 **Non analysé** et ne diminuent pas le score.
 
@@ -53,28 +53,32 @@ de modifier les réglages d'Expert Statistics.
 ## Routage
 
 Chaque SDA avec sa première destination, ses appels et son nombre de recommandations. Ouvrez une
-SDA pour voir son routage complet : branches heures d'ouverture, hors horaires et jours fériés,
-menus et leurs touches, files et leurs agents, débordements, renvois, messagerie et fin d'appel,
-dessiné sous forme de schéma :
+SDA pour voir sa fiche de cheminement des appels, à lire de gauche à droite puis de haut en bas :
 
-- les objets concernés par des recommandations sont colorés selon la plus grave (rouge erreur
-  probable, orange à vérifier, bleu optimisation) avec **⚠** et leur nombre ; survolez-en un pour
-  les lire, cliquez dessus pour y accéder sous le schéma ;
-- les flèches orange sont des conditions d'horaires, les flèches indigo les branches d'une Call
-  Flow App (réponses d'API, choix de menu), les flèches en pointillés reviennent vers un objet déjà
-  dessiné ou passent par l'une de vos SDA.
+- en haut, seules flèches : la règle entrante, le premier objet (menu, file ou Call Flow App avec ses
+  cas particuliers et les services web appelés) et la décision qu'il prend (horaires, ou états sur
+  lesquels la Call Flow App route, avec les horaires écrits dans son script) ;
+- une colonne par état ou touche de menu, avec les étapes écrites en texte et les sous-décisions
+  en retrait ;
+- les destinations 3CX atteintes (files avec stratégie, agents, attente maximale et débordement ;
+  menus ; messagerie ; numéros externes) regroupées sur leur propre ligne, sans trait vers les
+  colonnes pour qu'aucune liaison ne se croise, et en rouge le repli utilisé quand les services web
+  de la Call Flow App échouent ;
+- les points de vigilance de cette SDA. **⚠** signale un objet concerné par des recommandations :
+  survolez-le, ou un point de vigilance, pour les lire, cliquez pour accéder à la recommandation plus bas.
 
-Le détail de chaque étape est replié sous les recommandations.
+Quand une Call Flow App choisit ses destinations pendant l'appel, les appels réellement observés
+(destinations, nombre d'appels) sont affichés sous les recommandations.
 
 ## Files d'attente et agents
 
-- **Files d'attente** : stratégie, agents (connectés au moment de la sauvegarde), durée de
+- **Files d'attente** : stratégie, agents (connectés lors du relevé de la configuration), durée de
   sonnerie, attente maximale, post-appel, destination si pas de réponse, horaires, avec les appels,
   les taux de réponse et d'abandon et l'attente moyenne de la période.
 - **Agents** : chaque agent de file avec ses files, les appels de file présentés et répondus, les
   heures de connexion à chaque file sur la période, et les recommandations qui le concernent
   (agents répondant à peu d'appels, jamais connectés, désactivés, partagés avec une file qui perd
-  des appels…). Le statut (profil, connecté ou non) est celui **au moment de la sauvegarde**, pas
+  des appels…). Le statut (profil, connecté ou non) est celui **lors du relevé de la configuration**, pas
   sur la période.
 
 ## Historique, rapport et relance
@@ -82,7 +86,7 @@ Le détail de chaque étape est replié sous les recommandations.
 - **Historique** liste les audits précédents et leur score.
 - **Rapport** télécharge l'audit complet (routage de chaque SDA et toutes les recommandations) au
   format Markdown.
-- **Relancer l'audit** analyse à nouveau la dernière sauvegarde et recalcule le score.
+- **Relancer l'audit** analyse à nouveau la dernière configuration 3CX et recalcule le score.
 
 ## Fichiers de l'audit
 
