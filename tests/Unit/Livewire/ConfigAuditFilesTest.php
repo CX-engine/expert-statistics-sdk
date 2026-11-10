@@ -161,6 +161,26 @@ it('reads the backup in the browser and never binds the file inputs to Livewire'
     expect(\CXEngine\ExpertStatistics\Support\BackupReaderScript::source())->toContain('expertStatsBackupReader');
 });
 
+it('loads the reader as a data URL that survives Livewire asset injection', function () {
+    // Livewire 3 injects @assets with preg_replace(): an inline reader lost its backslashes
+    // (SyntaxError, window.expertStatsBackupReader missing → "browser cannot read").
+    $view = file_get_contents(__DIR__.'/../../../resources/views/livewire/configuration/config-audit-files.blade.php');
+    preg_match('#@assets(.*?)@endassets#s', $view, $block);
+    expect($block[1])->toContain('<script src="{{ \\CXEngine\\ExpertStatistics\\Support\\BackupReaderScript::dataUrl() }}"></script>')
+        ->and($block[1])->not->toContain('{!!');
+
+    $source = \CXEngine\ExpertStatistics\Support\BackupReaderScript::source();
+    $tag = '<script src="'.e(\CXEngine\ExpertStatistics\Support\BackupReaderScript::dataUrl()).'"></script>';
+
+    $page = \Livewire\Features\SupportAutoInjectedAssets\SupportAutoInjectedAssets::injectAssets('<html><head></head><body></body></html>', $tag, '');
+    expect($page)->toContain($tag);
+
+    preg_match('#base64,([A-Za-z0-9+/=]+)#', $page, $m);
+    expect(base64_decode($m[1]))->toBe($source)
+        ->and($source)->toContain('replace(/\\\\/g')
+        ->and(__('expert-statistics::pbx.config.auditFiles.errors.not_loaded'))->toContain('Reload the page');
+});
+
 it('gives the browser limits that fit the Livewire upload limit', function () {
     auditFilesMock();
 

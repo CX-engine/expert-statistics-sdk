@@ -110,6 +110,7 @@ return [
                 'too_large_content' => 'The content is abnormally large once decompressed: refused for security.',
                 'not_wave' => 'The file :name is not a real WAV audio file: refused for security.',
                 'memory' => 'Your browser ran out of memory reading this backup. Close other tabs and retry, or use a light backup.',
+                'not_loaded' => 'The backup reader did not load. Reload the page; if the problem persists, contact us.',
                 'unsupported' => 'Your browser cannot read the backup locally. Use a recent version of Chrome, Edge, Firefox or Safari.',
                 'generic' => 'Could not read this backup. Check that it is a 3CX backup and try again.',
                 'upload_failed' => 'Sending failed (connection interrupted or file refused by the server). Please try again.',

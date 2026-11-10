@@ -110,6 +110,7 @@ return [
                 'too_large_content' => 'Le contenu est anormalement volumineux une fois décompressé : refusé par sécurité.',
                 'not_wave' => 'Le fichier :name n\'est pas un vrai fichier audio WAV : refusé par sécurité.',
                 'memory' => 'Votre navigateur manque de mémoire pour lire cette sauvegarde. Fermez d\'autres onglets et réessayez, ou utilisez une sauvegarde légère.',
+                'not_loaded' => 'Le module de lecture de la sauvegarde ne s\'est pas chargé. Rechargez la page ; si le problème persiste, contactez-nous.',
                 'unsupported' => 'Votre navigateur ne peut pas lire la sauvegarde localement. Utilisez une version récente de Chrome, Edge, Firefox ou Safari.',
                 'generic' => 'Impossible de lire cette sauvegarde. Vérifiez qu\'il s\'agit bien d\'une sauvegarde 3CX, puis réessayez.',
                 'upload_failed' => 'L\'envoi a échoué (connexion interrompue ou fichier refusé par le serveur). Réessayez.',

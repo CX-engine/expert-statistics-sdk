@@ -7,8 +7,10 @@
 @endphp
 
 <div class="space-y-8">
+    {{-- As a base64 data: URL, never inline: Livewire 3 injects @assets with preg_replace,
+         which corrupts the backslashes of an inline script (see BackupReaderScript). --}}
     @assets
-        <script>{!! \CXEngine\ExpertStatistics\Support\BackupReaderScript::source() !!}</script>
+        <script src="{{ \CXEngine\ExpertStatistics\Support\BackupReaderScript::dataUrl() }}"></script>
     @endassets
 
     @if ($statusMessage)
@@ -66,7 +68,7 @@
                             if (this.busy) return;
                             this.error = null;
                             this.summary = null;
-                            if (! window.expertStatsBackupReader) { this.error = this.message('unsupported'); return; }
+                            if (! window.expertStatsBackupReader) { this.error = this.message('not_loaded'); return; }
                             this.busy = true;
                             try {
                                 let read;
