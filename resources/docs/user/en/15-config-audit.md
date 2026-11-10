@@ -82,17 +82,26 @@ they went, how many) are shown under the recommendations.
 
 ## Files of the audit
 
-**Configuration → PBX Settings → AI Audit files** ([PBX Settings](10-pbx-settings.md)) shows what the audit is computed from, and lets an administrator
-provide:
+**Configuration → PBX Settings → AI Audit files** ([PBX Settings](10-pbx-settings.md)) shows what the audit is computed
+from (saved configurations, audio messages and their transcripts), and lets an administrator **drop the 3CX backup as
+is**:
 
-- the **backup configuration** (.xml file of the 3CX backup), when the backups of the PBX are not
-  collected: it is checked, then the audit is run again on it;
-- the **Call Flow sources** of each Call Flow App (Call Flow Designer project, .zip), to replace
-  whenever the Call Flow changes;
-- the **audio messages** (.zip of the .wav files of the backup): they are transcribed, so the
-  audit knows what callers hear (a closing message, a menu, an invitation to call back).
+- the backup **.zip** file, whatever its size (a scheduled backup of tens of GB is fine), its **extracted folder**
+  (dragged onto the area or chosen), or the configuration **.xml** file alone;
+- the backup is **read on your computer**: only the configuration file (…Db.xml) and the audio messages (httpprompts
+  folder) are opened. Call history, recordings, voicemails and chats are never read — the call statistics already come
+  from your PBX;
+- the **passwords** of the configuration (SIP passwords, voicemail PINs, licence key, mail server password,
+  provisioning secrets) are **removed before sending**: the audit does not read them;
+- the configuration and the messages are sent, checked, then the audit is run again; the messages are transcribed
+  (Mistral AI) so the audit knows what callers hear (a closing message, a menu, an invitation to call back).
 
-Every file is checked before it is kept; a refused file shows why.
+**Getting a light backup**: 3CX console › Admin › Backup › "Backup Now", a name, **no optional item ticked** (call
+history, recordings, voicemails, chats are not needed here), **no encryption password**, then "Download" once the
+backup is created. The tab details these steps and what is kept.
+
+Every file is checked before it is forwarded, then again before it is kept; a refused file shows why (damaged archive,
+password-protected backup, no 3CX configuration…).
 
 ## Related pages
 

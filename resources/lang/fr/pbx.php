@@ -45,7 +45,7 @@ return [
         // AI Audit files tab
         'auditFiles' => [
             'backupSection' => 'Configuration sauvegardée',
-            'backupHelp' => 'L\'Audit IA lit le fichier de configuration de la sauvegarde quotidienne 3CX. Si les sauvegardes de ce standard ne sont pas collectées, déposez le fichier .xml de la sauvegarde 3CX (ex. 1337879628Db.xml) : il est vérifié, puis l\'audit est relancé dessus.',
+            'backupHelp' => 'Configurations sur lesquelles l\'Audit IA est calculé : celles des sauvegardes collectées automatiquement, et celles déposées ci-dessus.',
             'uploaded' => 'déposée',
             'collected' => 'issue des sauvegardes',
             'noBackup' => 'Aucune configuration pour le moment.',
@@ -60,7 +60,7 @@ return [
             'delete' => 'Supprimer',
             'confirmDelete' => 'Supprimer les sources de cette Call Flow App ?',
             'promptsSection' => 'Messages audio',
-            'promptsHelp' => 'Les messages sont transcrits pour que l\'audit sache ce qu\'entendent les appelants (message de fermeture, menu, invitation à rappeler). Déposez un ZIP des fichiers .wav de la sauvegarde 3CX (dossier httpprompts) ; les messages des Call Flows gardent leur dossier Callflows/<app>.',
+            'promptsHelp' => 'Les messages sont transcrits pour que l\'audit sache ce qu\'entendent les appelants (message de fermeture, menu, invitation à rappeler). Ils sont repris de la sauvegarde déposée ci-dessus.',
             'promptsCount' => ':count messages, :transcribed transcrits',
             'uploadPrompts' => 'Déposer les messages',
             'backup_uploaded' => 'Configuration déposée : l\'audit a été relancé.',
@@ -68,6 +68,108 @@ return [
             'call_flow_deleted' => 'Sources du Call Flow supprimées.',
             'prompts_uploaded' => 'Messages déposés : transcription en cours.',
             'refused' => 'Fichier refusé : :reason',
+            'importSection' => 'Sauvegarde 3CX',
+            'importHelp' => 'Déposez la sauvegarde 3CX telle quelle : elle est lue sur votre ordinateur, seuls le fichier de configuration (sans mots de passe) et les messages audio sont envoyés, puis l\'audit est relancé.',
+            'dropTitle' => 'Déposez la sauvegarde 3CX (.zip) ou le fichier de configuration (.xml)',
+            'dropHint' => 'ou cliquez pour la choisir — toute taille : seuls la configuration et les messages audio sont lus',
+            'chooseFolder' => 'ou choisir le dossier extrait de la sauvegarde',
+            'folderHint' => 'Le dossier qui contient le fichier …Db.xml et le dossier httpprompts. Vous pouvez aussi le glisser sur la zone ci-dessus.',
+            'backup_imported' => 'Sauvegarde importée : configuration et :count messages audio déposés. L\'audit a été relancé ; la transcription des messages se poursuit en arrière-plan.',
+            'reader' => [
+                'steps' => [
+                    'index' => 'Lecture du sommaire de la sauvegarde…',
+                    'xml' => 'Configuration : effacement des mots de passe…',
+                    'prompts' => 'Lecture des messages audio…',
+                    'done' => 'Prêt',
+                    'sending_prompts' => 'Envoi des messages audio (:current)…',
+                    'sending_config' => 'Envoi de la configuration, relance de l\'audit…',
+                ],
+                'units' => [
+                    'mb' => 'Mo',
+                    'gb' => 'Go',
+                ],
+                'summary' => 'Lu sur votre ordinateur : :read sur :source · :prompts messages audio · :redacted identifiants effacés avant l\'envoi',
+                'summary_folder' => 'Lu sur votre ordinateur : :read · :prompts messages audio · :redacted identifiants effacés avant l\'envoi',
+            ],
+            'errors' => [
+                'empty' => 'Aucun fichier sélectionné, ou le fichier / dossier choisi est vide.',
+                'unreadable' => 'Le fichier n\'a pas pu être lu (déplacé, supprimé ou accès refusé). Sélectionnez-le à nouveau.',
+                'missing' => 'Aucun fichier reçu : déposez à nouveau la sauvegarde 3CX.',
+                'not_zip' => 'Ce fichier n\'est ni une sauvegarde 3CX (.zip) ni un fichier de configuration (.xml).',
+                'not_xml' => 'Le fichier de configuration doit être un fichier .xml.',
+                'corrupted' => 'La sauvegarde est endommagée ou incomplète (téléchargement interrompu ?). Téléchargez-la à nouveau depuis la console 3CX puis réessayez.',
+                'encrypted' => 'Cette sauvegarde est protégée par un mot de passe. Créez une sauvegarde sans mot de passe de chiffrement (voir « Obtenir la sauvegarde 3CX »).',
+                'no_xml' => 'Ce fichier n\'est pas une sauvegarde 3CX : aucune configuration (fichier …Db.xml) n\'a été trouvée.',
+                'not_3cx' => 'Ce n\'est pas une configuration 3CX valide : le fichier …Db.xml est illisible ou d\'un format inattendu.',
+                'xml_too_big' => 'Le fichier de configuration dépasse :max Mo, la taille maximale acceptée ici. Contactez-nous.',
+                'too_big' => 'Le fichier reçu dépasse :max Mo.',
+                'no_prompt' => 'Le lot de messages ne contient aucun fichier audio .wav.',
+                'too_many_files' => 'Le lot de messages contient trop de fichiers.',
+                'unexpected_file' => 'Le lot de messages contient un fichier qui n\'est pas un message audio (:name) : refusé par sécurité.',
+                'unsafe_path' => 'Un fichier a un chemin non autorisé (:name) : refusé par sécurité.',
+                'too_large_content' => 'Le contenu est anormalement volumineux une fois décompressé : refusé par sécurité.',
+                'not_wave' => 'Le fichier :name n\'est pas un vrai fichier audio WAV : refusé par sécurité.',
+                'memory' => 'Votre navigateur manque de mémoire pour lire cette sauvegarde. Fermez d\'autres onglets et réessayez, ou utilisez une sauvegarde légère.',
+                'unsupported' => 'Votre navigateur ne peut pas lire la sauvegarde localement. Utilisez une version récente de Chrome, Edge, Firefox ou Safari.',
+                'generic' => 'Impossible de lire cette sauvegarde. Vérifiez qu\'il s\'agit bien d\'une sauvegarde 3CX, puis réessayez.',
+                'upload_failed' => 'L\'envoi a échoué (connexion interrompue ou fichier refusé par le serveur). Réessayez.',
+            ],
+            'help' => [
+                'title' => 'Obtenir la sauvegarde 3CX',
+                'intro' => 'L\'Audit IA a besoin de la configuration et des messages audio. Les statistiques d\'appels viennent déjà de votre standard : inutile d\'inclure l\'historique des appels.',
+                'light' => [
+                    'title' => 'Recommandé : une sauvegarde légère',
+                    'steps' => [
+                        'Connectez-vous à la console d\'administration 3CX (V20) avec un compte administrateur.',
+                        'Ouvrez Admin › Backup (Sauvegarde), puis cliquez sur « Backup Now ».',
+                        'Donnez-lui un nom, par exemple « audit ».',
+                        'Laissez décochés les éléments facultatifs (historique des appels, enregistrements, messageries vocales, chats) : l\'audit n\'en a pas besoin et ce sont eux qui rendent une sauvegarde énorme.',
+                        'Ne définissez pas de mot de passe de chiffrement (« Backup Encryption Password ») : une sauvegarde chiffrée ne peut pas être lue.',
+                        'Patientez pendant la création, actualisez la page, sélectionnez la sauvegarde dans la liste puis cliquez sur « Download ».',
+                        'Déposez le fichier .zip téléchargé ci-dessus.',
+                    ],
+                ],
+                'existing' => [
+                    'title' => 'Vous avez déjà une sauvegarde complète ?',
+                    'steps' => [
+                        'Les sauvegardes planifiées (3CXScheduledBackup) figurent dans la liste de Admin › Backup : sélectionnez la plus récente puis « Download ».',
+                        'Elle peut peser plusieurs dizaines de Go : seul son téléchargement prend du temps. Déposez-la telle quelle : la configuration et les messages sont lus en quelques secondes, le reste n\'est jamais ouvert.',
+                    ],
+                ],
+                'folder' => [
+                    'title' => 'Sauvegarde déjà décompressée ?',
+                    'steps' => [
+                        'Glissez le dossier sur la zone de dépôt, ou cliquez sur « choisir le dossier extrait de la sauvegarde » et sélectionnez le dossier qui contient le fichier …Db.xml.',
+                        'Votre navigateur peut demander s\'il faut « importer » les fichiers de ce dossier : c\'est sa formulation habituelle pour autoriser la lecture. Rien n\'est envoyé à ce stade : seuls la configuration et les messages audio sont lus.',
+                    ],
+                ],
+                'note' => 'Les libellés peuvent légèrement varier selon la version de 3CX. Une sauvegarde 3CX hébergée (3CX Hosted) s\'obtient de la même façon depuis la console. Le fichier de configuration seul (…Db.xml) est aussi accepté.',
+            ],
+            'privacy' => [
+                'title' => 'Vos données : ce qui est lu, envoyé et conservé',
+                'points' => [
+                    [
+                        'title' => 'Votre sauvegarde reste sur votre ordinateur',
+                        'text' => 'Elle est lue par votre navigateur, elle n\'est pas envoyée. Seuls le fichier de configuration (…Db.xml) et les messages audio (httpprompts) sont ouverts : historique des appels, enregistrements, messageries vocales, chats et pièces jointes ne sont jamais lus.',
+                    ],
+                    [
+                        'title' => 'Les mots de passe sont effacés avant l\'envoi',
+                        'text' => 'Mots de passe SIP des postes, codes PIN de messagerie, clé de licence, mot de passe du serveur de messagerie et secrets de provisioning des téléphones sont vidés dans votre navigateur. L\'audit n\'en a pas besoin et ne les lit pas.',
+                    ],
+                    [
+                        'title' => 'Ce qui est envoyé',
+                        'text' => 'La configuration sans identifiants et les messages audio, par connexion chiffrée (HTTPS), au service Expert Statistics. Chaque fichier est vérifié avant d\'être transmis.',
+                    ],
+                    [
+                        'title' => 'Pourquoi',
+                        'text' => 'La configuration permet d\'auditer le routage (numéros, files, horaires, menus vocaux, Call Flows) ; les messages sont transcrits automatiquement (Mistral AI, France) pour vérifier ce qu\'entendent vos appelants.',
+                    ],
+                    [
+                        'title' => 'Ce qui est conservé',
+                        'text' => 'La configuration (sans identifiants), les messages audio et leur transcription sont conservés pour l\'Audit IA de ce standard ; un nouveau dépôt les met à jour.',
+                    ],
+                ],
+            ],
         ],
 
         // Onglet wallboard

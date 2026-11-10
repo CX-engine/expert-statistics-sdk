@@ -45,7 +45,7 @@ return [
         // AI Audit files tab
         'auditFiles' => [
             'backupSection' => 'Backup configuration',
-            'backupHelp' => 'The AI Audit reads the configuration file of the daily 3CX backup. If the backups of this PBX are not collected, upload the .xml file found in the 3CX backup (e.g. 1337879628Db.xml): it is checked, then the audit is run again on it.',
+            'backupHelp' => 'Configurations the AI Audit is computed from: those of the automatically collected backups, and those uploaded above.',
             'uploaded' => 'uploaded',
             'collected' => 'from the backups',
             'noBackup' => 'No backup configuration yet.',
@@ -60,7 +60,7 @@ return [
             'delete' => 'Remove',
             'confirmDelete' => 'Remove the sources of this Call Flow App?',
             'promptsSection' => 'Audio messages',
-            'promptsHelp' => 'Messages are transcribed so the audit knows what callers hear (closing message, menu, invitation to call back). Upload a ZIP of the .wav files of the 3CX backup (httpprompts folder); Call Flow messages keep their Callflows/<app> folder.',
+            'promptsHelp' => 'Messages are transcribed so the audit knows what callers hear (closing message, menu, invitation to call back). They are taken from the backup uploaded above.',
             'promptsCount' => ':count messages, :transcribed transcribed',
             'uploadPrompts' => 'Upload the messages',
             'backup_uploaded' => 'Backup configuration uploaded: the audit has been run again.',
@@ -68,6 +68,108 @@ return [
             'call_flow_deleted' => 'Call Flow sources removed.',
             'prompts_uploaded' => 'Messages uploaded: they are being transcribed.',
             'refused' => 'File refused: :reason',
+            'importSection' => '3CX backup',
+            'importHelp' => 'Drop the 3CX backup as is: it is read on your computer, only the configuration file (without passwords) and the audio messages are sent, then the audit is run again.',
+            'dropTitle' => 'Drop the 3CX backup (.zip) or the configuration file (.xml)',
+            'dropHint' => 'or click to choose it — any size: only the configuration and the audio messages are read',
+            'chooseFolder' => 'or choose the extracted backup folder',
+            'folderHint' => 'The folder that contains the …Db.xml file and the httpprompts folder. You can also drag it onto the area above.',
+            'backup_imported' => 'Backup imported: configuration and :count audio messages uploaded. The audit has been run again; the messages are being transcribed in the background.',
+            'reader' => [
+                'steps' => [
+                    'index' => 'Reading the backup table of contents…',
+                    'xml' => 'Configuration: removing passwords…',
+                    'prompts' => 'Reading the audio messages…',
+                    'done' => 'Ready',
+                    'sending_prompts' => 'Sending the audio messages (:current)…',
+                    'sending_config' => 'Sending the configuration, running the audit again…',
+                ],
+                'units' => [
+                    'mb' => 'MB',
+                    'gb' => 'GB',
+                ],
+                'summary' => 'Read on your computer: :read of :source · :prompts audio messages · :redacted credentials removed before sending',
+                'summary_folder' => 'Read on your computer: :read · :prompts audio messages · :redacted credentials removed before sending',
+            ],
+            'errors' => [
+                'empty' => 'No file selected, or the chosen file / folder is empty.',
+                'unreadable' => 'The file could not be read (moved, deleted or access denied). Please select it again.',
+                'missing' => 'No file received: drop the 3CX backup again.',
+                'not_zip' => 'This file is neither a 3CX backup (.zip) nor a configuration file (.xml).',
+                'not_xml' => 'The configuration file must be an .xml file.',
+                'corrupted' => 'The backup is damaged or incomplete (interrupted download?). Download it again from the 3CX console and retry.',
+                'encrypted' => 'This backup is password-protected. Create a backup without an encryption password (see "Getting the 3CX backup").',
+                'no_xml' => 'This file is not a 3CX backup: no configuration (…Db.xml file) was found.',
+                'not_3cx' => 'This is not a valid 3CX configuration: the …Db.xml file is unreadable or in an unexpected format.',
+                'xml_too_big' => 'The configuration file exceeds :max MB, the maximum accepted here. Please contact us.',
+                'too_big' => 'The received file exceeds :max MB.',
+                'no_prompt' => 'The batch of messages contains no .wav audio file.',
+                'too_many_files' => 'The batch of messages contains too many files.',
+                'unexpected_file' => 'The batch of messages contains a file that is not an audio message (:name): refused for security.',
+                'unsafe_path' => 'A file has a forbidden path (:name): refused for security.',
+                'too_large_content' => 'The content is abnormally large once decompressed: refused for security.',
+                'not_wave' => 'The file :name is not a real WAV audio file: refused for security.',
+                'memory' => 'Your browser ran out of memory reading this backup. Close other tabs and retry, or use a light backup.',
+                'unsupported' => 'Your browser cannot read the backup locally. Use a recent version of Chrome, Edge, Firefox or Safari.',
+                'generic' => 'Could not read this backup. Check that it is a 3CX backup and try again.',
+                'upload_failed' => 'Sending failed (connection interrupted or file refused by the server). Please try again.',
+            ],
+            'help' => [
+                'title' => 'Getting the 3CX backup',
+                'intro' => 'The AI Audit needs the configuration and the audio messages. The call statistics already come from your PBX: no need to include the call history.',
+                'light' => [
+                    'title' => 'Recommended: a light backup',
+                    'steps' => [
+                        'Sign in to the 3CX admin console (V20) with an administrator account.',
+                        'Open Admin › Backup, then click "Backup Now".',
+                        'Give it a name, for example "audit".',
+                        'Leave the optional items unticked (call history, recordings, voicemails, chats): the audit does not need them and they are what makes a backup huge.',
+                        'Do not set an encryption password ("Backup Encryption Password"): an encrypted backup cannot be read.',
+                        'Wait while it is created, refresh the page, select the backup in the list and click "Download".',
+                        'Drop the downloaded .zip file above.',
+                    ],
+                ],
+                'existing' => [
+                    'title' => 'Already have a full backup?',
+                    'steps' => [
+                        'Scheduled backups (3CXScheduledBackup) are listed under Admin › Backup: select the latest one and click "Download".',
+                        'It can weigh tens of GB: only the download takes time. Drop it as is: the configuration and the messages are read in seconds, the rest is never opened.',
+                    ],
+                ],
+                'folder' => [
+                    'title' => 'Backup already extracted?',
+                    'steps' => [
+                        'Drag the folder onto the drop area, or click "choose the extracted backup folder" and select the folder that contains the …Db.xml file.',
+                        'Your browser may ask whether to "upload" the files of this folder: that is its usual wording to allow reading. Nothing is sent at that point: only the configuration and the audio messages are read.',
+                    ],
+                ],
+                'note' => 'Labels can differ slightly between 3CX versions. A 3CX Hosted backup is obtained the same way from the console. The configuration file alone (…Db.xml) is also accepted.',
+            ],
+            'privacy' => [
+                'title' => 'Your data: what is read, sent and kept',
+                'points' => [
+                    [
+                        'title' => 'Your backup stays on your computer',
+                        'text' => 'It is read by your browser, not uploaded. Only the configuration file (…Db.xml) and the audio messages (httpprompts) are opened: call history, recordings, voicemails, chats and attachments are never read.',
+                    ],
+                    [
+                        'title' => 'Passwords are removed before sending',
+                        'text' => 'Extension SIP passwords, voicemail PINs, the licence key, the mail server password and phone provisioning secrets are blanked in your browser. The audit does not need them and never reads them.',
+                    ],
+                    [
+                        'title' => 'What is sent',
+                        'text' => 'The configuration without credentials and the audio messages, over an encrypted connection (HTTPS), to the Expert Statistics service. Every file is checked before it is forwarded.',
+                    ],
+                    [
+                        'title' => 'Why',
+                        'text' => 'The configuration lets us audit the routing (numbers, queues, hours, IVRs, Call Flows); the messages are transcribed automatically (Mistral AI, France) to check what your callers hear.',
+                    ],
+                    [
+                        'title' => 'What is kept',
+                        'text' => 'The configuration (without credentials), the audio messages and their transcripts are kept for this PBX\'s AI Audit; a new upload updates them.',
+                    ],
+                ],
+            ],
         ],
 
         // Wallboard tab

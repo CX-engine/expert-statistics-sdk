@@ -184,4 +184,17 @@ return [
         'model' => env('EXPERT_STATISTICS_AI_ACTIONS_MODEL', 'mistral-small-latest'),
         'max_tool_steps' => (int) env('EXPERT_STATISTICS_AI_ACTIONS_MAX_TOOL_STEPS', 4),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | AI Audit files tab
+    |--------------------------------------------------------------------------
+    |
+    | The administrator drops the 3CX backup itself; the browser keeps only the
+    | configuration XML and the audio prompts. `call_flow_upload` shows the
+    | Call Flow Designer sources upload (hidden for now, code and API kept).
+    */
+    'config_audit' => [
+        'call_flow_upload' => (bool) env('EXPERT_STATISTICS_CALL_FLOW_UPLOAD', false),
+    ],
 ];

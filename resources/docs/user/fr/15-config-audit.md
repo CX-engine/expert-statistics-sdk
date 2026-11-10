@@ -90,17 +90,26 @@ Quand une Call Flow App choisit ses destinations pendant l'appel, les appels ré
 
 ## Fichiers de l'audit
 
-**Configuration → Paramètres PBX → Fichiers de l'Audit IA** ([Paramètres PBX](10-pbx-settings.md)) montre à partir de quoi l'audit est calculé, et
-permet à un administrateur de fournir :
+**Configuration → Paramètres PBX → Fichiers de l'Audit IA** ([Paramètres PBX](10-pbx-settings.md)) montre à partir de quoi
+l'audit est calculé (configurations sauvegardées, messages audio et leur transcription), et permet à un administrateur
+de **déposer la sauvegarde 3CX telle quelle** :
 
-- la **configuration sauvegardée** (fichier .xml de la sauvegarde 3CX), quand les sauvegardes du
-  standard ne sont pas collectées : elle est vérifiée, puis l'audit est relancé dessus ;
-- les **sources des Call Flows** de chaque Call Flow App (projet Call Flow Designer, .zip), à
-  remplacer à chaque modification du Call Flow ;
-- les **messages audio** (.zip des fichiers .wav de la sauvegarde) : ils sont transcrits, pour que
-  l'audit sache ce qu'entendent les appelants (message de fermeture, menu, invitation à rappeler).
+- le fichier **.zip** de la sauvegarde, quelle que soit sa taille (une sauvegarde planifiée de plusieurs dizaines de Go
+  convient), son **dossier décompressé** (à glisser sur la zone ou à choisir), ou le fichier de configuration **.xml** seul ;
+- la sauvegarde est **lue sur votre ordinateur** : seuls le fichier de configuration (…Db.xml) et les messages audio
+  (dossier httpprompts) sont ouverts. L'historique des appels, les enregistrements, messageries vocales et chats ne sont
+  jamais lus — les statistiques d'appels viennent déjà de votre standard ;
+- les **mots de passe** de la configuration (mots de passe SIP, codes PIN de messagerie, clé de licence, mot de passe du
+  serveur de messagerie, secrets de provisioning) sont **effacés avant l'envoi** : l'audit ne les lit pas ;
+- la configuration et les messages sont envoyés, vérifiés, puis l'audit est relancé ; les messages sont transcrits
+  (Mistral AI) pour que l'audit sache ce qu'entendent les appelants (message de fermeture, menu, invitation à rappeler).
 
-Chaque fichier est vérifié avant d'être conservé ; un fichier refusé indique pourquoi.
+**Obtenir une sauvegarde légère** : console 3CX › Admin › Backup › « Backup Now », un nom, **aucun élément facultatif
+coché** (historique des appels, enregistrements, messageries, chats sont inutiles ici), **pas de mot de passe de
+chiffrement**, puis « Download » une fois la sauvegarde créée. L'onglet détaille ces étapes et ce qui est conservé.
+
+Chaque fichier est vérifié avant d'être transmis, puis à nouveau avant d'être conservé ; un fichier refusé indique
+pourquoi (archive endommagée, sauvegarde protégée par mot de passe, pas de configuration 3CX…).
 
 ## Pages liées
 
