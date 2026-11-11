@@ -7,6 +7,7 @@ use CXEngine\ExpertStatistics\Concerns\AuthorizesExpertStatisticsAccess;
 use CXEngine\ExpertStatistics\Concerns\HasPbxElementSelector;
 use CXEngine\ExpertStatistics\Concerns\RequiresExpertStatisticsActivation;
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
+use CXEngine\ExpertStatistics\Support\QueueReportPeriods;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Route;
 use Livewire\Attributes\Url;
@@ -44,7 +45,27 @@ class MyQueuesReport extends Component
     #[Url]
     public string $dn = '';
 
+    /** Total kept for compatibility: true = total period (breakdown "total"). */
     public bool $groupData = true;
+
+    /** Period view: total | day | week | month (QueueReportPeriods). */
+    #[Url]
+    public string $breakdown = QueueReportPeriods::TOTAL;
+
+    /** Period-over-period comparison (day/week/month only). On by default for week/month. */
+    public bool $compare = true;
+
+    /** @var list<string> views available for the range (API's `available_periods` once loaded) */
+    public array $availableBreakdowns = [QueueReportPeriods::TOTAL];
+
+    /** @var array<int, array<string, mixed>> the API's `periods` list (bucketed views) */
+    public array $periods = [];
+
+    /** @var array<string, array<string, array<string, mixed>>> comparison badges by period|queue|element */
+    public array $comparison = [];
+
+    /** @var array<int, array<string, mixed>> the API's ranked `anomalies` */
+    public array $anomalies = [];
 
     public bool $queuesOnlyStats = true;
 
@@ -79,6 +100,11 @@ class MyQueuesReport extends Component
     {
         $this->restoreExpertStatsFilters();
         $this->applyPeriod($this->selectedPeriod);
+        if (! \in_array($this->breakdown, QueueReportPeriods::ALL, true)) {
+            $this->breakdown = QueueReportPeriods::TOTAL;
+        }
+        $this->groupData = $this->breakdown === QueueReportPeriods::TOTAL;
+        $this->compare = $this->breakdown !== QueueReportPeriods::DAY;
         $this->loadPbxElements();
         $this->loadData();
     }
@@ -92,13 +118,83 @@ class MyQueuesReport extends Component
         $this->loadData();
     }
 
+    /** Legacy Total / Day-by-day switch, kept for compatibility. */
     public function toggleGroupData(): void
     {
-        $this->groupData = ! $this->groupData;
+        $this->selectBreakdown($this->groupData ? QueueReportPeriods::DAY : QueueReportPeriods::TOTAL);
+    }
+
+    /** Total / day / week / month view. Comparison defaults on for week/month, off for day. */
+    public function selectBreakdown(string $value): void
+    {
+        if (! \in_array($value, QueueReportPeriods::ALL, true)) {
+            return;
+        }
+        // Same rules as the API, on the current range (availableBreakdowns may predate it).
+        if (! \in_array($value, QueueReportPeriods::available($this->startDate, $this->endDate), true)) {
+            return;
+        }
+
+        $this->breakdown = $value;
+        $this->groupData = $value === QueueReportPeriods::TOTAL;
         if (! $this->groupData) {
             $this->consolidateData = false;
+            $this->compare = $value !== QueueReportPeriods::DAY;
         }
         $this->loadData();
+    }
+
+    /** Called by Livewire after wire:model updates compare. */
+    public function updatedCompare(): void
+    {
+        $this->loadData();
+    }
+
+    public function isBucketed(): bool
+    {
+        return QueueReportPeriods::isBucketed($this->breakdown);
+    }
+
+    /** Week/month views show a sub-header per period; sorting applies within a period. */
+    public function groupsRowsByPeriod(): bool
+    {
+        return \in_array($this->breakdown, [QueueReportPeriods::WEEK, QueueReportPeriods::MONTH], true);
+    }
+
+    public function showsComparison(): bool
+    {
+        return $this->isBucketed() && $this->compare && ! empty($this->comparison);
+    }
+
+    /** @return list<array<string, mixed>> anomalies matching the queues-only / extensions view */
+    public function getVisibleAnomalies(): array
+    {
+        return $this->isBucketed() && $this->compare
+            ? QueueReportPeriods::visibleAnomalies($this->anomalies, $this->queuesOnlyStats)
+            : [];
+    }
+
+    /** @return array<string, string> period labels by key */
+    public function getPeriodLabels(): array
+    {
+        return $this->isBucketed() ? QueueReportPeriods::labels($this->breakdown, $this->periods) : [];
+    }
+
+    /**
+     * Comparison badge of one metric of a report row, or null.
+     *
+     * @param  array<string, string>  $labels  getPeriodLabels()
+     * @return array{text: string, class: string, title: string, severity: ?string, assessment: string}|null
+     */
+    public function comparisonBadge(array $row, string $metric, array $labels = []): ?array
+    {
+        if (! $this->showsComparison()) {
+            return null;
+        }
+
+        $metrics = $this->comparison[QueueReportPeriods::seriesKey($row)] ?? null;
+
+        return QueueReportPeriods::badge($metric, $metrics[$metric] ?? null, $this->breakdown, $labels);
     }
 
     public function toggleQueuesOnlyStats(): void
@@ -114,7 +210,8 @@ class MyQueuesReport extends Component
     /** Called by Livewire after wire:model updates consolidateData. */
     public function updatedConsolidateData(): void
     {
-        if ($this->consolidateData && ! $this->groupData) {
+        if ($this->consolidateData && ($this->breakdown !== QueueReportPeriods::TOTAL || ! $this->groupData)) {
+            $this->breakdown = QueueReportPeriods::TOTAL;
             $this->groupData = true;
             $this->loadData();
         }
@@ -174,20 +271,25 @@ class MyQueuesReport extends Component
             return '#';
         }
 
+        // Only null/'' are dropped: compare=0 must reach the API (its default is true).
         $params = array_filter([
             'start_date' => $this->startDate,
             'end_date' => $this->endDate,
             'start_time' => $this->startTime,
             'end_time' => $this->endTime,
             'dn' => $this->dn,
-            'exclude_closed_hours' => $this->excludeClosedHours ? 1 : 0,
-        ]);
+            'exclude_closed_hours' => $this->excludeClosedHours ? 1 : null,
+            'period' => $this->isBucketed() ? $this->breakdown : null,
+            'compare' => $this->isBucketed() ? ($this->compare ? 1 : 0) : null,
+        ], fn ($v) => $v !== null && $v !== '');
 
         return route('expert-stats.my-queues.export', $params);
     }
 
     public function loadData(): void
     {
+        $this->syncAvailableBreakdowns();
+
         if (! $this->dn || ! $this->startDate || ! $this->endDate) {
             return;
         }
@@ -197,6 +299,9 @@ class MyQueuesReport extends Component
         $this->queueData = [];
         $this->extensionData = [];
         $this->aggregated = [];
+        $this->periods = [];
+        $this->comparison = [];
+        $this->anomalies = [];
 
         try {
             $params = [
@@ -205,12 +310,27 @@ class MyQueuesReport extends Component
                 'start_time' => $this->startTime,
                 'end_time' => $this->endTime,
                 'dn' => $this->dn,
+                // `period` supersedes `grouped` on the API; grouped is kept for older servers.
                 'grouped' => $this->groupData ? 1 : 0,
+                'period' => $this->breakdown,
                 'exclude_closed_hours' => $this->excludeClosedHours ? 1 : 0,
             ];
+            if ($this->isBucketed()) {
+                $params['compare'] = $this->compare ? 1 : 0;
+            }
 
             $raw = app(ExpertStatisticsService::class)->getQueuesReport($params);
             $this->aggregated = $raw['aggregated'] ?? [];
+            if (! empty($raw['available_periods']) && \is_array($raw['available_periods'])) {
+                $this->availableBreakdowns = array_values(array_intersect(QueueReportPeriods::ALL, $raw['available_periods']));
+            }
+            if ($this->isBucketed()) {
+                $this->periods = $raw['periods'] ?? [];
+                if ($this->compare) {
+                    $this->comparison = QueueReportPeriods::indexComparison($raw['comparison'] ?? []);
+                    $this->anomalies = $raw['anomalies'] ?? [];
+                }
+            }
 
             foreach ($raw['report'] ?? [] as $row) {
                 $keyType = $row['keyType'] ?? null;
@@ -224,7 +344,7 @@ class MyQueuesReport extends Component
                 }
             }
         } catch (\Throwable) {
-            $this->errorMessage = 'Erreur lors du chargement des données.';
+            $this->errorMessage = __('expert-statistics::pbx.expert_statistics.error_loading');
         }
 
         $this->isLoading = false;
@@ -255,7 +375,16 @@ class MyQueuesReport extends Component
         }
 
         if ($this->sortField !== '') {
-            $data = $this->sortRows($data);
+            // Week/month views are grouped by period: sorting applies within each period.
+            if ($this->groupsRowsByPeriod()) {
+                $sorted = [];
+                foreach (QueueReportPeriods::groupByPeriod($this->breakdown, $data) as $group) {
+                    array_push($sorted, ...$this->sortRows($group['rows']));
+                }
+                $data = $sorted;
+            } else {
+                $data = $this->sortRows($data);
+            }
         }
 
         return array_values($data);
@@ -278,13 +407,10 @@ class MyQueuesReport extends Component
         return $mins > 0 ? "{$mins}m {$remaining}s" : "{$remaining}s";
     }
 
+    /** Localised day of a report row ("Y-m-d" from the API, legacy "Ymd" accepted). */
     public function formatDate(string $day): string
     {
-        if (strlen($day) === 8) {
-            return substr($day, 6, 2).'/'.substr($day, 4, 2).'/'.substr($day, 0, 4);
-        }
-
-        return $day;
+        return QueueReportPeriods::formatDay($day);
     }
 
     public function render(): View
@@ -299,7 +425,8 @@ class MyQueuesReport extends Component
             return [];
         }
 
-        $ignoreKeys = ['element', 'elementName', 'elementNameNumber', 'keyType', 'queue', 'queueName', 'queueNameNumber'];
+        $ignoreKeys = ['element', 'elementName', 'elementNameNumber', 'keyType', 'queue', 'queueName', 'queueNameNumber',
+            'day', 'period', 'period_label', 'period_start', 'period_end', 'period_days', 'partial'];
         $holder = [];
 
         foreach ($this->queueData as $row) {
@@ -321,7 +448,7 @@ class MyQueuesReport extends Component
             $holder['solicited'] = (float) ($this->aggregated['inbound_calls'] ?? 0);
         }
 
-        $holder['queueNameNumber'] = 'Consolidée';
+        $holder['queueNameNumber'] = __('expert-statistics::pbx.queue_report_periods.consolidated');
         $holder['keyType'] = 4;
 
         return [$holder];
@@ -365,6 +492,20 @@ class MyQueuesReport extends Component
         usort($data, fn ($a, $b): int => ($getValue($a) <=> $getValue($b)) * $dir);
 
         return $data;
+    }
+
+    /**
+     * Views available for the current range (same rules as the API); falls back to the total
+     * view when the selected one no longer fits the range.
+     */
+    private function syncAvailableBreakdowns(): void
+    {
+        $this->availableBreakdowns = QueueReportPeriods::available($this->startDate, $this->endDate);
+
+        if (! \in_array($this->breakdown, $this->availableBreakdowns, true)) {
+            $this->breakdown = QueueReportPeriods::TOTAL;
+            $this->groupData = true;
+        }
     }
 
     private function applyPeriod(string $period): void
