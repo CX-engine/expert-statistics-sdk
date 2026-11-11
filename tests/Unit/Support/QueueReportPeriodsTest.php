@@ -123,3 +123,16 @@ it('indexes the comparison by period, queue and element and filters anomalies by
     expect(QueueReportPeriods::visibleAnomalies($anomalies, true))->toHaveCount(1)
         ->and(QueueReportPeriods::visibleAnomalies($anomalies, false))->toHaveCount(2);
 });
+
+it('averages talk per answered call and wait per waiting call without the message', function () {
+    expect(QueueReportPeriods::averageTalking(['answered' => 4, 'talking_duration' => 600]))->toBe(150.0)
+        ->and(QueueReportPeriods::averageTalking(['answered' => 0, 'talking_duration' => 0]))->toBeNull();
+
+    // 10 calls waited (10 s message each), 6 answered by this queue, 4 overflowed elsewhere.
+    $row = ['answered' => 6, 'waiting_duration' => 400, 'preanswer_duration' => 60, 'waiting_calls' => 10, 'net_waiting_duration' => 300];
+    expect(QueueReportPeriods::averageWaiting($row))->toBe(30.0)
+        ->and(QueueReportPeriods::averageWaiting(['waiting_calls' => 0, 'net_waiting_duration' => 0, 'answered' => 3]))->toBeNull();
+
+    // Older API without the waiting population: (waiting − message) / answered.
+    expect(QueueReportPeriods::averageWaiting(['answered' => 6, 'waiting_duration' => 400, 'preanswer_duration' => 60]))->toBe(56.7);
+});

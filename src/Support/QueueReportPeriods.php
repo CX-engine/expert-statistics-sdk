@@ -75,6 +75,38 @@ class QueueReportPeriods
         return $available;
     }
 
+    /**
+     * Average talk time per answered call (seconds), null without answered calls.
+     */
+    public static function averageTalking(array $row): ?float
+    {
+        $answered = (float) ($row['answered'] ?? 0);
+
+        return $answered > 0 ? round((float) ($row['talking_duration'] ?? 0) / $answered, 1) : null;
+    }
+
+    /**
+     * Average wait per call that waited, pre-recorded message excluded (seconds) — the API's
+     * `net_waiting_duration / waiting_calls` (same formula as its comparison and export).
+     * waiting_duration / answered would be wrong: the waiting calls of a queue include calls
+     * answered by another queue (overflow), and waiting_duration includes the message.
+     * Payloads without these fields (older API) fall back to (waiting − message) / answered.
+     */
+    public static function averageWaiting(array $row): ?float
+    {
+        if (\array_key_exists('waiting_calls', $row)) {
+            $calls = (float) $row['waiting_calls'];
+
+            return $calls > 0 ? round((float) ($row['net_waiting_duration'] ?? 0) / $calls, 1) : null;
+        }
+
+        $answered = (float) ($row['answered'] ?? 0);
+
+        return $answered > 0
+            ? round(max(0.0, (float) ($row['waiting_duration'] ?? 0) - (float) ($row['preanswer_duration'] ?? 0)) / $answered, 1)
+            : null;
+    }
+
     public static function isBucketed(string $period): bool
     {
         return \in_array($period, self::BUCKETED, true);

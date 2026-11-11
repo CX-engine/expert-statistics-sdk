@@ -1142,6 +1142,10 @@ return [
     ],
 
     'queue_report_periods' => [
+        'col_avg_talk' => 'Conv. moy.',
+        'col_avg_talk_hint' => 'Durée moyenne de conversation par appel répondu',
+        'col_avg_wait' => 'Attente moy.',
+        'col_avg_wait_hint' => 'Attente moyenne par appel ayant attendu, message préenregistré exclu',
         'view_total' => 'Période totale',
         'view_day' => 'Jour',
         'view_week' => 'Semaine',

@@ -34,8 +34,8 @@ désactivez « Files uniquement »). Colonnes :
 | **Transférés** | Appels transférés ailleurs après avoir été répondus. |
 | **Taux %** | Taux de réponse — coloré en vert (≥80 %), jaune (≥60 %), rouge (en dessous), calculé
   comme répondus ÷ (appels − abandons en pré-décroché). |
-| **Durée conv.** | Durée totale de conversation pour cette ligne. |
-| **Durée attente** | Temps total passé en attente par les appelants. |
+| **Conv. moy.** | Durée moyenne de conversation par appel répondu. |
+| **Attente moy.** | Temps moyen d'attente dans la file avant réponse, par appel ayant attendu, **message préenregistré exclu** (les appels ayant attendu ici puis débordé vers une autre file comptent aussi). Pour une ligne poste : temps moyen de sonnerie avant que l'agent ne décroche. |
 
 ### Options de la ligne
 
@@ -72,9 +72,8 @@ s'applique à l'intérieur de chaque période. La première et la dernière pér
 dates : une telle période *partielle* est marquée d'un astérisque — survolez-le pour voir les jours
 couverts.
 
-**Comparer à la période précédente** (activé par défaut pour les semaines et les mois, désactivé
-pour les jours, dont les variations sont surtout du bruit) ajoute un petit indicateur d'évolution
-sous **Appels**, **Répondus**, **Abandonnés**, **Taux %** et **Durée attente** (attente moyenne) :
+**Comparer à la période précédente** (désactivé par défaut — cochez-le pour afficher la comparaison) ajoute un petit indicateur d'évolution
+sous **Appels**, **Répondus**, **Abandonnés**, **Taux %** et **Attente moy.** :
 ▲/▼ avec *+12 %* pour les volumes, *+3.2 pts* pour le taux de réponse, *+8 s* pour l'attente
 moyenne. Survolez-le pour voir la valeur de la période précédente.
 

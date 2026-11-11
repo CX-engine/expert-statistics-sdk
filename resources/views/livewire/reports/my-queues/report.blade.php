@@ -290,14 +290,14 @@
                                 {{ __('expert-statistics::pbx.expert_statistics.col_answer_rate') }}{!! $sortIcon('answered_percentage') !!}
                             </th>
 
-                            <th wire:click="sortBy('talking_duration')"
+                            <th wire:click="sortBy('avg_talking')" title="{{ $tp('col_avg_talk_hint') }}"
                                 class="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none whitespace-nowrap">
-                                {{ __('expert-statistics::pbx.expert_statistics.col_talk_duration') }}{!! $sortIcon('talking_duration') !!}
+                                {{ $tp('col_avg_talk') }}{!! $sortIcon('avg_talking') !!}
                             </th>
 
-                            <th wire:click="sortBy('waiting_duration')"
+                            <th wire:click="sortBy('avg_waiting')" title="{{ $tp('col_avg_wait_hint') }}"
                                 class="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none whitespace-nowrap">
-                                {{ __('expert-statistics::pbx.expert_statistics.col_wait_duration') }}{!! $sortIcon('waiting_duration') !!}
+                                {{ $tp('col_avg_wait') }}{!! $sortIcon('avg_waiting') !!}
                             </th>
                         </tr>
 
@@ -434,10 +434,12 @@
                                     {!! $badge($row, 'answer_rate') !!}
                                 </td>
                                 <td class="px-4 py-3 text-right text-gray-600 dark:text-gray-400">
-                                    {{ $this->formatDuration($row['talking_duration'] ?? 0) }}
+                                    @php($avgTalk = \CXEngine\ExpertStatistics\Support\QueueReportPeriods::averageTalking($row))
+                                    {{ $avgTalk === null ? '–' : $this->formatDuration((int) round($avgTalk)) }}
                                 </td>
                                 <td class="px-4 py-3 text-right text-gray-600 dark:text-gray-400">
-                                    {{ $this->formatDuration($row['waiting_duration'] ?? 0) }}
+                                    @php($avgWait = \CXEngine\ExpertStatistics\Support\QueueReportPeriods::averageWaiting($row))
+                                    {{ $avgWait === null ? '–' : $this->formatDuration((int) round($avgWait)) }}
                                     {!! $badge($row, 'avg_waiting') !!}
                                 </td>
                             </tr>

@@ -29,8 +29,8 @@ only"). Columns:
 | **Answered** | Calls actually picked up. |
 | **Transferred** | Calls transferred elsewhere after being answered. |
 | **Rate %** | Answer rate — colour-coded green (≥80%), yellow (≥60%), red (below), calculated as answered ÷ (calls − pre-answer-abandoned). |
-| **Talk dur.** | Total talk time for that row. |
-| **Wait dur.** | Total time callers spent waiting. |
+| **Avg talk** | Average talk time per answered call. |
+| **Avg wait** | Average time a caller waited in the queue before being answered, per call that waited, **pre-recorded message excluded** (calls that waited here and overflowed to another queue count here too). For an extension row: average ringing time before that agent answered. |
 
 ### Row toggles
 
@@ -64,9 +64,8 @@ the rows are grouped under a header per period, and sorting a column sorts insid
 first and last periods are cut to your dates: such a *partial* period is marked with an asterisk —
 hover it to see the days it covers.
 
-**Compare with previous period** (on by default for weeks and months, off for days, where daily
-changes are mostly noise) adds a small change indicator under **Calls**, **Answered**,
-**Abandoned**, **Rate %** and **Wait dur.** (average wait): ▲/▼ with *+12 %* for volumes, *+3.2
+**Compare with previous period** (off by default — tick it when you want the comparison) adds a small change indicator under **Calls**, **Answered**,
+**Abandoned**, **Rate %** and **Avg wait**: ▲/▼ with *+12 %* for volumes, *+3.2
 pts* for the answer rate, *+8 s* for the average wait. Hover it to see the previous period's value.
 
 - **Green** = better (more answered, fewer abandoned, higher rate, shorter wait), **red** = worse,

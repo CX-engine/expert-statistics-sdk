@@ -118,7 +118,9 @@ it('loads the month view with its comparison and biggest changes', function () {
         ->call('selectBreakdown', 'month')
         ->assertSet('breakdown', 'month')
         ->assertSet('groupData', false)
-        ->assertSet('compare', true)
+        ->assertSet('compare', false)
+        ->assertDontSee(__('expert-statistics::pbx.queue_report_periods.anomalies_title'))
+        ->set('compare', true)
         ->assertSee('January 2026')
         ->assertSee('February 2026')
         ->assertSee('Partial period: 01/15 – 01/31')
@@ -133,20 +135,39 @@ it('loads the month view with its comparison and biggest changes', function () {
     expect($last)->toMatchArray(['period' => 'month', 'compare' => 1, 'grouped' => 0, 'dn' => '800']);
 });
 
-it('sends compare=0 when the comparison is switched off and defaults it off for days', function () {
+it('keeps the comparison off by default and as the user chose it across views', function () {
     $component = Livewire::test(MyQueuesReport::class)
         ->set('startDate', '2026-01-15')
         ->set('endDate', '2026-02-28')
         ->set('dn', '800')
-        ->call('selectBreakdown', 'day')
-        ->assertSet('compare', false)
         ->call('selectBreakdown', 'week')
-        ->assertSet('compare', true)
-        ->set('compare', false)
-        ->assertDontSee(__('expert-statistics::pbx.queue_report_periods.anomalies_title'));
+        ->assertSet('compare', false);
 
-    $last = collect(sentQueueReportQueries($this->mockClient))->last();
-    expect($last)->toMatchArray(['period' => 'week', 'compare' => 0]);
+    expect(collect(sentQueueReportQueries($this->mockClient))->last())->toMatchArray(['period' => 'week', 'compare' => 0]);
+
+    $component->set('compare', true)
+        ->call('selectBreakdown', 'month')
+        ->assertSet('compare', true)
+        ->assertSee(__('expert-statistics::pbx.queue_report_periods.anomalies_title'));
+
+    expect(collect(sentQueueReportQueries($this->mockClient))->last())->toMatchArray(['period' => 'month', 'compare' => 1]);
+
+    $component->set('compare', false)
+        ->assertDontSee(__('expert-statistics::pbx.queue_report_periods.anomalies_title'));
+});
+
+it('shows average talk and wait instead of totals', function () {
+    // Fixture rows: answered 90 / 140, talk 120 s and wait 20 s per answered call, no message.
+    Livewire::test(MyQueuesReport::class)
+        ->set('startDate', '2026-01-15')
+        ->set('endDate', '2026-02-28')
+        ->set('dn', '800')
+        ->call('selectBreakdown', 'month')
+        ->assertSee(__('expert-statistics::pbx.queue_report_periods.col_avg_talk'))
+        ->assertSee(__('expert-statistics::pbx.queue_report_periods.col_avg_wait'))
+        ->assertSee('2m 0s')
+        ->assertSee('20s')
+        ->assertDontSee('3h 0m'); // 90 × 120 s: the old total
 });
 
 it('falls back to the total view when the range no longer allows the selection', function () {

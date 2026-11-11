@@ -52,8 +52,8 @@ class MyQueuesReport extends Component
     #[Url]
     public string $breakdown = QueueReportPeriods::TOTAL;
 
-    /** Period-over-period comparison (day/week/month only). On by default for week/month. */
-    public bool $compare = true;
+    /** Period-over-period comparison (day/week/month only). Off until the user asks for it. */
+    public bool $compare = false;
 
     /** @var list<string> views available for the range (API's `available_periods` once loaded) */
     public array $availableBreakdowns = [QueueReportPeriods::TOTAL];
@@ -104,7 +104,6 @@ class MyQueuesReport extends Component
             $this->breakdown = QueueReportPeriods::TOTAL;
         }
         $this->groupData = $this->breakdown === QueueReportPeriods::TOTAL;
-        $this->compare = $this->breakdown !== QueueReportPeriods::DAY;
         $this->loadPbxElements();
         $this->loadData();
     }
@@ -124,7 +123,7 @@ class MyQueuesReport extends Component
         $this->selectBreakdown($this->groupData ? QueueReportPeriods::DAY : QueueReportPeriods::TOTAL);
     }
 
-    /** Total / day / week / month view. Comparison defaults on for week/month, off for day. */
+    /** Total / day / week / month view. The comparison stays as the user set it (off by default). */
     public function selectBreakdown(string $value): void
     {
         if (! \in_array($value, QueueReportPeriods::ALL, true)) {
@@ -139,7 +138,6 @@ class MyQueuesReport extends Component
         $this->groupData = $value === QueueReportPeriods::TOTAL;
         if (! $this->groupData) {
             $this->consolidateData = false;
-            $this->compare = $value !== QueueReportPeriods::DAY;
         }
         $this->loadData();
     }
@@ -473,6 +471,8 @@ class MyQueuesReport extends Component
 
                     return $divisor > 0 ? ((int) ($row['answered'] ?? 0) / $divisor) * 100 : 0.0;
                 })(),
+                'avg_talking' => (float) (QueueReportPeriods::averageTalking($row) ?? 0),
+                'avg_waiting' => (float) (QueueReportPeriods::averageWaiting($row) ?? 0),
                 'day', 'queueNameNumber', 'elementNameNumber' => (string) ($row[$field] ?? ''),
                 default => (float) ($row[$field] ?? 0),
             };

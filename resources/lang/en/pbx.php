@@ -1144,6 +1144,10 @@ return [
     ],
 
     'queue_report_periods' => [
+        'col_avg_talk' => 'Avg talk',
+        'col_avg_talk_hint' => 'Average talk time per answered call',
+        'col_avg_wait' => 'Avg wait',
+        'col_avg_wait_hint' => 'Average wait per call that waited, pre-recorded message excluded',
         'view_total' => 'Total period',
         'view_day' => 'Day',
         'view_week' => 'Week',
