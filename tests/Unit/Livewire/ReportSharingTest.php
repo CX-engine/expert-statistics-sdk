@@ -123,3 +123,13 @@ it('sends the call analysis calls with their filters', function () {
         'repeat' => false,
     ]);
 });
+
+it('keeps the user DN type (0) in the call analysis filters', function () {
+    Livewire::test(CallAnalysis::class)
+        ->set('startDate', '2026-09-01')
+        ->set('endDate', '2026-09-30')
+        ->set('destinationDnType', '0')
+        ->set('originDnType', '0')
+        ->call('shareReport')
+        ->assertDispatched('open-share-report', fn (string $name, array $params): bool => $params['filters'] === ['origin_dn_type' => '0', 'destination_dn_type' => '0']);
+});

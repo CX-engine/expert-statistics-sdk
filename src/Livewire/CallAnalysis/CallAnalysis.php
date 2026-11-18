@@ -126,6 +126,15 @@ class CallAnalysis extends Component
 
     public bool $filtersApplied = false;
 
+    /**
+     * The filters the current list was loaded with. The filter properties
+     * change as soon as the user edits them, before "Apply", so the card
+     * badges are judged against these instead.
+     *
+     * @var array{destination_dn?: string, destination_dn_type?: string, origin_dn?: string, call_status?: string}
+     */
+    public array $loadedFilters = [];
+
     public bool $isLoading = false;
 
     public string $callerSearch = '';
@@ -324,7 +333,7 @@ class CallAnalysis extends Component
             return '#';
         }
 
-        $params = array_filter([
+        $params = self::filledParams([
             'start_date' => str_replace('-', '', $this->startDate),
             'end_date' => str_replace('-', '', $this->endDate),
             'start_time' => $this->startTime,
@@ -368,7 +377,7 @@ class CallAnalysis extends Component
             startTime: $this->startTime,
             endTime: $this->endTime,
             reportType: 'cdrReport',
-            filters: array_filter([
+            filters: self::filledParams([
                 'origin_dn' => $this->originDn,
                 'origin_dn_type' => $this->originDnType,
                 'destination_dn' => $this->destinationDn,
@@ -407,6 +416,51 @@ class CallAnalysis extends Component
         return PbxDataProcessor::getSegmentLabel($segmentType, $answered);
     }
 
+    /**
+     * @param  array<string, mixed>  $step
+     * @return array{label: string, tone: string}
+     */
+    public function describeStep(array $step, string $direction): array
+    {
+        return PbxDataProcessor::describeStep($step, $direction);
+    }
+
+    public function actionNoteKey(string $action): ?string
+    {
+        return PbxDataProcessor::actionNoteKey($action);
+    }
+
+    /**
+     * Outcome of a call for its card badges, judged against the filters the
+     * list was loaded with (the same rule as the API's call_status filter).
+     *
+     * @param  array<string, mixed>  $call
+     * @return array{answered: bool, answered_by: array{dn: string, name: ?string}|null, filter_answered: ?bool}
+     */
+    public function callOutcome(array $call): array
+    {
+        return PbxDataProcessor::callOutcome($call, $this->loadedFilters);
+    }
+
+    /** Name of the filtered destination for the badge: its name when one is selected, null for several. */
+    public function filteredDestinationName(): ?string
+    {
+        $dns = array_values(array_filter(explode(',', $this->loadedFilters['destination_dn'] ?? '')));
+
+        if (count($dns) !== 1) {
+            return null;
+        }
+
+        if (($this->loadedFilters['destination_dn_type'] ?? '') === '0') {
+            return $this->pbxMap['extensions'][$dns[0]] ?? $dns[0];
+        }
+
+        $queue = $this->pbxMap['call_queues'][$dns[0]] ?? null;
+
+        return (is_array($queue) ? ($queue['name'] ?? null) : null)
+            ?? ($this->pbxMap['extensions'][$dns[0]] ?? $dns[0]);
+    }
+
     public function formatSecondsShort(int $secs): string
     {
         return PbxDataProcessor::formatSecondsShort($secs);
@@ -426,7 +480,7 @@ class CallAnalysis extends Component
         $this->isLoading = true;
 
         try {
-            $params = array_filter([
+            $params = self::filledParams([
                 'start_date' => str_replace('-', '', $this->startDate),
                 'end_date' => str_replace('-', '', $this->endDate),
                 'start_time' => $this->startTime,
@@ -447,6 +501,7 @@ class CallAnalysis extends Component
             $raw = app(ExpertStatisticsService::class)->getCdrReport($params);
 
             $this->calls = $raw['data'] ?? [];
+            $this->loadedFilters = array_intersect_key($params, array_flip(['destination_dn', 'destination_dn_type', 'origin_dn', 'call_status']));
             $this->pagination = [
                 'current_page' => (int) ($raw['current_page'] ?? 1),
                 'per_page' => (int) ($raw['per_page'] ?? 50),
@@ -459,6 +514,19 @@ class CallAnalysis extends Component
         }
 
         $this->isLoading = false;
+    }
+
+    /**
+     * Drop the unset filters from API params. Not array_filter(): it would
+     * also drop the '0' DN type ("user"), and the API then judges a user
+     * filter with the queue rule.
+     *
+     * @param  array<string, mixed>  $params
+     * @return array<string, mixed>
+     */
+    private static function filledParams(array $params): array
+    {
+        return array_filter($params, fn ($value): bool => $value !== '' && $value !== null && $value !== 0);
     }
 
     public function render(): View

@@ -695,6 +695,153 @@ class PbxDataProcessor
     }
 
     /**
+     * Whether a step's destination is a person: an extension, or the external
+     * party on an outbound call. Only a person "answers" a call; IVRs, queues,
+     * voicemail and line routing pick up automatically.
+     *
+     * @param  array<string, mixed>  $step
+     */
+    public static function isPersonStep(array $step, string $direction): bool
+    {
+        $toType = $step['to_type'] ?? '';
+
+        return $toType === 'extension'
+            || ($toType === 'world' && in_array($direction, ['outbound', 'unknown'], true));
+    }
+
+    /**
+     * Describe a call-flow timeline step for users: its label (a translation
+     * KEY, translate with __() in the view) and a tone for its badge color.
+     * "Answered" is only used when a person picked up; system destinations
+     * get a label that says what they are, whatever their answered_at.
+     *
+     * @param  array<string, mixed>  $step
+     * @return array{label: string, tone: 'answered'|'unanswered'|'voicemail'|'neutral'}
+     */
+    public static function describeStep(array $step, string $direction): array
+    {
+        $prefix = 'expert-statistics::pbx.expert_statistics.';
+
+        if (self::isPersonStep($step, $direction)) {
+            return ! empty($step['answered_at'])
+                ? ['label' => $prefix.'cfa_segment_talk', 'tone' => 'answered']
+                : ['label' => $prefix.'cfa_segment_not_answered', 'tone' => 'unanswered'];
+        }
+
+        // The caller's call arriving on the dialed line (DID): external number to external number.
+        if (($step['from_type'] ?? '') === 'world' && ($step['to_type'] ?? '') === 'world') {
+            return ['label' => $prefix.'cfa_segment_incoming', 'tone' => 'neutral'];
+        }
+
+        return match ($step['to_type'] ?? '') {
+            'queue' => ['label' => $prefix.'cfa_segment_queue', 'tone' => 'neutral'],
+            'ivr' => ['label' => $prefix.'cfa_segment_ivr', 'tone' => 'neutral'],
+            'call_flow' => ['label' => $prefix.'cfa_segment_call_flow', 'tone' => 'neutral'],
+            'voicemail' => ['label' => $prefix.'cfa_segment_voicemail', 'tone' => 'voicemail'],
+            default => ['label' => $prefix.'cfa_segment_transit', 'tone' => 'neutral'],
+        };
+    }
+
+    /**
+     * Translation KEY for the note shown under a timeline step, from the
+     * action text the API sends (French, see expert-stats CallRecordService).
+     * Returns null when the action adds nothing to the step's arrow (start of
+     * the call, redirections) or is unknown. "Ended by" actions are handled
+     * by the view, which needs the step to name who ended the call.
+     */
+    public static function actionNoteKey(string $action): ?string
+    {
+        $key = match ($action) {
+            "a refusé l'appel ou n'a pas répondu" => 'cfa_action_declined_or_no_answer',
+            "a laissé le téléphone sonner et n'a pas répondu" => 'cfa_action_rang_no_answer',
+            "a refusé l'appel. L'appel a été automatiquement redirigé vers" => 'cfa_action_declined_redirected',
+            "n'a pas pu répondre. L'appel a été automatiquement redirigé vers" => 'cfa_action_could_not_answer_redirected',
+            "n'a pas pu répondre car indisponible" => 'cfa_action_unavailable',
+            "le numéro sélectionné n'existe pas ou l'appel a échoué" => 'cfa_action_failed',
+            "a laissé le téléphone sonner et c'est mis en mode occupé" => 'cfa_action_rang_then_busy',
+            "a refusé l'appel ou l'a directement transféré à la messagerie vocal" => 'cfa_action_declined_to_voicemail',
+            default => null,
+        };
+
+        return $key ? 'expert-statistics::pbx.expert_statistics.'.$key : null;
+    }
+
+    /**
+     * The outcome of a call for its card badges.
+     *
+     * - answered_by: the first person who answered the call, anywhere in its
+     *   flow (null when nobody did).
+     * - filter_answered: when a destination filter is set, whether THAT
+     *   destination answered, with the same rule as the expert-stats API's
+     *   call_status filter (CDRController): a user answered when a pong to
+     *   that extension lasted; a queue answered when a pong from that queue
+     *   to an extension lasted. When the list is already filtered on
+     *   answered/unanswered, the API's verdict is used as is, so the badge
+     *   always matches the filter. Null when no destination filter is set.
+     *
+     * @param  array<string, mixed>  $call
+     * @param  array{destination_dn?: string, destination_dn_type?: string, origin_dn?: string, call_status?: string}  $filters
+     * @return array{answered: bool, answered_by: array{dn: string, name: ?string}|null, filter_answered: ?bool}
+     */
+    public static function callOutcome(array $call, array $filters): array
+    {
+        $isOutbound = in_array($call['direction'] ?? '', ['outbound', 'unknown'], true);
+        $destinationDns = array_values(array_filter(explode(',', $filters['destination_dn'] ?? '')));
+        $originDns = array_values(array_filter(explode(',', $filters['origin_dn'] ?? '')));
+        $destinationIsUser = ($filters['destination_dn_type'] ?? '') === '0';
+        $callStatus = $filters['call_status'] ?? '';
+
+        $answeredBy = null;
+        $filterAnswered = false;
+
+        foreach ($call['flow'] ?? [] as $segment) {
+            $personAnswered = $isOutbound
+                ? ($segment['to_type'] ?? '') === 'world' && ! empty($segment['answered'])
+                : ($segment['segment_type'] ?? '') === 'pong'
+                    && (int) ($segment['duration'] ?? 0) > 0
+                    && ($segment['to_type'] ?? '') === 'extension';
+
+            if (! $personAnswered) {
+                continue;
+            }
+
+            $answeredBy ??= ['dn' => (string) ($segment['to_dn'] ?? ''), 'name' => $segment['to_name'] ?? null];
+
+            if (empty($destinationDns)) {
+                continue;
+            }
+
+            // The API counts an outbound call answered by the external party for any non-user destination filter.
+            if ($isOutbound) {
+                $filterAnswered = $filterAnswered || ! $destinationIsUser;
+
+                continue;
+            }
+
+            if ($destinationIsUser) {
+                if (in_array((string) ($segment['to_dn'] ?? ''), $destinationDns, true)
+                    && (empty($originDns) || in_array((string) ($segment['from_dn'] ?? ''), $originDns, true))) {
+                    $filterAnswered = true;
+                }
+            } elseif (in_array((string) ($segment['from_dn'] ?? ''), $destinationDns, true)) {
+                $filterAnswered = true;
+            }
+        }
+
+        $filterResult = match (true) {
+            empty($destinationDns) => null,
+            in_array($callStatus, ['answered', 'unanswered'], true) => $callStatus === 'answered',
+            default => $filterAnswered,
+        };
+
+        return [
+            'answered' => $answeredBy !== null,
+            'answered_by' => $answeredBy,
+            'filter_answered' => $filterResult,
+        ];
+    }
+
+    /**
      * Resolve a human-readable name for a call-flow step's destination DN.
      *
      * @param  array<string, mixed>  $pbxMap  The 'extensions'/'call_queues' map from ExpertStatisticsService::getMap()

@@ -402,6 +402,22 @@
 
         {{-- Call accordion cards --}}
         <div class="space-y-2">
+            @php
+                $filteredDestName = $this->filteredDestinationName();
+                // Badge colors per step tone (see PbxDataProcessor::describeStep()).
+                $toneClasses = [
+                    'answered'   => 'bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-300 ring-green-200 dark:ring-green-800',
+                    'unanswered' => 'bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-300 ring-red-200 dark:ring-red-800',
+                    'voicemail'  => 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 ring-amber-200 dark:ring-amber-800',
+                    'neutral'    => 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 ring-gray-200 dark:ring-gray-700',
+                ];
+                $toneNodes = [
+                    'answered'   => 'bg-green-500 dark:bg-green-400',
+                    'unanswered' => 'bg-red-400 dark:bg-red-500',
+                    'voicemail'  => 'bg-amber-400 dark:bg-amber-500',
+                    'neutral'    => 'bg-gray-300 dark:bg-gray-600',
+                ];
+            @endphp
             @foreach ($calls as $call)
             @php
                 $direction = $call['direction'] ?? '';
@@ -429,15 +445,13 @@
 
                 $flowPreview = $this->buildFlowPreview($flow);
 
-                // Inbound/internal calls are answered when an extension picks up;
-                // outbound calls are answered when the external party (world) does.
-                $answeringType = in_array($direction, ['outbound', 'unknown']) ? 'world' : 'extension';
-                $isAnswered = false;
+                // Who answered, and whether the filtered destination did (same rule as the API's filter).
+                $outcome = $this->callOutcome($call);
+                $answeredByName = $outcome['answered_by']
+                    ? ($outcome['answered_by']['name'] ?: ($pbxMap['extensions'][$outcome['answered_by']['dn']] ?? $outcome['answered_by']['dn']))
+                    : null;
                 $destDn = ''; $destType = ''; $destName = null;
                 foreach ($flow as $_fs) {
-                    if (! empty($_fs['answered_at']) && ($_fs['to_type'] ?? '') === $answeringType) {
-                        $isAnswered = true;
-                    }
                     if (($_fs['segment_type'] ?? '') === 'ping' && ! empty($_fs['to_dn'])) {
                         $destDn   = $_fs['to_dn'];
                         $destType = $_fs['to_type'] ?? '';
@@ -515,15 +529,42 @@
                             {{ $duration }}
                         </span>
 
-                        @if ($isAnswered)
+                        @php
+                            // With a destination filter, the main badge is that destination's result, so it
+                            // always agrees with the filter; who actually answered goes in a second badge.
+                            $badgeAnswered = $outcome['filter_answered'] ?? $outcome['answered'];
+                            if ($outcome['filter_answered'] === null) {
+                                $badgeText = $answeredByName
+                                    ? __('expert-statistics::pbx.expert_statistics.cfa_answered_by', ['who' => $answeredByName])
+                                    : __('expert-statistics::pbx.expert_statistics.cfa_unanswered');
+                            } elseif ($filteredDestName) {
+                                $badgeText = __($badgeAnswered
+                                    ? 'expert-statistics::pbx.expert_statistics.cfa_answered_by'
+                                    : 'expert-statistics::pbx.expert_statistics.cfa_not_answered_by', ['who' => $filteredDestName]);
+                            } else {
+                                $badgeText = __($badgeAnswered
+                                    ? 'expert-statistics::pbx.expert_statistics.cfa_answered_by_selection'
+                                    : 'expert-statistics::pbx.expert_statistics.cfa_not_answered_by_selection');
+                            }
+                            $showAnsweredBy = $outcome['filter_answered'] !== null
+                                && $answeredByName
+                                && $answeredByName !== $filteredDestName;
+                        @endphp
+                        @if ($badgeAnswered)
                             <span class="inline-flex items-center gap-1 text-xs font-medium text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/50 px-2 py-0.5 rounded-full ring-1 ring-green-200 dark:ring-green-800 shrink-0">
                                 <x-heroicon-m-check class="w-3 h-3" />
-                                {{ __('expert-statistics::pbx.expert_statistics.cfa_answered') }}
+                                {{ $badgeText }}
                             </span>
                         @else
                             <span class="inline-flex items-center gap-1 text-xs font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/50 px-2 py-0.5 rounded-full ring-1 ring-red-200 dark:ring-red-800 shrink-0">
                                 <x-heroicon-m-x-mark class="w-3 h-3" />
-                                {{ __('expert-statistics::pbx.expert_statistics.cfa_unanswered') }}
+                                {{ $badgeText }}
+                            </span>
+                        @endif
+                        @if ($showAnsweredBy)
+                            <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full ring-1 ring-gray-200 dark:ring-gray-700 shrink-0">
+                                <x-heroicon-m-phone class="w-3 h-3" />
+                                {{ __('expert-statistics::pbx.expert_statistics.cfa_answered_by', ['who' => $answeredByName]) }}
                             </span>
                         @endif
 
@@ -538,9 +579,8 @@
                                 <x-heroicon-m-arrow-right class="w-3 h-3 text-gray-300 dark:text-gray-600 shrink-0" />
                             @endif
                             @php
-                                $fpColor = $fpStep['answered']
-                                    ? 'bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-300 ring-green-200 dark:ring-green-800'
-                                    : 'bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-300 ring-red-200 dark:ring-red-800';
+                                $fpTone = $this->describeStep(['to_type' => $fpStep['to_type'] ?? '', 'answered_at' => $fpStep['answered'] ? true : null], $direction)['tone'];
+                                $fpColor = $toneClasses[$fpTone];
                                 $fpToDn   = $fpStep['to_dn'] ?? '';
                                 $fpToType = $fpStep['to_type'] ?? '';
                                 $fpLabel  = $fpStep['to_name'] ?? null;
@@ -605,7 +645,10 @@
                                 $toDn     = $step['to_dn'] ?? '';
                                 $toName   = $step['to_name'] ?? null;
                                 $action   = $step['action'] ?? '';
-                                $segmentLabelKey = $this->getSegmentLabel($step['segment_type'] ?? '', $stepAnswered);
+                                $stepInfo = $this->describeStep($step, $direction);
+                                $segmentLabelKey = $stepInfo['label'];
+                                // Only a person answering counts as "answered"; a system pickup (IVR, queue, voicemail) does not.
+                                $stepAnswered = $stepInfo['tone'] === 'answered';
 
                                 if ($fromType === 'world' && $toType === 'world' && $callerDn) {
                                     $fromDisplay = $callerDn;
@@ -647,10 +690,8 @@
                                 }
                                 $toTypeLabel = ($toType && $toType !== 'world') ? ($typeLabels[$toType] ?? null) : null;
 
-                                $nodeColor  = $stepAnswered ? 'bg-green-500 dark:bg-green-400' : 'bg-red-400 dark:bg-red-500';
-                                $badgeColor = $stepAnswered
-                                    ? 'bg-green-100 dark:bg-green-950/60 text-green-700 dark:text-green-300 ring-green-200 dark:ring-green-800'
-                                    : 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 ring-red-200 dark:ring-red-800';
+                                $nodeColor  = $toneNodes[$stepInfo['tone']];
+                                $badgeColor = $toneClasses[$stepInfo['tone']];
 
                                 $ringLabel = null;
                                 if ($stepAnswered && $answeredAt && ($step['started_at'] ?? null)) {
@@ -675,8 +716,12 @@
                                             ? ($pbxMap['call_queues'][$toDn]['name'] ?? $toDn)
                                             : $toDn);
                                     $actionNote = __('expert-statistics::pbx.expert_statistics.cfa_ended_by', ['who' => $who]);
-                                } elseif ($action && $action !== '—' && $action !== "a demarré l'appel") {
-                                    $actionNote = ucfirst($action);
+                                } elseif ($actionNoteKey = $this->actionNoteKey($action)) {
+                                    $actionNote = __($actionNoteKey);
+                                }
+                                // The first step is the caller reaching the dialed line: say so instead of "From → To".
+                                if ($segmentLabelKey === 'expert-statistics::pbx.expert_statistics.cfa_segment_incoming' && ! $actionNote) {
+                                    $actionNote = __('expert-statistics::pbx.expert_statistics.cfa_incoming_note', ['caller' => $callerDn ?: '—', 'line' => $did ?: ($toDn ?: '—')]);
                                 }
                             @endphp
 

@@ -379,3 +379,85 @@ it('flattens nested daily-activity rows into flat date/status rows', function ()
         ->and($rows[0])->toBe(['date' => '2026-01-01', 'user_dn' => '100', 'status' => '0', 'total_minutes' => 30])
         ->and($rows[1]['status'])->toBe('4');
 });
+
+/**
+ * A call answered by an extension, then transferred to a queue where nobody answered
+ * (the caller hung up while waiting).
+ *
+ * @return array<string, mixed>
+ */
+function answeredThenTransferredToQueueCall(): array
+{
+    return [
+        'direction' => 'inbound',
+        'caller' => '0563022929',
+        'did' => '0237918911',
+        'flow' => [
+            ['segment_type' => 'ping', 'from_type' => 'world', 'from_dn' => '0563022929', 'to_type' => 'world', 'to_dn' => '0237918911', 'duration' => 1, 'answered_at' => null],
+            ['segment_type' => 'ping', 'from_type' => 'world', 'from_dn' => '0237918911', 'to_type' => 'extension', 'to_dn' => '101', 'to_name' => 'VIALLIS Veronika', 'duration' => 44, 'answered_at' => '2026-11-17 09:51:50'],
+            ['segment_type' => 'pong', 'from_type' => 'world', 'from_dn' => '0237918911', 'to_type' => 'extension', 'to_dn' => '101', 'to_name' => 'VIALLIS Veronika', 'duration' => 16, 'answered_at' => '2026-11-17 09:51:50', 'answered' => true],
+            ['segment_type' => 'ping', 'from_type' => 'extension', 'from_dn' => '101', 'to_type' => 'queue', 'to_dn' => '800', 'to_name' => 'PIECES_RECHANGES', 'duration' => 131, 'answered_at' => '2026-11-17 09:52:06'],
+        ],
+    ];
+}
+
+it('says who answered a call when no destination filter is set', function () {
+    $outcome = PbxDataProcessor::callOutcome(answeredThenTransferredToQueueCall(), []);
+
+    expect($outcome['answered'])->toBeTrue()
+        ->and($outcome['answered_by'])->toBe(['dn' => '101', 'name' => 'VIALLIS Veronika'])
+        ->and($outcome['filter_answered'])->toBeNull();
+});
+
+it('judges the filtered queue on its own: a call answered by an extension before reaching it is unanswered by the queue', function () {
+    $outcome = PbxDataProcessor::callOutcome(answeredThenTransferredToQueueCall(), ['destination_dn' => '800', 'destination_dn_type' => '4']);
+
+    expect($outcome['filter_answered'])->toBeFalse()
+        ->and($outcome['answered_by']['name'])->toBe('VIALLIS Veronika');
+});
+
+it('judges a filtered user by whether that extension answered', function () {
+    $filters = ['destination_dn' => '101', 'destination_dn_type' => '0'];
+
+    expect(PbxDataProcessor::callOutcome(answeredThenTransferredToQueueCall(), $filters)['filter_answered'])->toBeTrue()
+        ->and(PbxDataProcessor::callOutcome(answeredThenTransferredToQueueCall(), ['destination_dn' => '102', 'destination_dn_type' => '0'])['filter_answered'])->toBeFalse();
+});
+
+it('uses the answered/unanswered filter verdict of the API for the filtered destination', function () {
+    $filters = ['destination_dn' => '101', 'destination_dn_type' => '0', 'call_status' => 'unanswered'];
+
+    expect(PbxDataProcessor::callOutcome(answeredThenTransferredToQueueCall(), $filters)['filter_answered'])->toBeFalse();
+});
+
+it('counts an outbound call answered by the external party', function () {
+    $call = ['direction' => 'outbound', 'flow' => [
+        ['segment_type' => 'ping', 'from_type' => 'extension', 'from_dn' => '101', 'to_type' => 'world', 'to_dn' => '0600000000', 'answered' => true, 'answered_at' => '2026-11-17 10:00:05'],
+    ]];
+
+    $outcome = PbxDataProcessor::callOutcome($call, ['destination_dn' => '800', 'destination_dn_type' => '4']);
+
+    expect($outcome['answered_by']['dn'])->toBe('0600000000')
+        ->and($outcome['filter_answered'])->toBeTrue();
+});
+
+it('labels timeline steps so only a person answering reads as answered', function () {
+    $key = fn (string $k): string => 'expert-statistics::pbx.expert_statistics.'.$k;
+    $step = fn (string $fromType, string $toType, ?string $answeredAt = null): array => ['from_type' => $fromType, 'to_type' => $toType, 'answered_at' => $answeredAt];
+
+    // A call that went through the line, rang an extension, then the IVR, a queue and its voicemail.
+    expect(PbxDataProcessor::describeStep($step('world', 'world'), 'inbound'))->toBe(['label' => $key('cfa_segment_incoming'), 'tone' => 'neutral'])
+        ->and(PbxDataProcessor::describeStep($step('world', 'extension'), 'inbound'))->toBe(['label' => $key('cfa_segment_not_answered'), 'tone' => 'unanswered'])
+        ->and(PbxDataProcessor::describeStep($step('world', 'extension', '2026-11-17 17:15:12'), 'inbound'))->toBe(['label' => $key('cfa_segment_talk'), 'tone' => 'answered'])
+        ->and(PbxDataProcessor::describeStep($step('world', 'ivr', '2026-11-17 17:15:12'), 'inbound'))->toBe(['label' => $key('cfa_segment_ivr'), 'tone' => 'neutral'])
+        ->and(PbxDataProcessor::describeStep($step('ivr', 'queue', '2026-11-17 17:15:32'), 'inbound'))->toBe(['label' => $key('cfa_segment_queue'), 'tone' => 'neutral'])
+        ->and(PbxDataProcessor::describeStep($step('queue', 'voicemail', '2026-11-17 17:15:32'), 'inbound'))->toBe(['label' => $key('cfa_segment_voicemail'), 'tone' => 'voicemail'])
+        ->and(PbxDataProcessor::describeStep($step('extension', 'world', '2026-11-17 17:15:32'), 'outbound'))->toBe(['label' => $key('cfa_segment_talk'), 'tone' => 'answered'])
+        ->and(PbxDataProcessor::describeStep($step('extension', 'world'), 'outbound'))->toBe(['label' => $key('cfa_segment_not_answered'), 'tone' => 'unanswered']);
+});
+
+it('maps API step actions to translated notes and drops the ones the timeline arrow already shows', function () {
+    expect(PbxDataProcessor::actionNoteKey("redirige l'utilisateur vers"))->toBeNull()
+        ->and(PbxDataProcessor::actionNoteKey("a demarré l'appel"))->toBeNull()
+        ->and(PbxDataProcessor::actionNoteKey("a laissé l'utilisateur patienter, puis l'a redirigé vers"))->toBeNull()
+        ->and(PbxDataProcessor::actionNoteKey("a laissé le téléphone sonner et n'a pas répondu"))->toBe('expert-statistics::pbx.expert_statistics.cfa_action_rang_no_answer');
+});
