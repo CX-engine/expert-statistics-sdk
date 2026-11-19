@@ -21,7 +21,7 @@ only"). Columns:
 
 | Column | Meaning |
 |---|---|
-| **Date** | Shown when you're viewing "Day by day" instead of "Total period". |
+| **Date** / **Period** | Shown in the Day, Week and Month views (see [Period views](#period-views-and-comparison)). |
 | **Queue** / **Extension** | Which queue (and, if enabled, which extension) the row is for. |
 | **Calls** | Total calls that reached this queue. |
 | **Unanswered** | Split into *Declined* and *Abandoned* — declined calls were not answered by an agent; abandoned calls were hung up by the caller before being answered (the pre-answer-abandoned count appears in parentheses when non-zero). |
@@ -29,8 +29,8 @@ only"). Columns:
 | **Answered** | Calls actually picked up. |
 | **Transferred** | Calls transferred elsewhere after being answered. |
 | **Rate %** | Answer rate — colour-coded green (≥80%), yellow (≥60%), red (below), calculated as answered ÷ (calls − pre-answer-abandoned). |
-| **Talk dur.** | Total talk time for that row. |
-| **Wait dur.** | Total time callers spent waiting. |
+| **Avg talk** | Average talk time per answered call. |
+| **Avg wait** | Average time a caller waited in the queue before being answered, per call that waited, **pre-recorded message excluded** (calls that waited here and overflowed to another queue count here too). For an extension row: average ringing time before that agent answered. |
 
 ### Row toggles
 
@@ -46,6 +46,46 @@ only"). Columns:
   toggle above — one collapses *rows*, the other de-duplicates *calls*. You can use either
   independently, or both together.
 - Per-column text filters let you search by queue or extension name.
+
+### Period views and comparison
+
+Over a long range, a day-by-day table is hard to read. The **Total period · Day · Week · Month**
+switch above the table chooses how the range is cut:
+
+- **Total period** — one row per queue (or queue+extension) for the whole range.
+- **Day** — one row per day (ranges of more than one day).
+- **Week** — one row per ISO week, Monday to Sunday, labelled like *W10 · 03/02 – 03/08* (ranges of
+  more than 7 days covering at least two weeks).
+- **Month** — one row per calendar month (ranges of 28 days or more covering at least two months).
+
+Views that don't make sense for the selected dates are greyed out; if you shorten the range so the
+current view no longer fits, the report goes back to **Total period**. In the Week and Month views
+the rows are grouped under a header per period, and sorting a column sorts inside each period. The
+first and last periods are cut to your dates: such a *partial* period is marked with an asterisk —
+hover it to see the days it covers.
+
+**Spot anomalies** (off by default — tick it when you want the analysis) compares each period with
+the **usual level** of its queue, taken from the **other selected periods**: with 6 months
+selected, March is compared with the 5 other months. In the **Day** view, a day is compared with
+the same weekday (a Monday with the other Mondays), since traffic depends on the weekday. With at
+least three reference periods, the usual level is their median: a single bad period does not skew
+the reference of the others.
+
+Only what matters to your callers is judged: the **answer rate**, the **average wait** and
+**abandoned** calls. The number of calls is not judged; it is given as the likely cause ("35 %
+more calls than usual").
+
+- A **Points of attention** panel above the table lists the queues and periods clearly **worse
+  than usual**, one line per queue and period, the most important first (queues before
+  extensions): for example *Answer rate 72.0 % (usually 88.0 %) · Average wait 1 min 40 s
+  (usually 35 s) · 35 % more calls than usual*. It shows five at first — **Show all** expands the
+  list. When nothing is abnormal, it says so.
+- In the table, only an abnormal value gets a note under the figure, for example *▼ usually
+  88.0 %*: **red** when worse than usual, **green** when better. A bold note is a **major** gap.
+  Values within the usual range have none.
+- Volumes are scaled to the period's length (a partial month, February vs March).
+- Small volumes are not judged: a queue with 3 calls is not flagged.
+- In the queues-only view, only queues are listed.
 
 ## KPI
 
@@ -66,6 +106,10 @@ Useful for understanding *why* a queue is receiving the volume it is.
 Report, Dashboard, KPI and Origins pages each have an export action that produces an Excel (.xlsx)
 file of the current view, respecting whatever filters (date range, closed-hours exclusion, etc.)
 are currently applied.
+
+From the Report page in the Day, Week or Month view, the Excel file also contains a **report per
+day/week/month** sheet and, when comparison is on, a **comparison** sheet listing the points
+of attention first, then every period with its usual level, coloured like the screen.
 
 ## Related pages
 

@@ -7,7 +7,9 @@ sans avoir à choisir d'abord une file d'attente ou un utilisateur précis. Il c
 ## Onglet Analyse de période
 
 Choisissez une période dans le sélecteur — **Aujourd'hui, Hier, Cette semaine, Semaine dernière, Ce
-mois, Mois dernier, 3 derniers mois, 6 derniers mois** — et tout l'onglet se met à jour.
+mois, Mois dernier, 3 derniers mois, 6 derniers mois** — et tout l'onglet se met à jour. « 3 derniers mois »
+et « 6 derniers mois » couvrent des mois complets, sans le mois en cours (le 18 novembre : du 1er août au
+31 octobre).
 
 **Widget Total des appels** — affiche le nombre total d'appels et leur durée totale, répartis en
 Entrants, Sortants et Internes, avec une note précisant que la classification externe/interne

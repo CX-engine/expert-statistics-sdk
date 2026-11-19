@@ -27,13 +27,31 @@ class CallAnalysisLink
     }
 
     /**
-     * Converts a report row's "Ymd" day key to "Y-m-d", or null when it isn't one.
+     * Converts a report row's day key ("Y-m-d", or the legacy "Ymd") to "Y-m-d", or null
+     * when it isn't one.
      */
     public static function dayToDate(?string $day): ?string
     {
-        return $day !== null && strlen($day) === 8
-            ? substr($day, 0, 4).'-'.substr($day, 4, 2).'-'.substr($day, 6, 2)
-            : null;
+        return QueueReportPeriods::normalizeDate($day);
+    }
+
+    /**
+     * [start, end] ("Y-m-d") of a report row: its period (week/month views carry
+     * period_start/period_end), its day, or null when the row covers the whole range.
+     *
+     * @return array{0: string, 1: string}|null
+     */
+    public static function rowRange(array $row): ?array
+    {
+        $start = self::dayToDate($row['period_start'] ?? null);
+        $end = self::dayToDate($row['period_end'] ?? null);
+        if ($start !== null && $end !== null) {
+            return [$start, $end];
+        }
+
+        $day = self::dayToDate(isset($row['day']) ? (string) $row['day'] : null);
+
+        return $day !== null ? [$day, $day] : null;
     }
 
     public static function url(array $params): ?string

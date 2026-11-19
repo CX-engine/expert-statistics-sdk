@@ -168,7 +168,10 @@ class MyUsersOrigins extends Component
             'currentWeek' => $this->setRange($today->copy()->startOfWeek(), $today->copy()),
             'lastWeek' => $this->setRange($today->copy()->subWeek()->startOfWeek(), $today->copy()->subWeek()->endOfWeek()),
             'currentMonth' => $this->setRange($today->copy()->startOfMonth(), $today->copy()),
-            'lastMonth' => $this->setRange($today->copy()->subMonth()->startOfMonth(), $today->copy()->subMonth()->endOfMonth()),
+            'lastMonth' => $this->setRange($today->copy()->subMonthNoOverflow()->startOfMonth(), $today->copy()->subMonthNoOverflow()->endOfMonth()),
+            // Whole previous months, like lastMonth (Aug 1 – Oct 31 on Nov 18).
+            'last3Months' => $this->setRange($today->copy()->subMonthsNoOverflow(3)->startOfMonth(), $today->copy()->subMonthNoOverflow()->endOfMonth()),
+            'last6Months' => $this->setRange($today->copy()->subMonthsNoOverflow(6)->startOfMonth(), $today->copy()->subMonthNoOverflow()->endOfMonth()),
             default => null,
         };
     }

@@ -40,6 +40,8 @@
                     'lastWeek' => __('expert-statistics::pbx.expert_statistics.filter_period_last_week'),
                     'currentMonth' => __('expert-statistics::pbx.expert_statistics.filter_period_current_month'),
                     'lastMonth' => __('expert-statistics::pbx.expert_statistics.filter_period_last_month'),
+                    'last3Months' => __('expert-statistics::pbx.expert_statistics.filter_period_last_3_months'),
+                    'last6Months' => __('expert-statistics::pbx.expert_statistics.filter_period_last_6_months'),
                     ] as $key => $label)
                     <button wire:click="selectPeriod('{{ $key }}')" @click="open = false" type="button"
                         class="rounded-lg px-2.5 py-1 text-xs font-medium transition
@@ -79,6 +81,8 @@
             'lastWeek' => __('expert-statistics::pbx.expert_statistics.filter_period_last_week'),
             'currentMonth' => __('expert-statistics::pbx.expert_statistics.filter_period_current_month'),
             'lastMonth' => __('expert-statistics::pbx.expert_statistics.filter_period_last_month'),
+            'last3Months' => __('expert-statistics::pbx.expert_statistics.filter_period_last_3_months'),
+            'last6Months' => __('expert-statistics::pbx.expert_statistics.filter_period_last_6_months'),
             default => __('expert-statistics::pbx.expert_statistics.filter_custom_range'),
             } }}
         </span>

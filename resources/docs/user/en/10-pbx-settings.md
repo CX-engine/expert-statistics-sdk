@@ -78,6 +78,11 @@ Resource groups you create here become selectable when creating or editing a
 See [Wallboard & Live Data](12-wallboard-live-data.md) for the full walkthrough — this tab is
 where wallboards get built, previewed, and shared.
 
+## AI Audit files tab
+
+What the AI Audit is computed from (backup configurations, Call Flow sources, audio messages) and
+where an administrator provides them. See [AI Audit](15-config-audit.md#files-of-the-audit).
+
 ## Related pages
 
 - What each permission level lets you do on this page: [Permissions & Access](02-permissions.md).

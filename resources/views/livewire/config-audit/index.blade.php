@@ -43,10 +43,10 @@
             {{-- Period --}}
             <form wire:submit="applyPeriod" class="flex items-center gap-1.5">
                 <input type="date" wire:model="startDate" aria-label="{{ $t('period_from') }}"
-                       class="rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-xs py-1.5" />
+                       class="rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 bg-white text-gray-900 placeholder:text-gray-400 dark:text-gray-100 dark:placeholder:text-gray-500 dark:[color-scheme:dark] text-xs py-1.5" />
                 <span class="text-gray-400 text-xs">→</span>
                 <input type="date" wire:model="endDate" aria-label="{{ $t('period_to') }}"
-                       class="rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-xs py-1.5" />
+                       class="rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 bg-white text-gray-900 placeholder:text-gray-400 dark:text-gray-100 dark:placeholder:text-gray-500 dark:[color-scheme:dark] text-xs py-1.5" />
                 <button type="submit" class="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium">{{ $t('apply') }}</button>
                 @if ($startDate || $endDate)
                     <button type="button" wire:click="resetPeriod" class="text-xs text-gray-500 hover:underline">{{ $t('last_30_days') }}</button>
@@ -100,16 +100,35 @@
             @endforeach
         </nav>
 
-        <div wire:loading.flex wire:target="refresh, selectTab, applyPeriod, resetPeriod" class="items-center justify-center gap-1.5 py-16">
+        <div wire:loading.flex wire:target="refresh, selectTab, applyPeriod, resetPeriod, goBack, showQueue, showAgent, showFindings, showFindingsFor" class="items-center justify-center gap-1.5 py-16">
             <span class="w-2.5 h-2.5 bg-teal-400 rounded-full animate-bounce [animation-delay:0ms]"></span>
             <span class="w-2.5 h-2.5 bg-teal-400 rounded-full animate-bounce [animation-delay:150ms]"></span>
             <span class="w-2.5 h-2.5 bg-teal-400 rounded-full animate-bounce [animation-delay:300ms]"></span>
         </div>
 
-        <div wire:loading.remove wire:target="refresh, selectTab, applyPeriod, resetPeriod">
+        <div wire:loading.remove wire:target="refresh, selectTab, applyPeriod, resetPeriod, goBack, showQueue, showAgent, showFindings, showFindingsFor">
+            @if (count($backStack))
+                <button type="button" wire:click="goBack" wire:key="back-{{ count($backStack) }}"
+                        class="mb-3 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-sm font-medium text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/30 hover:bg-teal-100 dark:hover:bg-teal-900/40">
+                    <x-heroicon-o-arrow-left class="w-4 h-4" />
+                    {{ $t('back_to', ['name' => end($backStack)['label']]) }}
+                </button>
+            @endif
             @include('expert-statistics::livewire.config-audit.'.$tab)
         </div>
     @endif
+
+    {{-- Opening the routing of a DID (from the list or a recommendation): visible
+         while the API answers, and no second click meanwhile. --}}
+    <div wire:loading.flex wire:target="showRoute" class="fixed inset-0 z-40 items-center justify-center" style="background: rgba(15, 23, 42, .25)" role="status" aria-live="polite">
+        <div class="flex items-center gap-3 rounded-lg bg-white dark:bg-gray-800 px-5 py-3 shadow-lg ring-1 ring-gray-950/10 dark:ring-white/10 text-sm text-gray-700 dark:text-gray-200">
+            <svg class="w-5 h-5 text-primary-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            {{ $t('loading_route') }}
+        </div>
+    </div>
 </div>
 
 </x-expert-statistics::cluster-layout>

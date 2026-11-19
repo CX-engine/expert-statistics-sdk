@@ -15,78 +15,29 @@
             @endif
         </div>
 
-        <div wire:loading.flex wire:target="showRoute" class="justify-center py-10 text-sm text-gray-400">{{ $t('loading') }}</div>
-
-        <div wire:loading.remove wire:target="showRoute" class="space-y-2">
+        <div class="space-y-2">
             <h3 class="text-base font-semibold text-gray-800 dark:text-gray-200">
                 {{ ($route['is_default'] ?? false) ? $t('default_route', ['trunk' => $route['trunk'] ?? '']) : $t('did_title', ['did' => $route['did'] ?? $selectedDid]) }}
                 @if (! empty($route['rule_name'])) <span class="text-sm font-normal text-gray-500">– {{ $route['rule_name'] }}</span> @endif
             </h3>
 
-            @foreach ($nodes as $node)
-                <div wire:key="node-{{ $node['id'] }}" class="bg-white dark:bg-gray-800 rounded-lg ring-1 ring-gray-950/5 dark:ring-white/10 px-4 py-3">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span class="text-[11px] uppercase tracking-wide text-gray-400">{{ $t('node_types.'.($node['type'] ?? 'unknown')) !== 'expert-statistics::pbx.config_audit.node_types.'.($node['type'] ?? 'unknown') ? $t('node_types.'.$node['type']) : ($node['type'] ?? '') }}</span>
-                        <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ $node['label'] ?? $node['id'] }}</span>
-                    </div>
-                    @php $details = collect($node['details'] ?? [])->reject(fn ($v) => is_array($v) && empty($v)); @endphp
-                    @if ($details->isNotEmpty())
-                        <div class="mt-1.5 flex flex-wrap gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                            @foreach ($details as $name => $value)
-                                @if ($name === 'members' && is_array($value))
-                                    <span class="rounded bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5">{{ $t('agents_count', ['count' => count($value)]) }}:
-                                        {{ collect($value)->map(fn ($m) => is_array($m) ? trim(($m['dn'] ?? '').' '.($m['name'] ?? '')).(isset($m['status']) ? ' ('.$m['status'].')' : '') : $m)->take(12)->implode(', ') }}{{ count($value) > 12 ? ', …' : '' }}
-                                    </span>
-                                @elseif ($name === 'menus' && is_array($value))
-                                    @foreach ($value as $menu)
-                                        <span class="rounded bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5">{{ $menu['name'] ?? '' }}: {{ $t('keys') }} {{ implode(', ', $menu['options'] ?? []) }}</span>
-                                    @endforeach
-                                @else
-                                    <span class="rounded bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5">{{ str_replace('_', ' ', $name) }}: {{ is_bool($value) ? ($value ? '✓' : '✗') : (is_array($value) ? implode(', ', array_map(fn ($v) => is_scalar($v) ? $v : json_encode($v), $value)) : $value) }}</span>
-                                @endif
-                            @endforeach
-                        </div>
-                    @endif
-                    @if (! empty($node['next']))
-                        <ul class="mt-2 space-y-1 text-sm">
-                            @foreach ($node['next'] as $edge)
-                                <li class="flex flex-wrap items-baseline gap-1.5 text-gray-600 dark:text-gray-300">
-                                    <span class="text-xs text-gray-400">{{ $edge['condition'] ?? '' }}</span>
-                                    <x-heroicon-o-arrow-long-right class="w-4 h-4 text-gray-400 self-center" />
-                                    <span class="font-medium">{{ $labels[$edge['to'] ?? ''] ?? ($edge['to'] ?? '') }}</span>
-                                    @if (! empty($edge['via_own_did']))
-                                        <span class="text-[11px] rounded bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 px-1.5">{{ $t('via_own_did') }}</span>
-                                    @endif
-                                    @if (! empty($edge['department_change']))
-                                        <span class="text-[11px] rounded bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-400 px-1.5">{{ $t('department_change', ['from' => $edge['department_change']['from'] ?? '', 'to' => $edge['department_change']['to'] ?? '']) }}</span>
-                                    @endif
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
-                    @if (! empty($routeDetail['observed'][$node['id']]['destinations']))
-                        @php $observed = $routeDetail['observed'][$node['id']]; @endphp
-                        <div class="mt-3 rounded-md bg-teal-50/60 dark:bg-teal-950/20 ring-1 ring-teal-600/10 px-3 py-2" title="{{ $t('observed_help') }}">
-                            <p class="text-xs font-medium text-teal-800 dark:text-teal-300">
-                                {{ $t('observed_title') }}
-                                <span class="font-normal text-teal-700/80 dark:text-teal-400/80">· {{ $t('observed_summary', ['calls' => number_format((int) $observed['calls'], 0, ',', ' '), 'share' => isset($observed['observed_share']) ? round($observed['observed_share'] * 100).' %' : '—']) }}</span>
-                            </p>
-                            <ul class="mt-1 space-y-0.5 text-sm">
-                                @foreach ($observed['destinations'] as $destination)
-                                    <li class="flex flex-wrap items-baseline gap-1.5 text-gray-600 dark:text-gray-300">
-                                        <x-heroicon-o-arrow-long-right class="w-4 h-4 text-gray-400 self-center" />
-                                        <span class="font-medium">{{ $destination['label'] }}</span>
-                                        <span class="text-xs text-gray-500">{{ $t('calls_count', ['count' => number_format((int) $destination['calls'], 0, ',', ' ')]) }}</span>
-                                        @unless ($destination['in_script'])
-                                            <span class="text-[11px] rounded bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-1.5">{{ $t('observed_not_in_script') }}</span>
-                                        @endunless
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+            @if (! empty($routeDetail['load_error']))
+                <div class="rounded-lg ring-1 ring-amber-300 dark:ring-amber-800 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 text-sm text-amber-800 dark:text-amber-300 flex items-center justify-between gap-3">
+                    <span>{{ $t('route_load_error') }}</span>
+                    <button type="button" wire:click="showRoute(@js($selectedDid))" class="shrink-0 font-medium text-teal-700 dark:text-teal-400 hover:underline">{{ $t('retry') }}</button>
                 </div>
-            @endforeach
+            @endif
+
+            @if (! empty($routeDetail['sheet']))
+                @if (! empty($routeDetail['sheet']['pending']) && $routePolls < 15)
+                    {{-- The AI is summarising the sheet: shown as built meanwhile, asked again every few seconds. --}}
+                    <p wire:poll.4s="refreshRoute" class="text-xs text-gray-500 dark:text-gray-400">{{ $t('sheet_pending') }}</p>
+                @endif
+                {{-- Keyed by content: a new sheet gets a fresh Alpine component (tooltips, links). --}}
+                <div wire:key="sheet-{{ md5(json_encode($routeDetail['sheet'])) }}">
+                    @include('expert-statistics::livewire.config-audit.sheet', ['sheet' => $routeDetail['sheet']])
+                </div>
+            @endif
 
             @if (! empty($routeDetail['findings']))
                 <h4 class="pt-3 text-sm font-semibold text-gray-700 dark:text-gray-300">{{ $t('findings_on_route') }}</h4>
@@ -94,11 +45,40 @@
                     @include('expert-statistics::livewire.config-audit.finding-card', ['finding' => $finding, 'key' => 'route-finding-'.$loop->index])
                 @endforeach
             @endif
+
+            {{-- Where the calls actually went after the objects that choose their destination during the call (statistics). --}}
+            @foreach ($nodes as $node)
+                @if (! empty($routeDetail['observed'][$node['id']]['destinations']))
+                    @php $observed = $routeDetail['observed'][$node['id']]; @endphp
+                    <div wire:key="observed-{{ $node['id'] }}" class="mt-3 rounded-md bg-teal-50/60 dark:bg-teal-950/20 ring-1 ring-teal-600/10 px-3 py-2" title="{{ $t('observed_help') }}">
+                        <p class="text-xs font-medium text-teal-800 dark:text-teal-300">
+                            {{ $node['label'] ?? $node['id'] }} · {{ $t('observed_title') }}
+                            <span class="font-normal text-teal-700/80 dark:text-teal-400/80">· {{ $t('observed_summary', ['calls' => number_format((int) $observed['calls'], 0, ',', ' '), 'share' => isset($observed['observed_share']) ? round($observed['observed_share'] * 100).' %' : '—']) }}</span>
+                        </p>
+                        <ul class="mt-1 space-y-0.5 text-sm">
+                            @foreach ($observed['destinations'] as $destination)
+                                <li class="flex flex-wrap items-baseline gap-1.5 text-gray-600 dark:text-gray-300">
+                                    <x-heroicon-o-arrow-long-right class="w-4 h-4 text-gray-400 self-center" />
+                                    <span class="font-medium">{{ $destination['label'] }}</span>
+                                    <span class="text-xs text-gray-500">{{ $t('calls_count', ['count' => number_format((int) $destination['calls'], 0, ',', ' ')]) }}</span>
+                                    @unless ($destination['in_script'])
+                                        <span class="text-[11px] rounded bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-1.5">{{ $t('observed_not_in_script') }}</span>
+                                    @endunless
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            @endforeach
+
+            @if (empty($routeDetail['sheet']) && empty($routeDetail['load_error']))
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('sheet_unavailable') }}</p>
+            @endif
         </div>
     @else
         {{-- ── DID list ───────────────────────────────────────────────────────── --}}
         <input type="search" wire:model.live.debounce.400ms="routeSearch" placeholder="{{ $t('search_dids') }}"
-               class="w-full sm:w-80 rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 text-sm py-1.5" />
+               class="w-full sm:w-80 rounded-lg border-gray-200 dark:border-gray-700 dark:bg-gray-800 bg-white text-gray-900 placeholder:text-gray-400 dark:text-gray-100 dark:placeholder:text-gray-500 dark:[color-scheme:dark] text-sm py-1.5" />
 
         <div class="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10">
             <table class="min-w-full text-sm">

@@ -92,6 +92,11 @@ modification d'un [Rapport programmé](11-scheduled-reports-and-sharing.md).
 Voir [Wallboard & données en direct](12-wallboard-live-data.md) pour le guide complet — cet onglet
 est l'endroit où les wallboards se construisent, se prévisualisent, et se partagent.
 
+## Onglet Fichiers de l'Audit IA
+
+Ce à partir de quoi l'Audit IA est calculé (configurations sauvegardées, sources des Call Flows,
+messages audio) et où un administrateur les fournit. Voir [Audit IA](15-config-audit.md#fichiers-de-laudit).
+
 ## Pages associées
 
 - Ce que chaque niveau de permission vous permet de faire sur cette page :

@@ -2,7 +2,7 @@
 
 Montre l'impact de votre configuration 3CX sur vos appels, et précisément ce qu'il faut modifier
 dans 3CX pour améliorer vos statistiques. L'audit est calculé chaque jour à partir de la
-sauvegarde 3CX de votre PBX et croisé avec les appels des 30 derniers jours (ou de la période
+configuration 3CX de votre PBX et croisé avec les appels des 30 derniers jours (ou de la période
 choisie).
 
 > L'Audit IA fait partie des fonctionnalités IA : elles doivent être activées pour
@@ -22,7 +22,7 @@ l'audit n'a rien à recommander. Chaque recommandation le diminue selon :
 Le score est aussi donné **par domaine** : routage, files & agents, horaires, Call Flow Apps.
 
 La **couverture de l'analyse** est la part de vos appels dont le routage a pu être entièrement
-analysé. Les touches des SVI ne figurent pas dans les sauvegardes 3CX, et une partie de la logique
+analysé. Les touches des SVI ne figurent pas dans la configuration 3CX, et une partie de la logique
 d'une Call Flow App peut être calculée pendant l'appel : ces parties sont listées sous
 **Non analysé** et ne diminuent pas le score.
 
@@ -37,30 +37,79 @@ Triées par les points que chacune coûte sur le score. Chaque recommandation in
 - ce qui a été constaté, et **ce qu'il faut modifier**, avec l'écran et le réglage de l'admin 3CX ;
 - les statistiques mesurées et la preuve (l'élément de configuration ou le chiffre qui le montre).
 
-Filtrez par catégorie, par domaine, ou recherchez une file, un agent ou une SDA.
+Filtrez par catégorie, par domaine, ou recherchez une file, un agent ou une SDA. La file, l'agent
+ou la SDA d'une recommandation est un lien : ouvrez-le, puis utilisez **Retour à …** au-dessus de
+l'onglet pour revenir où vous étiez.
+
+### C'est voulu
+
+Certains comportements sont voulus pour votre standard : un message de fermeture après l'attente,
+un menu qui raccroche quand personne ne choisit, des agents partagés entre des files de campagne.
+Cliquez sur **C'est voulu** dans la recommandation (avec une note si vous le souhaitez) : elle ne
+compte plus dans le score et n'est plus signalée, pour cet audit et les suivants. **Marqués comme
+attendus** les liste, et **Signaler à nouveau** en fait revenir une. Les modifier demande le droit
+de modifier les réglages d'Expert Statistics.
 
 ## Routage
 
 Chaque SDA avec sa première destination, ses appels et son nombre de recommandations. Ouvrez une
-SDA pour voir son routage complet : branches heures d'ouverture, hors horaires et jours fériés,
-menus et leurs touches, files et leurs agents, débordements, renvois, messagerie et fin d'appel.
-Les transferts vers une de vos propres SDA et les changements de département sont signalés.
+SDA pour voir sa fiche de cheminement des appels, à lire de gauche à droite puis de haut en bas :
+
+- en haut, seules flèches : la règle entrante, le premier objet (menu, file ou Call Flow App avec ses
+  cas particuliers et les services web appelés) et la décision qu'il prend (horaires, ou états sur
+  lesquels la Call Flow App route, avec les horaires écrits dans son script) ;
+- une colonne par état ou touche de menu, avec les étapes écrites en texte et les sous-décisions
+  en retrait ;
+- les destinations 3CX atteintes (files avec stratégie, agents, attente maximale et débordement ;
+  menus ; messagerie ; numéros externes) regroupées sur leur propre ligne, sans trait vers les
+  colonnes pour qu'aucune liaison ne se croise, et en rouge le repli utilisé quand les services web
+  de la Call Flow App échouent ;
+- les points de vigilance de cette SDA. **⚠** signale un objet concerné par des recommandations :
+  survolez-le, ou un point de vigilance, pour les lire, cliquez pour accéder à la recommandation plus bas.
+
+Quand une Call Flow App choisit ses destinations pendant l'appel, les appels réellement observés
+(destinations, nombre d'appels) sont affichés sous les recommandations.
 
 ## Files d'attente et agents
 
-- **Files d'attente** : stratégie, agents (connectés au moment de la sauvegarde), durée de
+- **Files d'attente** : stratégie, agents (connectés lors du relevé de la configuration), durée de
   sonnerie, attente maximale, post-appel, destination si pas de réponse, horaires, avec les appels,
   les taux de réponse et d'abandon et l'attente moyenne de la période.
-- **Agents** : chaque agent de file avec ses files, les appels de file présentés et répondus, et
-  les recommandations qui le concernent (agents répondant à peu d'appels, dans trop de files,
-  jamais connectés, désactivés…).
+- **Agents** : chaque agent de file avec ses files, les appels de file présentés et répondus, les
+  heures de connexion à chaque file sur la période, et les recommandations qui le concernent
+  (agents répondant à peu d'appels, jamais connectés, désactivés, partagés avec une file qui perd
+  des appels…). Le statut (profil, connecté ou non) est celui **lors du relevé de la configuration**, pas
+  sur la période.
 
 ## Historique, rapport et relance
 
 - **Historique** liste les audits précédents et leur score.
 - **Rapport** télécharge l'audit complet (routage de chaque SDA et toutes les recommandations) au
   format Markdown.
-- **Relancer l'audit** analyse à nouveau la dernière sauvegarde et recalcule le score.
+- **Relancer l'audit** analyse à nouveau la dernière configuration 3CX et recalcule le score.
+
+## Fichiers de l'audit
+
+**Configuration → Paramètres PBX → Fichiers de l'Audit IA** ([Paramètres PBX](10-pbx-settings.md)) montre à partir de quoi
+l'audit est calculé (configurations sauvegardées, messages audio et leur transcription), et permet à un administrateur
+de **déposer la sauvegarde 3CX telle quelle** :
+
+- le fichier **.zip** de la sauvegarde, quelle que soit sa taille (une sauvegarde planifiée de plusieurs dizaines de Go
+  convient), son **dossier décompressé** (à glisser sur la zone ou à choisir), ou le fichier de configuration **.xml** seul ;
+- la sauvegarde est **lue sur votre ordinateur** : seuls le fichier de configuration (…Db.xml) et les messages audio
+  (dossier httpprompts) sont ouverts. L'historique des appels, les enregistrements, messageries vocales et chats ne sont
+  jamais lus — les statistiques d'appels viennent déjà de votre standard ;
+- les **mots de passe** de la configuration (mots de passe SIP, codes PIN de messagerie, clé de licence, mot de passe du
+  serveur de messagerie, secrets de provisioning) sont **effacés avant l'envoi** : l'audit ne les lit pas ;
+- la configuration et les messages sont envoyés, vérifiés, puis l'audit est relancé ; les messages sont transcrits
+  (Mistral AI) pour que l'audit sache ce qu'entendent les appelants (message de fermeture, menu, invitation à rappeler).
+
+**Obtenir une sauvegarde légère** : console 3CX › Admin › Backup › « Backup Now », un nom, **aucun élément facultatif
+coché** (historique des appels, enregistrements, messageries, chats sont inutiles ici), **pas de mot de passe de
+chiffrement**, puis « Download » une fois la sauvegarde créée. L'onglet détaille ces étapes et ce qui est conservé.
+
+Chaque fichier est vérifié avant d'être transmis, puis à nouveau avant d'être conservé ; un fichier refusé indique
+pourquoi (archive endommagée, sauvegarde protégée par mot de passe, pas de configuration 3CX…).
 
 ## Pages liées
 

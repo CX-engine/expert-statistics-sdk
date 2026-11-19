@@ -122,6 +122,7 @@ class ExpertStatisticsServiceProvider extends ServiceProvider
             Livewire::component('expert-statistics.caller-numbers.report', CallerNumbersReport::class);
 
             Livewire::component('expert-statistics.configuration.manage-pbx-settings', ManagePbxSettings::class);
+            Livewire::component('expert-statistics.configuration.config-audit-files', \CXEngine\ExpertStatistics\Livewire\Configuration\ConfigAuditFiles::class);
 
             Livewire::component('expert-statistics.reports.share-report-modal', ShareReportModal::class);
             Livewire::component('expert-statistics.reports.manage-scheduled-reports', ManageScheduledReports::class);

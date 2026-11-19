@@ -3,6 +3,7 @@
 namespace CXEngine\ExpertStatistics\Http\Controllers;
 
 use CXEngine\ExpertStatistics\Services\ExpertStatisticsService;
+use CXEngine\ExpertStatistics\Support\QueueReportPeriods;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -25,6 +26,7 @@ class QueuesReportExportController extends Controller
 {
     public function __invoke(Request $request, ExpertStatisticsService $service): StreamedResponse
     {
+        // Only null/'' are dropped: compare=0 must reach the API (its default is true).
         $params = array_filter($request->only([
             'start_date',
             'end_date',
@@ -32,7 +34,14 @@ class QueuesReportExportController extends Controller
             'end_time',
             'dn',
             'exclude_closed_hours',
-        ]));
+            'period',
+            'compare',
+        ]), fn ($v) => $v !== null && $v !== '');
+
+        // `period` adds the per-day/week/month and comparison sheets; total is the default file.
+        if (! \in_array($params['period'] ?? null, QueueReportPeriods::BUCKETED, true)) {
+            unset($params['period'], $params['compare']);
+        }
 
         $response = $service->streamQueueReportFile($params);
 

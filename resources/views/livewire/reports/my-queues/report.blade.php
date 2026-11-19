@@ -1,4 +1,13 @@
 @use('CXEngine\ExpertStatistics\Support\CallAnalysisLink')
+@use('CXEngine\ExpertStatistics\Support\QueueReportPeriods')
+{{-- Tailwind source: classes emitted by Support\QueueReportPeriods (src/ is not scanned by the host build):
+    rounded px-1 font-semibold ring-1 text-gray-400 dark:text-gray-500 text-white
+    bg-green-50 bg-green-100 text-green-700 text-green-800 ring-green-500 dark:bg-green-950/30 dark:bg-green-950/60 dark:text-green-300 dark:text-green-400 dark:ring-green-600
+    bg-red-50 bg-red-100 bg-red-600 text-red-700 text-red-800 ring-red-500 dark:bg-red-500 dark:bg-red-950/30 dark:bg-red-950/60 dark:text-red-300 dark:text-red-400 dark:ring-red-600
+    bg-amber-50 bg-amber-100 text-amber-700 text-amber-800 ring-amber-500 dark:bg-amber-900/50 dark:bg-amber-950/30 dark:bg-amber-950/60 dark:text-amber-300 dark:text-amber-400 dark:ring-amber-600 --}}
+@php
+    $tp = fn (string $key, array $r = []) => __('expert-statistics::pbx.queue_report_periods.'.$key, $r);
+@endphp
 <x-expert-statistics::cluster-layout :title="__('expert-statistics::pbx.expert_statistics.my_queues_title')">
 
 <div class="space-y-5">
@@ -61,26 +70,40 @@
 
             </div>
 
-            {{-- Group by day / total --}}
-            <div class="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1">
-                <button wire:click="toggleGroupData" type="button" class="px-4 py-2 text-sm font-medium rounded-lg transition-all
-                        {{ $groupData
-                            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                            : 'text-gray-500 dark:text-gray-400' }}">
-                    {{ __('expert-statistics::pbx.expert_statistics.toggle_period_total') }}
-                </button>
-                <button wire:click="toggleGroupData" type="button" class="px-4 py-2 text-sm font-medium rounded-lg transition-all
-                        {{ ! $groupData
-                            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                            : 'text-gray-500 dark:text-gray-400' }}">
-                    {{ __('expert-statistics::pbx.expert_statistics.toggle_day_by_day') }}
-                </button>
+            <div class="flex flex-wrap items-center gap-3">
+                {{-- Anomaly detection: each period against the usual level of its queue (day / week / month) --}}
+                @if ($this->isBucketed())
+                    <label class="inline-flex items-center gap-2 cursor-pointer" title="{{ $tp('compare_hint') }}">
+                        <input type="checkbox" wire:model.live="compare"
+                            class="rounded border-gray-300 dark:border-gray-600 text-primary-600" />
+                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ $tp('compare_toggle') }}</span>
+                    </label>
+                @endif
+
+                {{-- Total / day / week / month --}}
+                <div class="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1" role="group" aria-label="{{ $tp('view_label') }}">
+                    @foreach (QueueReportPeriods::ALL as $view)
+                        @php $enabled = in_array($view, $availableBreakdowns, true); @endphp
+                        <button wire:click="selectBreakdown('{{ $view }}')" type="button"
+                            @disabled(! $enabled)
+                            @if (! $enabled) title="{{ $tp('view_unavailable') }}" @endif
+                            aria-pressed="{{ $breakdown === $view ? 'true' : 'false' }}"
+                            class="px-3 py-2 text-sm font-medium rounded-lg transition-all
+                                {{ $breakdown === $view
+                                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                                    : ($enabled
+                                        ? 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                        : 'text-gray-300 dark:text-gray-600 cursor-not-allowed') }}">
+                            {{ $tp('view_'.$view) }}
+                        </button>
+                    @endforeach
+                </div>
             </div>
         </div>
     @endif
 
     @php
-        $loadingTargets = 'applyFilters,selectPeriod,toggleGroupData,setCustomRange,updateTimeRange,applyPbxElementSelection,selectAllPbxElements,clearPbxElements,removePbxElement';
+        $loadingTargets = 'applyFilters,selectPeriod,toggleGroupData,selectBreakdown,compare,setCustomRange,updateTimeRange,applyPbxElementSelection,selectAllPbxElements,clearPbxElements,removePbxElement';
     @endphp
 
     {{-- Loading --}}
@@ -110,6 +133,23 @@
     @else
         @php
             $rows = $this->getDisplayData();
+            $bucketed = $this->isBucketed();
+            $periodLabels = $this->getPeriodLabels();
+            $groups = $this->groupsRowsByPeriod()
+                ? QueueReportPeriods::groupByPeriod($breakdown, $rows)
+                : [['key' => null, 'rows' => $rows]];
+            $colCount = 9 + ($queuesOnlyStats ? 0 : 1) + ($bucketed ? 1 : 0);
+            $visibleAnomalies = $this->getVisibleAnomalies();
+
+            /** Marker under a value that is notably worse / better than usual (anomaly detection on). */
+            $badge = function (array $row, string $metric): string {
+                $m = $this->usualMarker($row, $metric);
+                if ($m === null) {
+                    return '';
+                }
+
+                return '<div class="mt-0.5 text-xs leading-none whitespace-nowrap"><span class="cursor-help '.e($m['class']).'" title="'.e($m['title']).'">'.e($m['text']).'</span></div>';
+            };
 
             /**
              * Render a sort indicator for a given column field.
@@ -127,6 +167,61 @@
                 return '<svg xmlns="http://www.w3.org/2000/svg" class="inline-block ml-1 h-3 w-3 '.$color.'" viewBox="0 0 16 16" fill="currentColor"><path d="'.$path.'"/></svg>';
             };
         @endphp
+        {{-- Points of attention: queues and periods notably worse than usual --}}
+        @if ($this->showsAttentionPanel())
+            <div wire:loading.remove wire:target="{{ $loadingTargets }}" x-data="{ all: false }"
+                class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
+                <div class="flex flex-wrap items-baseline justify-between gap-2">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100">{{ $tp('attention_title') }}</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ $tp($breakdown === 'day' ? 'legend_weekday' : 'legend_range') }}
+                            <span class="whitespace-nowrap"><span class="text-red-600 dark:text-red-400 font-medium">{{ $tp('legend_worse') }}</span> · <span class="text-green-600 dark:text-green-400 font-medium">{{ $tp('legend_better') }}</span></span>
+                        </p>
+                    </div>
+                    @if (count($visibleAnomalies) > QueueReportPeriods::ATTENTION_LIMIT)
+                        <button type="button" x-on:click="all = ! all"
+                            class="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline">
+                            <span x-show="! all">{{ $tp('anomalies_show_all', ['count' => count($visibleAnomalies)]) }}</span>
+                            <span x-show="all" x-cloak>{{ $tp('anomalies_show_less') }}</span>
+                        </button>
+                    @endif
+                </div>
+
+                @if (empty($visibleAnomalies))
+                    <p class="mt-3 flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+                        <x-heroicon-m-check-circle class="w-4 h-4 shrink-0" />
+                        {{ $tp('attention_none') }}
+                    </p>
+                @else
+                    <ul class="mt-3 divide-y divide-gray-100 dark:divide-gray-700/50">
+                        @foreach ($visibleAnomalies as $i => $anomaly)
+                            @php
+                                $summary = QueueReportPeriods::anomalySummary($anomaly);
+                                $isExt = ($anomaly['keyType'] ?? null) == 0;
+                            @endphp
+                            <li @if ($i >= QueueReportPeriods::ATTENTION_LIMIT) x-show="all" x-cloak @endif
+                                class="flex gap-3 py-2 text-sm">
+                                <x-heroicon-m-exclamation-triangle class="w-4 h-4 mt-0.5 shrink-0 {{ ($anomaly['severity'] ?? null) === 'major' ? 'text-red-600 dark:text-red-400' : 'text-amber-500 dark:text-amber-400' }}" />
+                                <div class="min-w-0">
+                                    <div>
+                                        <span class="font-semibold text-gray-800 dark:text-gray-100">{{ trim(($anomaly['queue'] ?? '').' '.($anomaly['queueName'] ?? '')) }}</span>@if ($isExt)<span class="text-gray-500 dark:text-gray-400"> · {{ trim(($anomaly['element'] ?? '').' '.($anomaly['elementName'] ?? '')) }}</span>@endif
+                                        <span class="text-gray-500 dark:text-gray-400"> — {{ $periodLabels[$anomaly['period'] ?? ''] ?? ($anomaly['period'] ?? '') }}</span>
+                                        <span class="ml-1 inline-flex px-1.5 py-0.5 rounded text-[11px] font-semibold align-middle {{ QueueReportPeriods::severityClass($anomaly['severity'] ?? null) }}">
+                                            {{ $tp('severity_label_'.(($anomaly['severity'] ?? null) === 'major' ? 'major' : 'notable')) }}
+                                        </span>
+                                    </div>
+                                    <div class="text-gray-700 dark:text-gray-300">
+                                        {{ implode(' · ', $summary['issues']) }}@if ($summary['context'])<span class="text-gray-500 dark:text-gray-400"> · {{ $summary['context'] }}</span>@endif
+                                    </div>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        @endif
+
         <div wire:loading.remove wire:target="{{ $loadingTargets }}"
             class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 overflow-hidden">
             <div class="overflow-x-auto">
@@ -135,10 +230,10 @@
 
                         {{-- Column headers with sort --}}
                         <tr>
-                            @if (! $groupData)
-                                <th wire:click="sortBy('day')"
-                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none whitespace-nowrap">
-                                    {{ __('expert-statistics::pbx.expert_statistics.col_date') }}{!! $sortIcon('day') !!}
+                            @if ($bucketed)
+                                <th @if (! $this->groupsRowsByPeriod()) wire:click="sortBy('day')" @endif
+                                    class="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider select-none whitespace-nowrap {{ $this->groupsRowsByPeriod() ? '' : 'cursor-pointer hover:text-gray-700 dark:hover:text-gray-200' }}">
+                                    {{ $breakdown === 'day' ? __('expert-statistics::pbx.expert_statistics.col_date') : $tp('col_period') }}@if (! $this->groupsRowsByPeriod()){!! $sortIcon('day') !!}@endif
                                 </th>
                             @endif
 
@@ -163,8 +258,8 @@
                                     {{ __('expert-statistics::pbx.expert_statistics.col_declined') }}{!! $sortIcon('declined') !!}
                                 </div>
                                 <div class="grid grid-cols-2 gap-1 text-xs font-normal normal-case mt-1 text-gray-500 dark:text-gray-400">
-                                    <span>Déclinés</span>
-                                    <span>Abandonnés</span>
+                                    <span>{{ $tp('sub_declined') }}</span>
+                                    <span>{{ $tp('sub_abandoned') }}</span>
                                 </div>
                             </th>
 
@@ -195,27 +290,27 @@
                                 {{ __('expert-statistics::pbx.expert_statistics.col_answer_rate') }}{!! $sortIcon('answered_percentage') !!}
                             </th>
 
-                            <th wire:click="sortBy('talking_duration')"
+                            <th wire:click="sortBy('avg_talking')" title="{{ $tp('col_avg_talk_hint') }}"
                                 class="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none whitespace-nowrap">
-                                {{ __('expert-statistics::pbx.expert_statistics.col_talk_duration') }}{!! $sortIcon('talking_duration') !!}
+                                {{ $tp('col_avg_talk') }}{!! $sortIcon('avg_talking') !!}
                             </th>
 
-                            <th wire:click="sortBy('waiting_duration')"
+                            <th wire:click="sortBy('avg_waiting')" title="{{ $tp('col_avg_wait_hint') }}"
                                 class="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none whitespace-nowrap">
-                                {{ __('expert-statistics::pbx.expert_statistics.col_wait_duration') }}{!! $sortIcon('waiting_duration') !!}
+                                {{ $tp('col_avg_wait') }}{!! $sortIcon('avg_waiting') !!}
                             </th>
                         </tr>
 
                         {{-- Filter row --}}
                         <tr class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
-                            @if (! $groupData)<td class="px-2 py-1"></td>@endif
+                            @if ($bucketed)<td class="px-2 py-1"></td>@endif
 
                             {{-- Queue filter --}}
                             <td class="px-2 py-1">
                                 <input
                                     wire:model.live.debounce.300ms="filterQueue"
                                     type="text"
-                                    placeholder="Filtrer file…"
+                                    placeholder="{{ $tp('filter_queue') }}"
                                     class="w-full text-xs rounded border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 placeholder-gray-400 px-2 py-1 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 focus:outline-none" />
                             </td>
 
@@ -225,7 +320,7 @@
                                     <input
                                         wire:model.live.debounce.300ms="filterExtension"
                                         type="text"
-                                        placeholder="Filtrer extension…"
+                                        placeholder="{{ $tp('filter_extension') }}"
                                         class="w-full text-xs rounded border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 placeholder-gray-400 px-2 py-1 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 focus:outline-none" />
                                 </td>
                             @endif
@@ -237,7 +332,29 @@
 
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700/50">
-                        @forelse ($rows as $row)
+                        @if (empty($rows))
+                            <tr>
+                                <td colspan="{{ $colCount }}" class="px-4 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+                                    {{ __('expert-statistics::pbx.expert_statistics.no_data') }}
+                                </td>
+                            </tr>
+                        @endif
+                        @foreach ($groups as $group)
+                            @if ($group['key'] !== null)
+                                {{-- Period sub-header (week / month views) --}}
+                                <tr class="bg-gray-100 dark:bg-gray-900/60" wire:key="period-{{ $group['key'] }}">
+                                    <td colspan="{{ $colCount }}" class="px-4 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 whitespace-nowrap">
+                                        <span>{{ $group['label'] }}</span>
+                                        @if ($group['partial'])
+                                            <span class="ml-1 font-normal text-amber-600 dark:text-amber-400 cursor-help" title="{{ QueueReportPeriods::partialTooltip($group['start'], $group['end']) }}">* {{ $tp('partial_badge') }}</span>
+                                        @endif
+                                        <span class="ml-2 font-normal text-gray-500 dark:text-gray-400">
+                                            {{ QueueReportPeriods::formatDay((string) $group['start']) }} – {{ QueueReportPeriods::formatDay((string) $group['end']) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endif
+                        @foreach ($group['rows'] as $row)
                             @php
                                 $isQueue = ($row['keyType'] ?? null) == 4;
                                 $calls = (int) ($row['calls'] ?? 0);
@@ -252,8 +369,9 @@
                                 // extension as destination, reached through its parent queue as origin.
                                 $queueDn = explode('-', $row['queueNameNumber'] ?? '')[0];
                                 $elemDn  = explode('-', $row['elementNameNumber'] ?? '')[0];
-                                $dayDate = $groupData ? null : CallAnalysisLink::dayToDate($row['day'] ?? null);
-                                $cfaQE = array_merge(CallAnalysisLink::period($dayDate ?? $startDate, $dayDate ?? $endDate, $startTime, $endTime), [
+                                // Day / week / month rows link to the calls of their own period.
+                                $rowRange = $bucketed ? CallAnalysisLink::rowRange($row) : null;
+                                $cfaQE = array_merge(CallAnalysisLink::period($rowRange[0] ?? $startDate, $rowRange[1] ?? $endDate, $startTime, $endTime), [
                                     'callWay' => 'inbound',
                                     'destinationDn' => $isQueue ? $queueDn : $elemDn, 'destinationDnType' => $isQueue ? '4' : '0',
                                     'originDn' => $isQueue ? '' : $queueDn, 'originDnType' => $isQueue ? '' : '4',
@@ -265,9 +383,9 @@
                             @endphp
                             <tr
                                 class="{{ $isQueue && ! $queuesOnlyStats ? 'bg-gray-50/50 dark:bg-gray-900/20 font-medium' : '' }} hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                                @if (! $groupData)
+                                @if ($bucketed)
                                     <td class="px-4 py-3 text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                        {{ $this->formatDate($row['day'] ?? '') }}
+                                        <span>{{ QueueReportPeriods::rowLabel($breakdown, $row) }}</span>@if (! empty($row['partial']))<span class="text-amber-600 dark:text-amber-400 cursor-help" title="{{ QueueReportPeriods::partialTooltip($row['period_start'] ?? null, $row['period_end'] ?? null) }}">*</span>@endif
                                     </td>
                                 @endif
                                 <td class="px-4 py-3 text-gray-800 dark:text-gray-200 whitespace-nowrap">
@@ -284,7 +402,7 @@
                                 <td class="px-4 py-3 text-red-600 dark:text-red-400">
                                     <div class="grid grid-cols-2 gap-2 text-right">
                                         <span><x-expert-statistics::call-analysis-link :href="$urlUnanswered">{{ $declined }}</x-expert-statistics::call-analysis-link></span>
-                                        <span><x-expert-statistics::call-analysis-link :href="$urlUnanswered">{{ $abandoned }}{{ $preanswerAbandoned > 0 ? ' ('.$preanswerAbandoned.')' : '' }}</x-expert-statistics::call-analysis-link></span>
+                                        <span><x-expert-statistics::call-analysis-link :href="$urlUnanswered">{{ $abandoned }}{{ $preanswerAbandoned > 0 ? ' ('.$preanswerAbandoned.')' : '' }}</x-expert-statistics::call-analysis-link>{!! $badge($row, 'abandoned') !!}</span>
                                     </div>
                                 </td>
                                 @if ($queuesOnlyStats)
@@ -311,21 +429,20 @@
                                                 : 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400') }}">
                                         {{ number_format($pct, 1) }}%
                                     </span>
+                                    {!! $badge($row, 'answer_rate') !!}
                                 </td>
                                 <td class="px-4 py-3 text-right text-gray-600 dark:text-gray-400">
-                                    {{ $this->formatDuration($row['talking_duration'] ?? 0) }}
+                                    @php($avgTalk = \CXEngine\ExpertStatistics\Support\QueueReportPeriods::averageTalking($row))
+                                    {{ $avgTalk === null ? '–' : $this->formatDuration((int) round($avgTalk)) }}
                                 </td>
                                 <td class="px-4 py-3 text-right text-gray-600 dark:text-gray-400">
-                                    {{ $this->formatDuration($row['waiting_duration'] ?? 0) }}
+                                    @php($avgWait = \CXEngine\ExpertStatistics\Support\QueueReportPeriods::averageWaiting($row))
+                                    {{ $avgWait === null ? '–' : $this->formatDuration((int) round($avgWait)) }}
+                                    {!! $badge($row, 'avg_waiting') !!}
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="11" class="px-4 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
-                                    {{ __('expert-statistics::pbx.expert_statistics.no_data') }}
-                                </td>
-                            </tr>
-                        @endforelse
+                        @endforeach
+                        @endforeach
                     </tbody>
 
                 </table>
