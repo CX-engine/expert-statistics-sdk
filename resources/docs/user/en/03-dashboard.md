@@ -6,7 +6,8 @@ specific queue or user first. It has two tabs: **Period Analysis** and **12-Mont
 ## Period Analysis tab
 
 Pick a period from the selector — **Today, Yesterday, This week, Last week, This month, Last
-month, Last 3 months, Last 6 months** — and the whole tab updates.
+month, Last 3 months, Last 6 months** — and the whole tab updates. "Last 3 months" and
+"Last 6 months" cover whole months, without the current one (on November 18: August 1 to October 31).
 
 **Total Calls widget** — shows total call count and total call duration, split into Inbound,
 Outbound and Internal, with a note that external/internal classification depends on how your PBX

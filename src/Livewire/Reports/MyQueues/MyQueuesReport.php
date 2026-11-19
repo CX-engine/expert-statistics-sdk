@@ -52,7 +52,7 @@ class MyQueuesReport extends Component
     #[Url]
     public string $breakdown = QueueReportPeriods::TOTAL;
 
-    /** Period-over-period comparison (day/week/month only). Off until the user asks for it. */
+    /** Anomaly detection: each period against the usual level of its queue (day/week/month only). Off until the user asks for it. */
     public bool $compare = false;
 
     /** @var list<string> views available for the range (API's `available_periods` once loaded) */
@@ -179,12 +179,11 @@ class MyQueuesReport extends Component
     }
 
     /**
-     * Comparison badge of one metric of a report row, or null.
+     * Marker of an abnormal value of a report row (worse / better than usual), or null.
      *
-     * @param  array<string, string>  $labels  getPeriodLabels()
-     * @return array{text: string, class: string, title: string, severity: ?string, assessment: string}|null
+     * @return array{text: string, class: string, title: string}|null
      */
-    public function comparisonBadge(array $row, string $metric, array $labels = []): ?array
+    public function usualMarker(array $row, string $metric): ?array
     {
         if (! $this->showsComparison()) {
             return null;
@@ -192,7 +191,13 @@ class MyQueuesReport extends Component
 
         $metrics = $this->comparison[QueueReportPeriods::seriesKey($row)] ?? null;
 
-        return QueueReportPeriods::badge($metric, $metrics[$metric] ?? null, $this->breakdown, $labels);
+        return QueueReportPeriods::usualMarker($metric, $metrics[$metric] ?? null);
+    }
+
+    /** Points of attention are shown (even when empty: "nothing abnormal") once the comparison is loaded. */
+    public function showsAttentionPanel(): bool
+    {
+        return $this->showsComparison();
     }
 
     public function toggleQueuesOnlyStats(): void
@@ -518,7 +523,10 @@ class MyQueuesReport extends Component
             'currentWeek' => $this->setRange($today->copy()->startOfWeek(), $today->copy()),
             'lastWeek' => $this->setRange($today->copy()->subWeek()->startOfWeek(), $today->copy()->subWeek()->endOfWeek()),
             'currentMonth' => $this->setRange($today->copy()->startOfMonth(), $today->copy()),
-            'lastMonth' => $this->setRange($today->copy()->subMonth()->startOfMonth(), $today->copy()->subMonth()->endOfMonth()),
+            'lastMonth' => $this->setRange($today->copy()->subMonthNoOverflow()->startOfMonth(), $today->copy()->subMonthNoOverflow()->endOfMonth()),
+            // Whole previous months, like lastMonth (Aug 1 – Oct 31 on Nov 18).
+            'last3Months' => $this->setRange($today->copy()->subMonthsNoOverflow(3)->startOfMonth(), $today->copy()->subMonthNoOverflow()->endOfMonth()),
+            'last6Months' => $this->setRange($today->copy()->subMonthsNoOverflow(6)->startOfMonth(), $today->copy()->subMonthNoOverflow()->endOfMonth()),
             default => null,
         };
     }

@@ -72,54 +72,64 @@ it('groups rows by period in order of appearance', function () {
         ->and($groups[1]['rows'][0]['queue'])->toBe('800');
 });
 
-it('formats deltas per metric kind', function () {
-    expect(QueueReportPeriods::formatDelta('calls', ['delta' => 30, 'delta_percent' => 12.4]))->toBe('+12 %')
-        ->and(QueueReportPeriods::formatDelta('abandoned', ['delta' => 5, 'delta_percent' => null]))->toBe('+5')
-        ->and(QueueReportPeriods::formatDelta('answer_rate', ['delta' => -3.24, 'delta_percent' => -4.1]))->toBe('−3.2 pts')
-        ->and(QueueReportPeriods::formatDelta('avg_waiting', ['delta' => 8.4, 'delta_percent' => 30]))->toBe('+8 s')
-        ->and(QueueReportPeriods::formatValue('answer_rate', 81.25))->toBe('81.3 %')
+it('formats values per metric kind', function () {
+    expect(QueueReportPeriods::formatValue('answer_rate', 81.25))->toBe('81.3 %')
         ->and(QueueReportPeriods::formatValue('avg_waiting', 75))->toBe('1 min 15 s')
+        ->and(QueueReportPeriods::formatValue('abandoned', 17.6))->toBe('18')
         ->and(QueueReportPeriods::formatValue('calls', null))->toBe('—');
 });
 
-it('builds badges coloured by assessment and weighted by severity', function () {
+it('marks only the values notably worse or better than usual', function () {
     app()->setLocale('en');
-    $metric = fn (array $o) => array_merge([
-        'current' => 120, 'previous' => 100, 'delta' => 20, 'delta_percent' => 20.0, 'normalized' => false,
-        'trend' => 'up', 'assessment' => 'better', 'severity' => null, 'previous_period' => '2026-01',
-    ], $o);
+    $metric = fn (array $o) => array_merge(['current' => 70.0, 'usual' => 88.0, 'assessment' => 'worse', 'severity' => 'major'], $o);
 
-    $muted = QueueReportPeriods::badge('answered', $metric([]), 'month');
-    $major = QueueReportPeriods::badge('answer_rate', $metric(['delta' => -12.5, 'trend' => 'down', 'assessment' => 'worse', 'severity' => 'major', 'normalized' => true]), 'month');
-    $neutral = QueueReportPeriods::badge('calls', $metric(['assessment' => 'neutral', 'severity' => 'notable']), 'month', ['2026-01' => 'Jan (clipped)']);
+    $worse = QueueReportPeriods::usualMarker('answer_rate', $metric([]));
+    $better = QueueReportPeriods::usualMarker('avg_waiting', $metric(['current' => 20, 'usual' => 45, 'assessment' => 'better', 'severity' => 'notable']));
 
-    expect($muted['text'])->toBe('▲ +20 %')
-        ->and($muted['class'])->toContain('text-gray-400')
-        ->and($muted['title'])->toBe('Previous period (January 2026): 100')
-        ->and($major['text'])->toBe('▼ −12.5 pts')
-        ->and($major['class'])->toContain('bg-red-100')->toContain('ring-1')->toContain('font-semibold')
-        ->and($major['title'])->toContain('compared per day')->toContain('major change')
-        ->and($neutral['class'])->toContain('bg-amber-50')->not->toContain('ring-1')
-        ->and($neutral['title'])->toContain('Jan (clipped)')
-        ->and(QueueReportPeriods::badge('calls', null))->toBeNull()
-        ->and(QueueReportPeriods::badge('answer_rate', $metric(['delta' => null, 'trend' => 'new'])))->toBeNull();
+    expect($worse['text'])->toBe('▼ usually 88.0 %')
+        ->and($worse['class'])->toContain('text-red-600')->toContain('font-semibold')
+        ->and($worse['title'])->toBe('Answer rate worse than usual (usually 88.0 %)')
+        ->and($better['text'])->toBe('▼ usually 45 s')
+        ->and($better['class'])->toContain('text-green-600')->not->toContain('font-semibold')
+        ->and(QueueReportPeriods::usualMarker('answer_rate', $metric(['severity' => null])))->toBeNull()
+        ->and(QueueReportPeriods::usualMarker('calls', $metric(['assessment' => 'neutral'])))->toBeNull()
+        ->and(QueueReportPeriods::usualMarker('answer_rate', null))->toBeNull();
 });
 
-it('indexes the comparison by period, queue and element and filters anomalies by view', function () {
+it('summarises an alert as its worse indicators and the call volume', function () {
+    app()->setLocale('fr');
+    $summary = QueueReportPeriods::anomalySummary([
+        'issues' => [
+            'answer_rate' => ['current' => 72.0, 'usual' => 88.0],
+            'avg_waiting' => ['current' => 100.0, 'usual' => 35.0],
+        ],
+        'context' => ['calls' => ['delta_percent' => 34.6]],
+    ]);
+
+    expect($summary['issues'])->toBe([
+        'Taux de réponse 72.0 % (habituellement 88.0 %)',
+        'Attente moyenne 1 min 40 s (habituellement 35 s)',
+    ])->and($summary['context'])->toBe('35 % d\'appels de plus que d\'habitude')
+        ->and(QueueReportPeriods::anomalySummary(['issues' => [], 'context' => []])['context'])->toBeNull();
+});
+
+it('indexes the comparison by period, queue and element and filters the alerts by view', function () {
     $comparison = [[
-        'queue' => '800', 'element' => '101', 'keyType' => '0', 'period' => '2026-02', 'previous_period' => '2026-01',
-        'metrics' => ['calls' => ['current' => 5, 'previous' => 4, 'delta' => 1, 'score' => 0.1], 'avg_talking' => ['delta' => 3]],
+        'queue' => '800', 'element' => '101', 'keyType' => '0', 'period' => '2026-02',
+        'metrics' => [
+            'answer_rate' => ['current' => 70.0, 'usual' => 88.0, 'assessment' => 'worse', 'severity' => 'major', 'score' => 1.8, 'delta' => -18],
+            'calls' => ['current' => 5, 'usual' => 4],
+        ],
     ]];
 
     $index = QueueReportPeriods::indexComparison($comparison);
 
     expect(array_keys($index))->toBe(['2026-02|800|101'])
-        ->and($index['2026-02|800|101'])->toHaveKey('calls')->not->toHaveKey('avg_talking')
-        ->and($index['2026-02|800|101']['calls'])->not->toHaveKey('score')
-        ->and($index['2026-02|800|101']['calls']['previous_period'])->toBe('2026-01')
+        ->and($index['2026-02|800|101'])->toHaveKey('answer_rate')->not->toHaveKey('calls')
+        ->and($index['2026-02|800|101']['answer_rate'])->toBe(['current' => 70.0, 'usual' => 88.0, 'assessment' => 'worse', 'severity' => 'major'])
         ->and(QueueReportPeriods::seriesKey(['period' => '2026-02', 'queue' => '800', 'element' => '101']))->toBe('2026-02|800|101');
 
-    $anomalies = [['keyType' => '4', 'metric' => 'calls'], ['keyType' => '0', 'metric' => 'answered']];
+    $anomalies = [['keyType' => '4', 'issues' => ['answer_rate' => []]], ['keyType' => '0', 'issues' => ['abandoned' => []]], ['keyType' => '4']];
     expect(QueueReportPeriods::visibleAnomalies($anomalies, true))->toHaveCount(1)
         ->and(QueueReportPeriods::visibleAnomalies($anomalies, false))->toHaveCount(2);
 });

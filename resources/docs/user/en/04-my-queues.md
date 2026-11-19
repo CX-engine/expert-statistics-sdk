@@ -64,23 +64,28 @@ the rows are grouped under a header per period, and sorting a column sorts insid
 first and last periods are cut to your dates: such a *partial* period is marked with an asterisk —
 hover it to see the days it covers.
 
-**Compare with previous period** (off by default — tick it when you want the comparison) adds a small change indicator under **Calls**, **Answered**,
-**Abandoned**, **Rate %** and **Avg wait**: ▲/▼ with *+12 %* for volumes, *+3.2
-pts* for the answer rate, *+8 s* for the average wait. Hover it to see the previous period's value.
+**Spot anomalies** (off by default — tick it when you want the analysis) compares each period with
+the **usual level** of its queue, taken from the **other selected periods**: with 6 months
+selected, March is compared with the 5 other months. In the **Day** view, a day is compared with
+the same weekday (a Monday with the other Mondays), since traffic depends on the weekday. With at
+least three reference periods, the usual level is their median: a single bad period does not skew
+the reference of the others.
 
-- **Green** = better (more answered, fewer abandoned, higher rate, shorter wait), **red** = worse,
-  **amber** = a notable change that is neither good nor bad in itself (e.g. more calls).
-- A bold, outlined indicator is a **major** change; a lightly coloured one a **notable** change; a
-  small grey figure is an ordinary variation.
-- When two periods don't have the same number of days (a partial month, February vs March),
-  volumes are **compared per day** — the tooltip says so.
-- Small volumes are not graded: a queue going from 2 to 5 calls is not flagged.
-- The first period has nothing to be compared with.
+Only what matters to your callers is judged: the **answer rate**, the **average wait** and
+**abandoned** calls. The number of calls is not judged; it is given as the likely cause ("35 %
+more calls than usual").
 
-When comparison is on, a **Biggest changes** panel above the table lists the most significant
-changes first (major ones, then the busiest queues): severity, period vs previous period, queue (and
-extension), indicator, previous → current value and the change, coloured the same way. It shows six
-at first — **Show all** expands the list. In the queues-only view it lists queue changes only.
+- A **Points of attention** panel above the table lists the queues and periods clearly **worse
+  than usual**, one line per queue and period, the most important first (queues before
+  extensions): for example *Answer rate 72.0 % (usually 88.0 %) · Average wait 1 min 40 s
+  (usually 35 s) · 35 % more calls than usual*. It shows five at first — **Show all** expands the
+  list. When nothing is abnormal, it says so.
+- In the table, only an abnormal value gets a note under the figure, for example *▼ usually
+  88.0 %*: **red** when worse than usual, **green** when better. A bold note is a **major** gap.
+  Values within the usual range have none.
+- Volumes are scaled to the period's length (a partial month, February vs March).
+- Small volumes are not judged: a queue with 3 calls is not flagged.
+- In the queues-only view, only queues are listed.
 
 ## KPI
 
@@ -103,8 +108,8 @@ file of the current view, respecting whatever filters (date range, closed-hours 
 are currently applied.
 
 From the Report page in the Day, Week or Month view, the Excel file also contains a **report per
-day/week/month** sheet and, when comparison is on, a **comparison** sheet listing the biggest
-changes first, coloured like the screen.
+day/week/month** sheet and, when comparison is on, a **comparison** sheet listing the points
+of attention first, then every period with its usual level, coloured like the screen.
 
 ## Related pages
 

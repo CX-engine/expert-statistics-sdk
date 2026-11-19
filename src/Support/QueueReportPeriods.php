@@ -6,8 +6,10 @@ use Carbon\CarbonImmutable;
 
 /**
  * Pure shaping of the My Queues report's period views (total / day / week / month) and of
- * the period-over-period comparison returned by `queues-report-aggregated` when it gets a
- * `period` parameter (expert-stats QueueReportPeriodBreakdown / QueueReportPeriodComparison).
+ * the anomaly detection returned by `queues-report-aggregated` when it gets a `period`
+ * parameter (expert-stats QueueReportPeriodBreakdown / QueueReportPeriodComparison): each
+ * period against the usual level of its queue / extension over the other periods of the
+ * range (same weekday in the day view).
  *
  * Availability rules mirror the API's QueueReportPeriodBreakdown::availablePeriods() so the
  * buttons are right before the first answer; the component trusts `available_periods` after.
@@ -26,15 +28,13 @@ class QueueReportPeriods
 
     public const BUCKETED = [self::DAY, self::WEEK, self::MONTH];
 
-    /** Comparison metrics shown as badges in the table, keyed by the API metric name. */
-    public const BADGE_METRICS = ['calls', 'answered', 'abandoned', 'answer_rate', 'avg_waiting'];
-
-    /** Every metric the API compares, in display order (anomalies panel). */
-    public const METRICS = ['calls', 'answered', 'abandoned', 'answer_rate', 'avg_waiting', 'avg_talking'];
-
-    private const VOLUME_METRICS = ['calls', 'answered', 'abandoned'];
+    /** Indicators the API judges (better / worse than usual), marked in the table when abnormal. */
+    public const JUDGED_METRICS = ['answer_rate', 'avg_waiting', 'abandoned'];
 
     private const DURATION_METRICS = ['avg_waiting', 'avg_talking'];
+
+    /** Alerts shown before "Show all" in the points of attention panel. */
+    public const ATTENTION_LIMIT = 5;
 
     /**
      * Views that make sense for the range: day if more than one day; week if more than 7 days
@@ -227,22 +227,21 @@ class QueueReportPeriods
     }
 
     /**
-     * Comparison entries indexed by period|queue|element, keeping only the badge metrics and
-     * the fields the badges need (keeps the Livewire payload small).
+     * Comparison entries indexed by period|queue|element, keeping only the judged metrics and
+     * the fields the table needs (keeps the Livewire payload small).
      *
      * @param  array<int, array<string, mixed>>  $comparison
      * @return array<string, array<string, array<string, mixed>>>
      */
     public static function indexComparison(array $comparison): array
     {
-        $keep = ['current', 'previous', 'delta', 'delta_percent', 'normalized', 'trend', 'assessment', 'severity'];
+        $keep = ['current', 'usual', 'assessment', 'severity'];
         $index = [];
         foreach ($comparison as $entry) {
             $metrics = [];
-            foreach (self::BADGE_METRICS as $metric) {
+            foreach (self::JUDGED_METRICS as $metric) {
                 if (isset($entry['metrics'][$metric]) && \is_array($entry['metrics'][$metric])) {
                     $metrics[$metric] = array_intersect_key($entry['metrics'][$metric], array_flip($keep));
-                    $metrics[$metric]['previous_period'] = $entry['previous_period'] ?? null;
                 }
             }
             $index[self::seriesKey($entry)] = $metrics;
@@ -252,90 +251,71 @@ class QueueReportPeriods
     }
 
     /**
-     * Anomalies to show: queue rows only in the queues-only view.
+     * Alerts to show: queue rows only in the queues-only view. The API sends them queues
+     * first, most severe first.
      *
      * @param  array<int, array<string, mixed>>  $anomalies
      * @return list<array<string, mixed>>
      */
     public static function visibleAnomalies(array $anomalies, bool $queuesOnly): array
     {
-        return array_values(array_filter($anomalies, fn (array $a): bool => ! $queuesOnly || ($a['keyType'] ?? null) == 4));
+        return array_values(array_filter($anomalies, fn (array $a): bool => ! empty($a['issues']) && (! $queuesOnly || ($a['keyType'] ?? null) == 4)));
     }
 
     /**
-     * Compact delta badge of a compared metric, or null when there is nothing to compare
-     * (first period, value missing on one side).
+     * Marker under an abnormal value of the table: "▼ habit. 88.0 %" in red (worse than
+     * usual) or green (better), or null when the value is in the usual range.
      *
-     * @param  array<string, mixed>|null  $m  one metric of a comparison entry
-     * @param  array<string, string>  $labels  period labels by key (clipped dates), see labels()
-     * @return array{text: string, class: string, title: string, severity: ?string, assessment: string}|null
+     * @param  array<string, mixed>|null  $m  one judged metric of a comparison entry
+     * @return array{text: string, class: string, title: string}|null
      */
-    public static function badge(string $metric, ?array $m, string $period = self::MONTH, array $labels = []): ?array
+    public static function usualMarker(string $metric, ?array $m): ?array
     {
-        if ($m === null || ! isset($m['delta']) || $m['delta'] === null) {
+        if ($m === null || ($m['severity'] ?? null) === null || ! \in_array($m['assessment'] ?? null, ['better', 'worse'], true)) {
             return null;
         }
 
-        $trend = (string) ($m['trend'] ?? 'flat');
-        $arrow = match (true) {
-            $trend === 'up', $trend === 'new' => '▲',
-            $trend === 'down', $trend === 'gone' => '▼',
-            default => '=',
-        };
-
-        $text = trim($arrow.' '.self::formatDelta($metric, $m));
-        $assessment = (string) ($m['assessment'] ?? 'neutral');
-        $severity = $m['severity'] ?? null;
-
-        $title = self::t('badge_previous', [
-            'period' => isset($m['previous_period'])
-                ? ($labels[$m['previous_period']] ?? self::label($period, (string) $m['previous_period']))
-                : '',
-            'value' => self::formatValue($metric, $m['previous'] ?? null),
-        ]);
-        if (! empty($m['normalized'])) {
-            $title .= ' · '.self::t('badge_normalized');
-        }
-        if ($severity !== null) {
-            $title .= ' · '.self::t('severity_'.$severity);
-        }
+        $worse = $m['assessment'] === 'worse';
+        $up = (float) ($m['current'] ?? 0) > (float) ($m['usual'] ?? 0);
+        $usual = self::formatValue($metric, $m['usual'] ?? null);
+        $major = $m['severity'] === 'major';
 
         return [
-            'text' => $text,
-            'class' => self::badgeClass($assessment, $severity),
-            'title' => $title,
-            'severity' => $severity,
-            'assessment' => $assessment,
+            'text' => ($up ? '▲' : '▼').' '.self::t('usual_short', ['value' => $usual]),
+            'class' => ($worse ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400').($major ? ' font-semibold' : ''),
+            'title' => self::t($worse ? 'usual_title_worse' : 'usual_title_better', ['metric' => self::metricLabel($metric), 'value' => $usual]),
         ];
     }
 
     /**
-     * "+12 %" for volumes (per-day % when normalized; absolute when the previous value was 0),
-     * "+3.2 pts" for the answer rate, "+8 s" for durations.
+     * Sentence parts of an alert: "Taux de réponse 72.0 % (habituellement 88.0 %)" per worse
+     * indicator, and the call volume as context ("35 % d'appels de plus que d'habitude").
+     *
+     * @param  array<string, mixed>  $anomaly
+     * @return array{issues: list<string>, context: ?string}
      */
-    public static function formatDelta(string $metric, array $m): string
+    public static function anomalySummary(array $anomaly): array
     {
-        $delta = $m['delta'] ?? null;
-        $percent = $m['delta_percent'] ?? null;
-
-        if (\in_array($metric, self::VOLUME_METRICS, true)) {
-            return $percent !== null
-                ? self::signed((float) $percent, 0).' %'
-                : self::signed((float) $delta, 0);
+        $issues = [];
+        foreach ($anomaly['issues'] ?? [] as $metric => $m) {
+            $issues[] = self::t('attention_issue', [
+                'metric' => self::metricLabel((string) $metric),
+                'value' => self::formatValue((string) $metric, $m['current'] ?? null),
+                'usual' => self::formatValue((string) $metric, $m['usual'] ?? null),
+            ]);
         }
 
-        if ($metric === 'answer_rate') {
-            return self::signed((float) $delta, 1).' '.self::t('unit_points');
+        $context = null;
+        $calls = $anomaly['context']['calls'] ?? null;
+        if (\is_array($calls) && isset($calls['delta_percent'])) {
+            $percent = (int) round(abs((float) $calls['delta_percent']));
+            $context = self::t((float) $calls['delta_percent'] > 0 ? 'attention_calls_more' : 'attention_calls_less', ['percent' => $percent]);
         }
 
-        if (\in_array($metric, self::DURATION_METRICS, true)) {
-            return self::signed((float) $delta, 0).' s';
-        }
-
-        return self::signed((float) $delta, 1);
+        return ['issues' => $issues, 'context' => $context];
     }
 
-    /** Value of a metric for display (tooltips, anomalies panel). */
+    /** Value of a metric for display (markers, alerts). */
     public static function formatValue(string $metric, mixed $value): string
     {
         if ($value === null || $value === '') {
@@ -353,44 +333,12 @@ class QueueReportPeriods
         return (string) (int) round((float) $value);
     }
 
-    /** Badge classes: colour from the assessment, weight from the severity. */
-    public static function badgeClass(string $assessment, ?string $severity): string
-    {
-        if ($severity === null) {
-            return 'text-gray-400 dark:text-gray-500';
-        }
-
-        $colour = match ($assessment) {
-            'better' => $severity === 'major'
-                ? 'bg-green-100 text-green-800 ring-1 ring-green-500 dark:bg-green-950/60 dark:text-green-300 dark:ring-green-600'
-                : 'bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400',
-            'worse' => $severity === 'major'
-                ? 'bg-red-100 text-red-800 ring-1 ring-red-500 dark:bg-red-950/60 dark:text-red-300 dark:ring-red-600'
-                : 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400',
-            default => $severity === 'major'
-                ? 'bg-amber-100 text-amber-800 ring-1 ring-amber-500 dark:bg-amber-950/60 dark:text-amber-300 dark:ring-amber-600'
-                : 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400',
-        };
-
-        return 'rounded px-1 '.$colour.($severity === 'major' ? ' font-semibold' : '');
-    }
-
-    /** Severity pill classes (anomalies panel). */
+    /** Severity pill classes (points of attention). */
     public static function severityClass(?string $severity): string
     {
         return $severity === 'major'
             ? 'bg-red-600 text-white dark:bg-red-500'
             : 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300';
-    }
-
-    /** Text colour of an anomaly's change, from its assessment. */
-    public static function assessmentTextClass(string $assessment): string
-    {
-        return match ($assessment) {
-            'better' => 'text-green-700 dark:text-green-400',
-            'worse' => 'text-red-700 dark:text-red-400',
-            default => 'text-amber-700 dark:text-amber-400',
-        };
     }
 
     public static function metricLabel(string $metric): string
@@ -426,14 +374,6 @@ class QueueReportPeriods
             'start' => self::formatShortDay($start),
             'end' => self::formatShortDay($end),
         ]);
-    }
-
-    private static function signed(float $value, int $decimals): string
-    {
-        $rounded = round($value, $decimals);
-        $formatted = number_format(abs($rounded), $decimals, '.', '');
-
-        return ($rounded > 0 ? '+' : ($rounded < 0 ? '−' : '±')).$formatted;
     }
 
     private static function formatSeconds(float $seconds): string

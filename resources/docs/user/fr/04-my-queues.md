@@ -72,27 +72,28 @@ s'applique à l'intérieur de chaque période. La première et la dernière pér
 dates : une telle période *partielle* est marquée d'un astérisque — survolez-le pour voir les jours
 couverts.
 
-**Comparer à la période précédente** (désactivé par défaut — cochez-le pour afficher la comparaison) ajoute un petit indicateur d'évolution
-sous **Appels**, **Répondus**, **Abandonnés**, **Taux %** et **Attente moy.** :
-▲/▼ avec *+12 %* pour les volumes, *+3.2 pts* pour le taux de réponse, *+8 s* pour l'attente
-moyenne. Survolez-le pour voir la valeur de la période précédente.
+**Repérer les anomalies** (désactivé par défaut — cochez-le quand vous voulez l'analyse) compare
+chaque période au **niveau habituel** de sa file, calculé sur les **autres périodes sélectionnées** :
+avec 6 mois choisis, mars est comparé aux 5 autres mois. En vue **Jour**, un jour est comparé aux
+mêmes jours de la semaine (un lundi aux autres lundis), car le trafic dépend du jour. Avec au moins
+trois périodes de référence, le niveau habituel est leur valeur médiane : une seule mauvaise période
+ne fausse pas la référence des autres.
 
-- **Vert** = mieux (plus de répondus, moins d'abandons, meilleur taux, attente plus courte),
-  **rouge** = moins bien, **ambre** = variation notable ni bonne ni mauvaise en soi (par exemple plus
-  d'appels).
-- Un indicateur en gras et encadré signale une variation **majeure** ; légèrement coloré, une
-  variation **notable** ; un petit chiffre gris, une variation ordinaire.
-- Quand deux périodes n'ont pas le même nombre de jours (mois partiel, février contre mars), les
-  volumes sont **comparés par jour** — l'infobulle l'indique.
-- Les petits volumes ne sont pas évalués : une file qui passe de 2 à 5 appels n'est pas signalée.
-- La première période n'a rien à quoi se comparer.
+Seuls les indicateurs qui comptent pour vos appelants sont évalués : le **taux de réponse**,
+l'**attente moyenne** et les **abandons**. Le nombre d'appels n'est pas jugé ; il est indiqué comme
+cause probable (« 35 % d'appels de plus que d'habitude »).
 
-Quand la comparaison est active, un panneau **Plus fortes variations** au-dessus du tableau liste
-les variations les plus significatives en premier (les majeures, puis les files les plus
-chargées) : gravité, période contre période précédente, file (et poste), indicateur, valeur
-précédente → actuelle et l'évolution, colorée de la même façon. Il en affiche six — **Tout
-afficher** déplie la liste. En vue « files uniquement », seules les variations des files sont
-listées.
+- Un panneau **Points d'attention** au-dessus du tableau liste les files et périodes nettement
+  **moins bonnes que d'habitude**, une ligne par file et période, les plus importantes en premier
+  (les files avant les postes) : par exemple *Taux de réponse 72.0 % (habituellement 88.0 %) ·
+  Attente moyenne 1 min 40 s (habituellement 35 s) · 35 % d'appels de plus que d'habitude*. Il en
+  affiche cinq — **Tout afficher** déplie la liste. Si rien n'est anormal, il l'indique.
+- Dans le tableau, seule une valeur anormale porte une mention sous le chiffre, par exemple
+  *▼ habit. 88.0 %* : en **rouge** quand c'est moins bien que d'habitude, en **vert** quand c'est
+  mieux. Une mention en gras signale un écart **majeur**. Les valeurs dans la normale n'ont rien.
+- Les volumes sont rapportés à la durée de la période (un mois partiel, février contre mars).
+- Les petits volumes ne sont pas évalués : une file à 3 appels n'est pas signalée.
+- En vue « files uniquement », seules les files sont listées.
 
 ## KPI
 
@@ -118,7 +119,8 @@ exclusion des heures de fermeture, etc.).
 
 Depuis la page Rapport en vue Jour, Semaine ou Mois, le fichier Excel contient aussi une feuille
 **Rapport par jour/semaine/mois** et, si la comparaison est active, une feuille **Comparatif**
-listant d'abord les plus fortes variations, colorées comme à l'écran.
+listant d'abord les points d'attention, puis chaque période avec son niveau habituel, colorée comme
+à l'écran.
 
 ## Pages associées
 

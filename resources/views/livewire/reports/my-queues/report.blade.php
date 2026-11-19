@@ -71,7 +71,7 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-3">
-                {{-- Compare with the previous period (day / week / month) --}}
+                {{-- Anomaly detection: each period against the usual level of its queue (day / week / month) --}}
                 @if ($this->isBucketed())
                     <label class="inline-flex items-center gap-2 cursor-pointer" title="{{ $tp('compare_hint') }}">
                         <input type="checkbox" wire:model.live="compare"
@@ -141,15 +141,14 @@
             $colCount = 9 + ($queuesOnlyStats ? 0 : 1) + ($bucketed ? 1 : 0);
             $visibleAnomalies = $this->getVisibleAnomalies();
 
-            /** Small delta badge under a value (comparison on). */
-            $badge = function (array $row, string $metric) use ($periodLabels): string {
-                $b = $this->comparisonBadge($row, $metric, $periodLabels);
-                if ($b === null) {
+            /** Marker under a value that is notably worse / better than usual (anomaly detection on). */
+            $badge = function (array $row, string $metric): string {
+                $m = $this->usualMarker($row, $metric);
+                if ($m === null) {
                     return '';
                 }
-                $title = QueueReportPeriods::metricLabel($metric).' — '.$b['title'];
 
-                return '<div class="mt-0.5 text-xs leading-none whitespace-nowrap"><span class="'.e($b['class']).'" title="'.e($title).'">'.e($b['text']).'</span></div>';
+                return '<div class="mt-0.5 text-xs leading-none whitespace-nowrap"><span class="cursor-help '.e($m['class']).'" title="'.e($m['title']).'">'.e($m['text']).'</span></div>';
             };
 
             /**
@@ -168,16 +167,19 @@
                 return '<svg xmlns="http://www.w3.org/2000/svg" class="inline-block ml-1 h-3 w-3 '.$color.'" viewBox="0 0 16 16" fill="currentColor"><path d="'.$path.'"/></svg>';
             };
         @endphp
-        {{-- Biggest changes between consecutive periods --}}
-        @if (! empty($visibleAnomalies))
+        {{-- Points of attention: queues and periods notably worse than usual --}}
+        @if ($this->showsAttentionPanel())
             <div wire:loading.remove wire:target="{{ $loadingTargets }}" x-data="{ all: false }"
                 class="bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:ring-white/10 p-4">
-                <div class="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+                <div class="flex flex-wrap items-baseline justify-between gap-2">
                     <div>
-                        <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100">{{ $tp('anomalies_title') }}</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $tp('anomalies_subtitle') }}</p>
+                        <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100">{{ $tp('attention_title') }}</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ $tp($breakdown === 'day' ? 'legend_weekday' : 'legend_range') }}
+                            <span class="whitespace-nowrap"><span class="text-red-600 dark:text-red-400 font-medium">{{ $tp('legend_worse') }}</span> · <span class="text-green-600 dark:text-green-400 font-medium">{{ $tp('legend_better') }}</span></span>
+                        </p>
                     </div>
-                    @if (count($visibleAnomalies) > 6)
+                    @if (count($visibleAnomalies) > QueueReportPeriods::ATTENTION_LIMIT)
                         <button type="button" x-on:click="all = ! all"
                             class="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline">
                             <span x-show="! all">{{ $tp('anomalies_show_all', ['count' => count($visibleAnomalies)]) }}</span>
@@ -185,40 +187,38 @@
                         </button>
                     @endif
                 </div>
-                <ul class="divide-y divide-gray-100 dark:divide-gray-700/50">
-                    @foreach ($visibleAnomalies as $i => $anomaly)
-                        @php
-                            $metric = (string) ($anomaly['metric'] ?? '');
-                            $change = QueueReportPeriods::badge($metric, $anomaly, $breakdown, $periodLabels);
-                            $isExt = ($anomaly['keyType'] ?? null) == 0;
-                        @endphp
-                        <li @if ($i >= 6) x-show="all" x-cloak @endif
-                            class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2 text-sm">
-                            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold {{ QueueReportPeriods::severityClass($anomaly['severity'] ?? null) }}">
-                                {{ $tp('severity_label_'.(($anomaly['severity'] ?? null) === 'major' ? 'major' : 'notable')) }}
-                            </span>
-                            <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                {{ $tp('anomalies_vs', [
-                                    'current' => $periodLabels[$anomaly['period'] ?? ''] ?? ($anomaly['period'] ?? ''),
-                                    'previous' => $periodLabels[$anomaly['previous_period'] ?? ''] ?? ($anomaly['previous_period'] ?? ''),
-                                ]) }}
-                            </span>
-                            <span class="font-medium text-gray-800 dark:text-gray-200">
-                                {{ trim(($anomaly['queue'] ?? '').' '.($anomaly['queueName'] ?? '')) }}@if ($isExt)<span class="font-normal text-gray-500 dark:text-gray-400"> · {{ trim(($anomaly['element'] ?? '').' '.($anomaly['elementName'] ?? '')) }}</span>@endif
-                            </span>
-                            <span class="text-gray-600 dark:text-gray-300">{{ QueueReportPeriods::metricLabel($metric) }}</span>
-                            <span class="text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                {{ QueueReportPeriods::formatValue($metric, $anomaly['previous'] ?? null) }} → {{ QueueReportPeriods::formatValue($metric, $anomaly['current'] ?? null) }}
-                            </span>
-                            @if ($change)
-                                <span class="font-semibold whitespace-nowrap {{ QueueReportPeriods::assessmentTextClass($anomaly['assessment'] ?? 'neutral') }}"
-                                    @if (! empty($anomaly['normalized'])) title="{{ $tp('badge_normalized') }}" @endif>
-                                    {{ $change['text'] }}
-                                </span>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
+
+                @if (empty($visibleAnomalies))
+                    <p class="mt-3 flex items-center gap-2 text-sm text-green-700 dark:text-green-400">
+                        <x-heroicon-m-check-circle class="w-4 h-4 shrink-0" />
+                        {{ $tp('attention_none') }}
+                    </p>
+                @else
+                    <ul class="mt-3 divide-y divide-gray-100 dark:divide-gray-700/50">
+                        @foreach ($visibleAnomalies as $i => $anomaly)
+                            @php
+                                $summary = QueueReportPeriods::anomalySummary($anomaly);
+                                $isExt = ($anomaly['keyType'] ?? null) == 0;
+                            @endphp
+                            <li @if ($i >= QueueReportPeriods::ATTENTION_LIMIT) x-show="all" x-cloak @endif
+                                class="flex gap-3 py-2 text-sm">
+                                <x-heroicon-m-exclamation-triangle class="w-4 h-4 mt-0.5 shrink-0 {{ ($anomaly['severity'] ?? null) === 'major' ? 'text-red-600 dark:text-red-400' : 'text-amber-500 dark:text-amber-400' }}" />
+                                <div class="min-w-0">
+                                    <div>
+                                        <span class="font-semibold text-gray-800 dark:text-gray-100">{{ trim(($anomaly['queue'] ?? '').' '.($anomaly['queueName'] ?? '')) }}</span>@if ($isExt)<span class="text-gray-500 dark:text-gray-400"> · {{ trim(($anomaly['element'] ?? '').' '.($anomaly['elementName'] ?? '')) }}</span>@endif
+                                        <span class="text-gray-500 dark:text-gray-400"> — {{ $periodLabels[$anomaly['period'] ?? ''] ?? ($anomaly['period'] ?? '') }}</span>
+                                        <span class="ml-1 inline-flex px-1.5 py-0.5 rounded text-[11px] font-semibold align-middle {{ QueueReportPeriods::severityClass($anomaly['severity'] ?? null) }}">
+                                            {{ $tp('severity_label_'.(($anomaly['severity'] ?? null) === 'major' ? 'major' : 'notable')) }}
+                                        </span>
+                                    </div>
+                                    <div class="text-gray-700 dark:text-gray-300">
+                                        {{ implode(' · ', $summary['issues']) }}@if ($summary['context'])<span class="text-gray-500 dark:text-gray-400"> · {{ $summary['context'] }}</span>@endif
+                                    </div>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
             </div>
         @endif
 
@@ -398,7 +398,6 @@
                                 @endif
                                 <td class="px-4 py-3 text-right text-gray-700 dark:text-gray-300">
                                     <x-expert-statistics::call-analysis-link :href="$urlAll">{{ $calls }}</x-expert-statistics::call-analysis-link>
-                                    {!! $badge($row, 'calls') !!}
                                 </td>
                                 <td class="px-4 py-3 text-red-600 dark:text-red-400">
                                     <div class="grid grid-cols-2 gap-2 text-right">
@@ -417,7 +416,6 @@
                                 @endif
                                 <td class="px-4 py-3 text-right text-green-600 dark:text-green-400">
                                     <x-expert-statistics::call-analysis-link :href="$urlAnswered">{{ $answered }}</x-expert-statistics::call-analysis-link>
-                                    {!! $badge($row, 'answered') !!}
                                 </td>
                                 <td class="px-4 py-3 text-right text-blue-600 dark:text-blue-400">
                                     {{ (int) ($row['transferred'] ?? 0) }}

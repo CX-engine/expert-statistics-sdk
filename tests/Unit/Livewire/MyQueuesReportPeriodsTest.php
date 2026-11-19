@@ -31,15 +31,17 @@ function queuePeriodRow(string $period, string $start, string $end, bool $partia
 function queuePeriodMetric(array $o = []): array
 {
     return array_merge([
-        'current' => 0, 'previous' => 0, 'delta' => 0, 'delta_percent' => 0.0, 'normalized' => false,
+        'current' => 0, 'usual' => 0, 'delta' => 0, 'delta_percent' => 0.0, 'scaled' => false,
         'trend' => 'flat', 'assessment' => 'neutral', 'severity' => null, 'score' => 0.0,
     ], $o);
 }
 
+/** The API's anomaly detection: February is worse than the queue's usual level (January). */
 function queuePeriodsResponse(): array
 {
     $identity = ['queue' => '800', 'queueName' => 'Support', 'element' => '800', 'elementName' => 'Support', 'keyType' => '4'];
-    $rate = queuePeriodMetric(['current' => 70.0, 'previous' => 90.0, 'delta' => -20.0, 'delta_percent' => -22.2, 'trend' => 'down', 'assessment' => 'worse', 'severity' => 'major', 'score' => 2.0]);
+    $rate = queuePeriodMetric(['current' => 70.0, 'usual' => 90.0, 'delta' => -20.0, 'delta_percent' => -22.2, 'trend' => 'down', 'assessment' => 'worse', 'severity' => 'major', 'score' => 2.0]);
+    $calls = queuePeriodMetric(['current' => 200, 'usual' => 164.7, 'delta' => 35.3, 'delta_percent' => 21.4, 'scaled' => true, 'trend' => 'up', 'severity' => 'notable']);
 
     return [
         'report' => [
@@ -54,19 +56,19 @@ function queuePeriodsResponse(): array
             ['key' => '2026-02', 'label' => '2026-02', 'start' => '2026-02-01', 'end' => '2026-02-28', 'days' => 28, 'partial' => false],
         ],
         'comparison' => [array_merge($identity, [
-            'period' => '2026-02', 'previous_period' => '2026-01', 'severity' => 'major',
+            'period' => '2026-02', 'basis' => 'range', 'reference_periods' => ['2026-01'], 'severity' => 'major',
             'metrics' => [
-                'calls' => queuePeriodMetric(['current' => 200, 'previous' => 100, 'delta' => 100, 'delta_percent' => 21.4, 'normalized' => true, 'trend' => 'up', 'severity' => 'notable']),
-                'answered' => queuePeriodMetric(['current' => 140, 'previous' => 90, 'delta' => 50, 'delta_percent' => -5.6, 'normalized' => true, 'trend' => 'down', 'assessment' => 'worse']),
-                'abandoned' => queuePeriodMetric(),
                 'answer_rate' => $rate,
                 'avg_waiting' => queuePeriodMetric(),
-                'avg_talking' => queuePeriodMetric(),
+                'abandoned' => queuePeriodMetric(),
+                'calls' => $calls,
             ],
         ])],
         'anomalies' => [array_merge($identity, [
-            'period' => '2026-02', 'previous_period' => '2026-01', 'metric' => 'answer_rate', 'priority' => 5.4,
-        ], $rate)],
+            'period' => '2026-02', 'basis' => 'range', 'severity' => 'major', 'priority' => 4.6,
+            'issues' => ['answer_rate' => $rate],
+            'context' => ['calls' => $calls],
+        ])],
     ];
 }
 
@@ -110,7 +112,7 @@ function sentQueueReportQueries(MockClient $client): array
         ->all();
 }
 
-it('loads the month view with its comparison and biggest changes', function () {
+it('loads the month view and points out the periods worse than usual', function () {
     Livewire::test(MyQueuesReport::class)
         ->set('startDate', '2026-01-15')
         ->set('endDate', '2026-02-28')
@@ -119,20 +121,43 @@ it('loads the month view with its comparison and biggest changes', function () {
         ->assertSet('breakdown', 'month')
         ->assertSet('groupData', false)
         ->assertSet('compare', false)
-        ->assertDontSee(__('expert-statistics::pbx.queue_report_periods.anomalies_title'))
+        ->assertDontSee('Points of attention')
         ->set('compare', true)
         ->assertSee('January 2026')
-        ->assertSee('February 2026')
         ->assertSee('Partial period: 01/15 – 01/31')
-        ->assertSee(__('expert-statistics::pbx.queue_report_periods.anomalies_title'))
-        ->assertSee('February 2026 vs January 2026')
-        ->assertSee('▼ −20.0 pts')
-        ->assertSee('90.0 % → 70.0 %')
-        ->assertSee('▲ +21 %')
-        ->assertSee('compared per day (periods of different lengths)');
+        ->assertSee('Points of attention')
+        ->assertSee('Each period is compared with the usual level of its queue, over the other selected periods.')
+        ->assertSee('800 Support')
+        ->assertSee('February 2026')
+        ->assertSee('Answer rate 70.0 % (usually 90.0 %)')
+        ->assertSee('21 % more calls than usual')
+        // The table marks the abnormal answer rate only, not the calls (not judged).
+        ->assertSee('▼ usually 90.0 %')
+        ->assertSee('Answer rate worse than usual (usually 90.0 %)')
+        ->assertDontSee('usually 165');
 
     $last = collect(sentQueueReportQueries($this->mockClient))->last();
     expect($last)->toMatchArray(['period' => 'month', 'compare' => 1, 'grouped' => 0, 'dn' => '800']);
+});
+
+it('says when no period is abnormal', function () {
+    $response = queuePeriodsResponse();
+    $response['anomalies'] = [];
+    $response['comparison'][0]['metrics']['answer_rate'] = queuePeriodMetric(['current' => 70.0, 'usual' => 71.0]);
+    MockClient::destroyGlobal();
+    $this->mockClient = MockClient::global([
+        '*queues-report-aggregated*' => MockResponse::make($response, 200),
+        '*' => MockResponse::make([], 200),
+    ]);
+
+    Livewire::test(MyQueuesReport::class)
+        ->set('startDate', '2026-01-15')
+        ->set('endDate', '2026-02-28')
+        ->set('dn', '800')
+        ->call('selectBreakdown', 'month')
+        ->set('compare', true)
+        ->assertSee('No anomaly: every period is within the usual range.')
+        ->assertDontSee('▼ usually');
 });
 
 it('keeps the comparison off by default and as the user chose it across views', function () {
@@ -148,12 +173,12 @@ it('keeps the comparison off by default and as the user chose it across views', 
     $component->set('compare', true)
         ->call('selectBreakdown', 'month')
         ->assertSet('compare', true)
-        ->assertSee(__('expert-statistics::pbx.queue_report_periods.anomalies_title'));
+        ->assertSee('Points of attention');
 
     expect(collect(sentQueueReportQueries($this->mockClient))->last())->toMatchArray(['period' => 'month', 'compare' => 1]);
 
     $component->set('compare', false)
-        ->assertDontSee(__('expert-statistics::pbx.queue_report_periods.anomalies_title'));
+        ->assertDontSee('Points of attention');
 });
 
 it('shows average talk and wait instead of totals', function () {
@@ -261,4 +286,28 @@ it('renders the extensions view and the day view with localised dates', function
         ->call('selectBreakdown', 'day')
         ->assertSee('15/01/2026')
         ->assertDontSee('2026-01-15</td>', false);
+});
+
+it('selects the last 3 and 6 whole months, and last month without overflowing', function () {
+    \Carbon\Carbon::setTestNow('2026-11-18 10:00:00');
+
+    $component = Livewire::test(MyQueuesReport::class)
+        ->call('selectPeriod', 'last3Months')
+        ->assertSet('startDate', '2026-08-01')
+        ->assertSet('endDate', '2026-10-31')
+        ->assertSee('Last 3 months')
+        ->call('selectPeriod', 'last6Months')
+        ->assertSet('startDate', '2026-05-01')
+        ->assertSet('endDate', '2026-10-31');
+
+    expect($component->get('availableBreakdowns'))->toContain('month');
+
+    // March 31 minus one month must be February, not March 3.
+    \Carbon\Carbon::setTestNow('2026-03-31 10:00:00');
+    Livewire::test(MyQueuesReport::class)
+        ->call('selectPeriod', 'lastMonth')
+        ->assertSet('startDate', '2026-02-01')
+        ->assertSet('endDate', '2026-02-28');
+
+    \Carbon\Carbon::setTestNow();
 });
